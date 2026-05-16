@@ -1,34 +1,34 @@
-from db import inicializar_db
-import sqlite3
+from db import conectar, inicializar_db
 import bcrypt
 import os
 
 # =========================
-# RESET (solo desarrollo)
+# DB (POSTGRES)
 # =========================
-if os.path.exists("pedidos.db"):
-    os.remove("pedidos.db")
-
-# =========================
-# DB
-# =========================
-inicializar_db()        
-
-conn = sqlite3.connect("pedidos.db")
+conn = conectar()
 cursor = conn.cursor()
+
+# IMPORTANTE: crear tablas en Postgres
+inicializar_db()
 
 # =========================
 # SUPERADMIN
 # =========================
-cursor.execute("SELECT 1 FROM usuarios WHERE usuario=?", ("superadmin",))
+cursor.execute("""
+    SELECT 1 FROM usuarios WHERE usuario=%s
+""", ("superadmin",))
+
 if not cursor.fetchone():
 
     password = "1234"
-    hash_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    hash_password = bcrypt.hashpw(
+        password.encode('utf-8'),
+        bcrypt.gensalt()
+    ).decode("utf-8")
 
     cursor.execute("""
         INSERT INTO usuarios (usuario, password, rol, empresa_id)
-        VALUES (?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s)
     """, ("superadmin", hash_password, "owner_global", 1))
 
 # =========================
@@ -40,16 +40,19 @@ productos = [
 ]
 
 for p in productos:
+
     cursor.execute("""
-        SELECT 1 FROM productos WHERE nombre=? AND empresa_id=?
+        SELECT 1 FROM productos WHERE nombre=%s AND empresa_id=%s
     """, (p[0], p[5]))
 
     if not cursor.fetchone():
+
         cursor.execute("""
             INSERT INTO productos (
                 nombre, precio_mayorista, precio_individual,
                 precio_mostrador, costo, empresa_id
-            ) VALUES (?, ?, ?, ?, ?, ?)
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, p)
 
 # =========================
@@ -61,16 +64,20 @@ clientes = [
 ]
 
 for c in clientes:
+
     cursor.execute("""
-        SELECT 1 FROM clientes WHERE identificacion=? AND empresa_id=?
+        SELECT 1 FROM clientes
+        WHERE identificacion=%s AND empresa_id=%s
     """, (c[5], c[6]))
 
     if not cursor.fetchone():
+
         cursor.execute("""
             INSERT INTO clientes (
                 nombre, direccion, ciudad,
                 telefono, tipo_id, identificacion, empresa_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, c)
 
 # =========================
@@ -82,18 +89,22 @@ inventario = [
 ]
 
 for i in inventario:
+
     cursor.execute("""
-        SELECT 1 FROM inventario WHERE producto=? AND empresa_id=?
+        SELECT 1 FROM inventario
+        WHERE producto=%s AND empresa_id=%s
     """, (i[0], i[3]))
 
     if not cursor.fetchone():
+
         cursor.execute("""
             INSERT INTO inventario (
                 producto, stock_unidades, stock_kilos, empresa_id
-            ) VALUES (?, ?, ?, ?)
+            )
+            VALUES (%s, %s, %s, %s)
         """, i)
 
 conn.commit()
 conn.close()
 
-print("✅ Sistema inicializado correctamente")
+print("✅ Sistema inicializado correctamente en PostgreSQL")
