@@ -65,7 +65,7 @@ def inicializar_db():
         estado TEXT DEFAULT 'pendiente',
         eliminado INTEGER DEFAULT 0,
 
-        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        fecha TIMESTAMP DEFAULT (datetime('now', '-5 hours')),
         fecha_entrega TIMESTAMP,
 
         empresa_id INTEGER

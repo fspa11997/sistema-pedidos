@@ -1,6 +1,7 @@
 import sqlite3
+import pytz
 import os
-from datetime import date
+from datetime import datetime
 from flask import Flask, render_template, session, redirect, request
 from db import (
     validar_usuario,
@@ -31,11 +32,13 @@ from db import (
     registrar_abono
 )
 
+
 app = Flask(__name__)
 app.secret_key = "secreto"
 
 
-
+zona_colombia = pytz.timezone("America/Bogota")
+fecha_entrega = datetime.now(zona_colombia)
 # =========================
 # LOGIN
 # =========================
