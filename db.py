@@ -1,3 +1,4 @@
+import pytz
 import os
 import psycopg2
 import psycopg2.extras
@@ -6,9 +7,12 @@ from datetime import datetime
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL)
+
 def conectar():
-    if not DATABASE_URL or "postgres" not in DATABASE_URL:
-        raise Exception("DATABASE_URL inválida o no configurada")
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+
+    if not DATABASE_URL:
+        raise Exception("DATABASE_URL no configurada en Railway")
 
     return psycopg2.connect(
         DATABASE_URL,
@@ -318,8 +322,7 @@ def validar_usuario(usuario, password, empresa_id):
 # =========================
 # CREAR CLIENTE
 # =========================
-def crear_cliente(nombre, direccion, ciudad, telefono,
-                  tipo_id, identificacion, empresa_id):
+def crear_cliente(nombre, direccion, ciudad, telefono, tipo_id, identificacion, empresa_id):
 
     conn = conectar()
     cursor = conn.cursor()
@@ -361,13 +364,18 @@ def obtener_clientes(empresa_id):
         SELECT *
         FROM clientes
         WHERE empresa_id = %s
-        ORDER BY nombre ASC
+        ORDER BY id DESC
     """, (empresa_id,))
 
-    data = cursor.fetchall()
+    rows = cursor.fetchall()
+
+    clientes = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in rows
+    ]
 
     conn.close()
-    return data
+    return clientes
 
 
 # =========================
@@ -448,7 +456,7 @@ def obtener_costo_producto(nombre_producto, empresa_id):
     cursor.execute("""
         SELECT costo
         FROM productos
-        WHERE nombre = ? AND empresa_id = ?
+        WHERE nombre = %s AND empresa_id = %s
     """, (nombre_producto, empresa_id))
 
     resultado = cursor.fetchone()
@@ -474,14 +482,14 @@ def obtener_pedidos(empresa_id):
             telefono,
             domiciliario,
             cantidad,
-            peso,  -- 🔥 AQUÍ
+            peso,
             precio,
             fecha,
             fecha_entrega,
             estado,
             eliminado
         FROM pedidos
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -505,7 +513,7 @@ def agregar_pedido(
             domiciliario, cantidad, peso,
             precio, abono, tipo_precio, empresa_id
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         cliente, producto, direccion, ciudad, telefono,
         domiciliario, cantidad, peso,
@@ -521,7 +529,7 @@ def obtener_pedidos_pendientes(empresa_id):
 
     cursor.execute("""
         SELECT * FROM pedidos
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND estado = 'pendiente'
         AND eliminado = 0
         ORDER BY id DESC
@@ -538,7 +546,7 @@ def obtener_pedidos_entregados(empresa_id):
 
     cursor.execute("""
         SELECT * FROM pedidos
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         AND estado = 'entregado'
         AND eliminado = 0
         ORDER BY id DESC
@@ -578,8 +586,10 @@ def cambiar_estado(id, estado):
     conn = conectar()
     cursor = conn.cursor()
 
+    zona_colombia = pytz.timezone("America/Bogota")
+
     if estado == "entregado":
-        fecha_entrega = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        fecha_entrega = datetime.now(zona_colombia).strftime("%Y-%m-%d %H:%M:%S")
     else:
         fecha_entrega = None
 
@@ -982,8 +992,6 @@ def crear_factura_empresa(empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     # 🔥 obtener pedidos pendientes
     cursor.execute("""
         SELECT *
@@ -1001,12 +1009,12 @@ def crear_factura_empresa(empresa_id):
 
     total = 0
 
-    # 🔥 crear factura
+    # 🔥 crear factura (usar NOW() directo)
     cursor.execute("""
         INSERT INTO facturas (cliente, fecha, total, empresa_id)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, NOW(), %s, %s)
         RETURNING id
-    """, ("FACTURA EMPRESA", fecha, 0, empresa_id))
+    """, ("FACTURA EMPRESA", 0, empresa_id))
 
     factura_id = cursor.fetchone()[0]
 
@@ -1015,7 +1023,7 @@ def crear_factura_empresa(empresa_id):
         precio_unitario = obtener_precio_producto(
             p["producto"],
             empresa_id
-        )
+        ) or 0
 
         subtotal = precio_unitario * p["peso"]
         total += subtotal
@@ -1039,13 +1047,14 @@ def crear_factura_empresa(empresa_id):
             subtotal
         ))
 
-        # 🔥 marcar como entregado o facturado
+        # 🔥 marcar pedido como entregado
         cursor.execute("""
             UPDATE pedidos
             SET estado = 'entregado'
             WHERE id = %s
         """, (p["id"],))
 
+    # 🔥 actualizar total final
     cursor.execute("""
         UPDATE facturas
         SET total = %s
@@ -1173,7 +1182,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     # FACTURA
     # =========================
     cursor.execute("""
-        SELECT *
+        SELECT id, cliente, total, abono
         FROM facturas
         WHERE id = %s
         AND empresa_id = %s
@@ -1183,12 +1192,16 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
 
     if not factura:
         conn.close()
-        return
+        return None
 
-    nuevo_abono = (factura["abono"] or 0) + abono
+    # convertir a dict seguro
+    factura = dict(zip([col[0] for col in cursor.description], factura))
 
+    actual_abono = factura["abono"] or 0
+    nuevo_abono = actual_abono + abono
+
+    saldo_anterior = factura["total"] - actual_abono
     saldo = factura["total"] - nuevo_abono
-    saldo_anterior = factura["total"] - (factura["abono"] or 0)
 
     # =========================
     # ESTADO
@@ -1196,29 +1209,29 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     if saldo <= 0:
         estado = "pagado"
         saldo = 0
-
     elif nuevo_abono > 0:
         estado = "parcial"
-
     else:
         estado = "pendiente"
 
     # =========================
-    # ACTUALIZAR FACTURA
+    # FACTURA UPDATE
     # =========================
     cursor.execute("""
         UPDATE facturas
         SET abono = %s,
             estado = %s
         WHERE id = %s
+        AND empresa_id = %s
     """, (
         nuevo_abono,
         estado,
-        factura_id
+        factura_id,
+        empresa_id
     ))
 
     # =========================
-    # ACTUALIZAR CREDITO
+    # CREDITO UPDATE
     # =========================
     cursor.execute("""
         UPDATE creditos
@@ -1226,18 +1239,26 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
             saldo = %s,
             estado = %s
         WHERE factura_id = %s
+        AND empresa_id = %s
     """, (
         nuevo_abono,
         saldo,
         estado,
-        factura_id
+        factura_id,
+        empresa_id
     ))
+
+    # =========================
+    # FECHA
+    # =========================
+    cursor.execute("""
+        SELECT NOW()
+    """)
+    fecha = cursor.fetchone()[0]
 
     # =========================
     # HISTORIAL
     # =========================
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     cursor.execute("""
         INSERT INTO pagos_credito (
             factura_id,
@@ -1258,7 +1279,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     ))
 
     # =========================
-    # RECIBO DE ABONO
+    # RECIBO
     # =========================
     cursor.execute("""
         INSERT INTO recibos_abono (
@@ -1281,9 +1302,12 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         empresa_id
     ))
 
-    recibo_id = cursor.lastrowid
-
     conn.commit()
+
+    # ⚠️ PostgreSQL NO usa lastrowid
+    cursor.execute("SELECT currval(pg_get_serial_sequence('recibos_abono','id'))")
+    recibo_id = cursor.fetchone()[0]
+
     conn.close()
 
     return recibo_id
@@ -1291,20 +1315,20 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
 def obtener_historial_abonos(factura_id, empresa_id):
 
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
         SELECT *
         FROM pagos_credito
         WHERE factura_id = %s
         AND empresa_id = %s
-        ORDER BY id DESC
+        ORDER BY fecha DESC
     """, (factura_id, empresa_id))
 
     pagos = cursor.fetchall()
 
     conn.close()
-    return pagos    
+    return pagos 
 
 #guadar cambios railway y git
 #git add .

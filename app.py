@@ -1,8 +1,9 @@
-import sqlite3
+import psycopg2
 import pytz
 import os
 from datetime import datetime
 from flask import Flask, render_template, session, redirect, request
+
 from db import (
     validar_usuario,
     obtener_empresas,
@@ -16,11 +17,10 @@ from db import (
     obtener_pedidos_pendientes,
     obtener_pedidos_entregados,
     obtener_pedidos_eliminados,
-    obtener_empresas,
     total_ventas_dia,
     total_ventas_mes,
     producto_top_mes,
-    crear_factura, 
+    crear_factura,
     registrar_compra,
     obtener_inventario,
     obtener_detalles_factura,
@@ -36,16 +36,11 @@ from db import (
 app = Flask(__name__)
 app.secret_key = "secreto"
 
-
 zona_colombia = pytz.timezone("America/Bogota")
-fecha_entrega = datetime.now(zona_colombia)
-# =========================
-# LOGIN
-# =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
     empresas = obtener_empresas()
-    
+
     if request.method == "POST":
         user = request.form["usuario"]
         pwd = request.form["password"]
@@ -60,11 +55,13 @@ def login():
 
             return redirect("/dashboard")
 
-        return render_template("login.html", empresas=empresas, error="Credenciales inválidas")
+        return render_template(
+            "login.html",
+            empresas=empresas,
+            error="Credenciales inválidas"
+        )
 
     return render_template("login.html", empresas=empresas)
-
-
 # =========================
 # DASHBOARD PRINCIPAL
 # =========================
@@ -78,14 +75,13 @@ def dashboard():
     rol = session.get("rol")
 
     # =========================
-    # CONEXIÓN
+    # CONEXIÓN POSTGRESQL
     # =========================
-    conn = sqlite3.connect("pedidos.db")
-    conn.row_factory = sqlite3.Row
+    conn = conectar()
     cursor = conn.cursor()
 
     # =========================
-    # USUARIOS (OWNER GLOBAL / EMPRESA)
+    # USUARIOS
     # =========================
     if rol == "owner_global":
         cursor.execute("""
@@ -93,7 +89,7 @@ def dashboard():
                 usuarios.id,
                 usuarios.usuario,
                 usuarios.rol,
-                COALESCE(empresas.nombre, 'Sin empresa') as empresa
+                COALESCE(empresas.nombre, 'Sin empresa') AS empresa
             FROM usuarios
             LEFT JOIN empresas
                 ON empresas.id = usuarios.empresa_id
@@ -105,18 +101,18 @@ def dashboard():
                 usuarios.id,
                 usuarios.usuario,
                 usuarios.rol,
-                COALESCE(empresas.nombre, 'Sin empresa') as empresa
+                COALESCE(empresas.nombre, 'Sin empresa') AS empresa
             FROM usuarios
             LEFT JOIN empresas
                 ON empresas.id = usuarios.empresa_id
-            WHERE usuarios.empresa_id = ?
+            WHERE usuarios.empresa_id = %s
             ORDER BY usuarios.id DESC
         """, (empresa_id,))
 
     usuarios = cursor.fetchall()
 
     # =========================
-    # FILTROS USUARIOS
+    # FILTROS USUARIOS (PYTHON)
     # =========================
     usuario_filtro = request.args.get("usuario", "").strip().lower()
     rol_filtro = request.args.get("rol", "").strip().lower()
@@ -134,13 +130,9 @@ def dashboard():
         ]
 
     # =========================
-    # RESTO DEL DASHBOARD
+    # DATOS DB (YA POSTGRES VIA db.py)
     # =========================
     empresas = obtener_empresas()
-
-    buscar = request.args.get("buscar", "")
-    fecha = request.args.get("fecha")
-    domiciliario_filtro = request.args.get("domiciliario", "")
 
     total_dia = total_ventas_dia(empresa_id)
     total_mes = total_ventas_mes(empresa_id)
@@ -163,9 +155,6 @@ def dashboard():
 
     conn.close()
 
-    # =========================
-    # RENDER
-    # =========================
     return render_template(
         "dashboard.html",
         pedidos=pedidos,
@@ -182,12 +171,20 @@ def dashboard():
 
 @app.route("/entregar/<int:id>")
 def entregar(id):
+
+    if "usuario" not in session:
+        return redirect("/")
+
     cambiar_estado(id, "entregado")
     return redirect("/pedidos")
 
 
 @app.route("/recuperar/<int:id>")
 def recuperar(id):
+
+    if "usuario" not in session:
+        return redirect("/")
+
     recuperar_pedido(id)
     return redirect("/pedidos")
 
@@ -202,17 +199,19 @@ def crear_usuario():
     password = request.form["password"]
     rol = request.form["rol"]
     empresa_id = request.form["empresa_id"]
-    
 
     import bcrypt
-    import sqlite3
 
-    conn = sqlite3.connect("pedidos.db")
+    conn = conectar()
     cursor = conn.cursor()
 
-    # 🔍 VERIFICAR SI YA EXISTE
+    # =========================
+    # VERIFICAR SI EXISTE
+    # =========================
     cursor.execute("""
-        SELECT id FROM usuarios WHERE usuario = ?
+        SELECT id
+        FROM usuarios
+        WHERE usuario = %s
     """, (usuario,))
 
     existe = cursor.fetchone()
@@ -221,21 +220,31 @@ def crear_usuario():
         conn.close()
         return "❌ El usuario ya existe", 400
 
+    # =========================
+    # HASH PASSWORD
+    # =========================
     hash_password = bcrypt.hashpw(
-        password.encode('utf-8'),
+        password.encode("utf-8"),
         bcrypt.gensalt()
-    )
+    ).decode("utf-8")
 
+    # =========================
+    # INSERTAR USUARIO
+    # =========================
     cursor.execute("""
         INSERT INTO usuarios (usuario, password, rol, empresa_id)
-        VALUES (?, ?, ?, ?)
-    """, (usuario, hash_password, rol, empresa_id))
+        VALUES (%s, %s, %s, %s)
+    """, (
+        usuario,
+        hash_password,
+        rol,
+        empresa_id
+    ))
 
     conn.commit()
     conn.close()
 
     return redirect("/dashboard")
-
 
 @app.route("/eliminar_usuario/<int:id>", methods=["POST"])
 def eliminar_usuario(id):
@@ -243,12 +252,12 @@ def eliminar_usuario(id):
     if "rol" not in session or session["rol"] != "owner_global":
         return "No autorizado", 403
 
-    conn = sqlite3.connect("pedidos.db")
+    conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
         DELETE FROM usuarios
-        WHERE id = ?
+        WHERE id = %s
     """, (id,))
 
     conn.commit()
@@ -262,28 +271,36 @@ def cambiar_password(user_id):
     if "usuario" not in session:
         return redirect("/")
 
-    # 🔐 solo admin global o dueño
+    # 🔐 solo admin global
     if session.get("rol") != "owner_global":
         return "No autorizado", 403
 
     nueva_password = request.form["password"]
 
     import bcrypt
-    import sqlite3
 
+    conn = conectar()
+    cursor = conn.cursor()
+
+    # =========================
+    # HASH PASSWORD
+    # =========================
     hash_password = bcrypt.hashpw(
         nueva_password.encode("utf-8"),
         bcrypt.gensalt()
-    )
+    ).decode("utf-8")
 
-    conn = sqlite3.connect("pedidos.db")
-    cursor = conn.cursor()
-
+    # =========================
+    # UPDATE USUARIO
+    # =========================
     cursor.execute("""
         UPDATE usuarios
-        SET password = ?
-        WHERE id = ?
-    """, (hash_password, user_id))
+        SET password = %s
+        WHERE id = %s
+    """, (
+        hash_password,
+        user_id
+    ))
 
     conn.commit()
     conn.close()
@@ -306,9 +323,6 @@ def crear_pedido():
     ciudad = request.form["ciudad"]
     telefono = request.form["telefono"]
     domiciliario = request.form.get("domiciliario", "")
-
-    precio = float(request.form.get("precio") or 0)
-    abono = float(request.form.get("abono") or 0)
     tipo_precio = request.form.get("tipo_precio", "")
 
     productos = request.form.getlist("producto[]")
@@ -318,18 +332,18 @@ def crear_pedido():
     for i in range(len(productos)):
 
         agregar_pedido(
-            cliente,
-            productos[i],
-            direccion,
-            ciudad,
-            telefono,
-            domiciliario,
-            int(cantidades[i]),
-            float(pesos[i]),
-            precio,
-            abono,
-            tipo_precio,
-            empresa_id
+            cliente=cliente,
+            producto=productos[i],
+            direccion=direccion,
+            ciudad=ciudad,
+            telefono=telefono,
+            domiciliario=domiciliario,
+            cantidad=int(cantidades[i] or 0),
+            peso=float(pesos[i] or 0),
+            precio=0,   # opcional (ya lo calculas luego en DB si quieres)
+            abono=0,
+            tipo_precio=tipo_precio,
+            empresa_id=empresa_id
         )
 
     return redirect("/dashboard")
@@ -343,20 +357,22 @@ def crear_empresa():
 
     nombre = request.form["nombre"]
 
-    import sqlite3
-    conn = sqlite3.connect("pedidos.db")
+    conn = conectar()
     cursor = conn.cursor()
 
     # 🔍 VALIDAR SI YA EXISTE
-    cursor.execute("SELECT id FROM empresas WHERE nombre = ?", (nombre,))
+    cursor.execute("""
+        SELECT id FROM empresas WHERE nombre = %s
+    """, (nombre,))
+
     if cursor.fetchone():
         conn.close()
-        return redirect("/dashboard")  # puedes luego mostrar mensaje
+        return redirect("/dashboard")
 
     # ✅ INSERTAR SI NO EXISTE
     cursor.execute("""
         INSERT INTO empresas (nombre)
-        VALUES (?)
+        VALUES (%s)
     """, (nombre,))
 
     conn.commit()
@@ -371,17 +387,30 @@ def eliminar_empresa(id):
     if "rol" not in session or session["rol"] != "owner_global":
         return "No autorizado", 403
 
-    import sqlite3
-    conn = sqlite3.connect("pedidos.db")
+    conn = conectar()
     cursor = conn.cursor()
 
     # 🔴 BORRAR PRIMERO DATOS RELACIONADOS
-    cursor.execute("DELETE FROM usuarios WHERE empresa_id=?", (id,))
-    cursor.execute("DELETE FROM pedidos WHERE empresa_id=?", (id,))
-    cursor.execute("DELETE FROM productos WHERE empresa_id=?", (id,))
+    cursor.execute("""
+        DELETE FROM usuarios
+        WHERE empresa_id = %s
+    """, (id,))
+
+    cursor.execute("""
+        DELETE FROM pedidos
+        WHERE empresa_id = %s
+    """, (id,))
+
+    cursor.execute("""
+        DELETE FROM productos
+        WHERE empresa_id = %s
+    """, (id,))
 
     # 🔥 BORRAR EMPRESA
-    cursor.execute("DELETE FROM empresas WHERE id=?", (id,))
+    cursor.execute("""
+        DELETE FROM empresas
+        WHERE id = %s
+    """, (id,))
 
     conn.commit()
     conn.close()
@@ -393,23 +422,32 @@ def eliminar_empresa(id):
 # =========================
 @app.route("/estado/<int:id>")
 def estado(id):
+
     if "usuario" not in session:
         return redirect("/")
 
     cambiar_estado(id)
+
     return redirect("/dashboard")
 
 
 # =========================
 # ELIMINAR
 # =========================
-@app.route("/eliminar/<int:id>")
-def eliminar(id):
-    if "usuario" not in session:
-        return redirect("/")
+from db import conectar
 
-    eliminar_pedido(id)
-    return redirect("/pedidos")
+def eliminar_pedido(id):
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM pedidos
+        WHERE id = %s
+    """, (id,))
+
+    conn.commit()
+    conn.close()
 
 
 # =========================
@@ -460,18 +498,14 @@ def crear_factura_route():
     cantidades = request.form.getlist("cantidad[]")
     pesos = request.form.getlist("peso[]")
 
-    # =========================
-    # VALIDACIÓN BÁSICA
-    # =========================
     if not productos:
         return "Debe agregar productos", 400
 
     # =========================
-    # DB
+    # CONEXIÓN POSTGRESQL
     # =========================
-    import sqlite3
-    conn = sqlite3.connect("pedidos.db")
-    conn.row_factory = sqlite3.Row
+    conn = conectar()
+    conn.row_factory = psycopg2.extras.RealDictCursor
     cursor = conn.cursor()
 
     productos_factura = []
@@ -484,7 +518,7 @@ def crear_factura_route():
 
         cursor.execute("""
             SELECT * FROM productos
-            WHERE nombre=? AND empresa_id=?
+            WHERE nombre = %s AND empresa_id = %s
         """, (producto, empresa_id))
 
         producto_db = cursor.fetchone()
@@ -519,7 +553,7 @@ def crear_factura_route():
         cliente_final = f"{cliente} - CC: {identificacion}"
 
     # =========================
-    # CREAR FACTURA (CORRECTO)
+    # CREAR FACTURA
     # =========================
     factura_id = crear_factura(
         cliente=cliente_final,
@@ -535,6 +569,9 @@ def crear_factura_route():
         domiciliario=domiciliario
     )
 
+    # =========================
+    # CREAR PEDIDOS RELACIONADOS
+    # =========================
     for p in productos_factura:
 
         agregar_pedido(
@@ -612,34 +649,33 @@ def ver_facturas():
     query = """
         SELECT *
         FROM facturas
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
     """
 
     params = [empresa_id]
 
     # 🔍 filtro cliente
     if cliente:
-        query += " AND cliente LIKE ?"
+        query += " AND cliente ILIKE %s"
         params.append(f"%{cliente}%")
 
     # 🔍 filtro factura ID
     if factura:
-        query += " AND id LIKE ?"
+        query += " AND id::text ILIKE %s"
         params.append(f"%{factura}%")
 
     # 🔍 filtro fecha
     if fecha:
-        query += " AND DATE(fecha) = ?"
+        query += " AND fecha::date = %s"
         params.append(fecha)
 
     query += " ORDER BY id DESC"
 
     cursor.execute(query, params)
-
     facturas = cursor.fetchall()
 
     conn.close()
-    
+
     return render_template(
         "facturas.html",
         facturas=facturas
@@ -655,7 +691,10 @@ def facturar_empresa():
 
     empresa_id = session["empresa_id"]
 
-    factura_id = crear_factura(empresa_id)
+    factura_id = crear_factura(
+        empresa_id=empresa_id,
+        modo="pendientes"
+    )
 
     if not factura_id:
         return "No hay pedidos pendientes", 400
@@ -663,19 +702,20 @@ def facturar_empresa():
     return redirect(f"/factura/{factura_id}")
 
 @app.route("/crear_producto", methods=["POST"])
-
 def crear_producto():
+
+    if "usuario" not in session:
+        return redirect("/")
 
     empresa_id = session["empresa_id"]
 
     nombre = request.form["nombre"]
-    precio_mayorista = request.form["precio_mayorista"]
-    precio_individual = request.form["precio_individual"]
-    precio_mostrador = request.form["precio_mostrador"]
+    precio_mayorista = float(request.form["precio_mayorista"] or 0)
+    precio_individual = float(request.form["precio_individual"] or 0)
+    precio_mostrador = float(request.form["precio_mostrador"] or 0)
+    costo = float(request.form["costo"] or 0)
 
-    costo = request.form["costo"]
-
-    conn = sqlite3.connect("pedidos.db")
+    conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -687,7 +727,7 @@ def crear_producto():
             costo,
             empresa_id
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """, (
         nombre,
         precio_mayorista,
@@ -708,32 +748,32 @@ def eliminar_producto(id):
     if "usuario" not in session:
         return redirect("/")
 
-    if session["rol"] == "vendedor":
-        return "No autorizado", 40
+    if session.get("rol") == "vendedor":
+        return "No autorizado", 403
 
     empresa_id = session["empresa_id"]
 
-    conn = sqlite3.connect("pedidos.db")
+    conn = conectar()
     cursor = conn.cursor()
 
     # 🔍 BUSCAR NOMBRE PRODUCTO
     cursor.execute("""
         SELECT nombre
         FROM productos
-        WHERE id = ? AND empresa_id = ?
+        WHERE id = %s AND empresa_id = %s
     """, (id, empresa_id))
 
     producto = cursor.fetchone()
 
     if producto:
 
-        nombre_producto = producto[0]
+        nombre_producto = producto["nombre"] if isinstance(producto, dict) else producto[0]
 
         # 🗑 ELIMINAR INVENTARIO RELACIONADO
         cursor.execute("""
             DELETE FROM inventario
-            WHERE producto = ?
-            AND empresa_id = ?
+            WHERE producto = %s
+            AND empresa_id = %s
         """, (
             nombre_producto,
             empresa_id
@@ -742,8 +782,8 @@ def eliminar_producto(id):
         # 🗑 ELIMINAR PRODUCTO
         cursor.execute("""
             DELETE FROM productos
-            WHERE id = ?
-            AND empresa_id = ?
+            WHERE id = %s
+            AND empresa_id = %s
         """, (
             id,
             empresa_id
@@ -754,8 +794,6 @@ def eliminar_producto(id):
 
     return redirect("/dashboard")
 
-from datetime import date
-
 @app.route("/ventas")
 def ventas():
 
@@ -765,75 +803,92 @@ def ventas():
     empresa_id = session["empresa_id"]
 
     conn = conectar()
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     # ================= VENTAS =================
     cursor.execute("""
         SELECT *
         FROM pedidos
-        WHERE empresa_id = ?
-        AND eliminado = 0
+        WHERE empresa_id = %s
+        AND eliminado = false
         ORDER BY id DESC
     """, (empresa_id,))
 
-    ventas = [dict(v) for v in cursor.fetchall()]
+    ventas = cursor.fetchall()
+
+    # convertir a dict manual (Postgres NO usa sqlite Row)
+    ventas = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in ventas
+    ]
 
     # ================= RESUMEN DIARIO =================
     cursor.execute("""
         SELECT 
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
+            COALESCE(SUM(total),0) as facturado,
+            COALESCE(SUM(abono),0) as abonado,
+            COALESCE(SUM(total - abono),0) as deben
         FROM facturas
-        WHERE empresa_id = ?
-        AND date(fecha) = date('now')
+        WHERE empresa_id = %s
+        AND DATE(fecha) = CURRENT_DATE
     """, (empresa_id,))
 
-    dia = dict(cursor.fetchone())
+    dia = dict(zip(
+        [col[0] for col in cursor.description],
+        cursor.fetchone()
+    ))
 
     # ================= RESUMEN MENSUAL =================
     cursor.execute("""
         SELECT 
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
+            COALESCE(SUM(total),0) as facturado,
+            COALESCE(SUM(abono),0) as abonado,
+            COALESCE(SUM(total - abono),0) as deben
         FROM facturas
-        WHERE empresa_id = ?
-        AND strftime('%Y-%m', fecha) = strftime('%Y-%m', 'now')
+        WHERE empresa_id = %s
+        AND TO_CHAR(fecha, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
     """, (empresa_id,))
 
-    mes = dict(cursor.fetchone())
+    mes = dict(zip(
+        [col[0] for col in cursor.description],
+        cursor.fetchone()
+    ))
 
     # ================= HISTÓRICO DIARIO =================
     cursor.execute("""
         SELECT 
-            date(fecha) as dia,
+            DATE(fecha) as dia,
             SUM(total) as facturado,
             SUM(abono) as abonado,
             SUM(total - abono) as deben
         FROM facturas
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         GROUP BY dia
         ORDER BY dia DESC
     """, (empresa_id,))
 
-    diario = [dict(r) for r in cursor.fetchall()]
+    diario = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in cursor.fetchall()
+    ]
 
     # ================= HISTÓRICO MENSUAL =================
     cursor.execute("""
         SELECT 
-            strftime('%Y-%m', fecha) as mes,
+            TO_CHAR(fecha, 'YYYY-MM') as mes,
             SUM(total) as facturado,
             SUM(abono) as abonado,
             SUM(total - abono) as deben
         FROM facturas
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         GROUP BY mes
         ORDER BY mes DESC
     """, (empresa_id,))
 
-    mensual = [dict(r) for r in cursor.fetchall()]
+    mensual = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in cursor.fetchall()
+    ]
 
     conn.close()
 
@@ -851,46 +906,60 @@ def reportes():
 
     if "usuario" not in session:
         return redirect("/")
-    
+
     if session.get("rol") == "vendedor":
         return "No autorizado", 403
-    
+
     empresa_id = session["empresa_id"]
 
     conn = conectar()
     cursor = conn.cursor()
 
-    # Total vendido
+    # =========================
+    # TOTAL VENDIDO
+    # =========================
     cursor.execute("""
-        SELECT SUM(precio) as total
+        SELECT COALESCE(SUM(precio), 0) as total
         FROM pedidos
-        WHERE empresa_id = ?
-        AND eliminado = 0
+        WHERE empresa_id = %s
+        AND eliminado = false
     """, (empresa_id,))
 
-    total = cursor.fetchone()["total"] or 0
+    total = cursor.fetchone()[0]
 
-    # Total pedidos
+    # =========================
+    # TOTAL PEDIDOS
+    # =========================
     cursor.execute("""
         SELECT COUNT(*) as total_pedidos
         FROM pedidos
-        WHERE empresa_id = ?
-        AND eliminado = 0
+        WHERE empresa_id = %s
+        AND eliminado = false
     """, (empresa_id,))
 
-    total_pedidos = cursor.fetchone()["total_pedidos"]
+    total_pedidos = cursor.fetchone()[0]
 
-    # Producto mas vendido
+    # =========================
+    # PRODUCTO MÁS VENDIDO
+    # =========================
     cursor.execute("""
         SELECT producto, COUNT(*) as total
         FROM pedidos
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
         GROUP BY producto
         ORDER BY total DESC
         LIMIT 1
     """, (empresa_id,))
 
-    top_producto = cursor.fetchone()
+    row = cursor.fetchone()
+
+    if row:
+        top_producto = {
+            "producto": row[0],
+            "total": row[1]
+        }
+    else:
+        top_producto = None
 
     conn.close()
 
@@ -900,6 +969,7 @@ def reportes():
         total_pedidos=total_pedidos,
         top_producto=top_producto
     )
+
 @app.route("/crear_cliente", methods=["POST"])
 def crear_cliente_route():
 
@@ -947,23 +1017,14 @@ def pedidos():
     # =========================
     filtro = request.args.get("filtro", "pendientes")
 
-    buscar = request.args.get(
-        "buscar",
-        ""
-    ).strip().lower()
-
+    buscar = request.args.get("buscar", "").strip().lower()
     fecha = request.args.get("fecha", "")
-
-    domiciliario = request.args.get(
-        "domiciliario",
-        ""
-    ).strip().lower()
+    domiciliario = request.args.get("domiciliario", "").strip().lower()
 
     # =========================
-    # CONEXIÓN
+    # CONEXIÓN POSTGRES
     # =========================
-    conn = sqlite3.connect("pedidos.db")
-    conn.row_factory = sqlite3.Row
+    conn = conectar()
     cursor = conn.cursor()
 
     # =========================
@@ -972,7 +1033,7 @@ def pedidos():
     query = """
         SELECT *
         FROM pedidos
-        WHERE empresa_id = ?
+        WHERE empresa_id = %s
     """
 
     params = [empresa_id]
@@ -981,68 +1042,56 @@ def pedidos():
     # FILTRO ESTADO
     # =========================
     if filtro == "pendientes":
-
         query += """
             AND estado = 'pendiente'
-            AND eliminado = 0
+            AND eliminado = false
         """
 
     elif filtro == "entregados":
-
         query += """
             AND estado = 'entregado'
-            AND eliminado = 0
+            AND eliminado = false
         """
 
     elif filtro == "eliminados":
-
         query += """
-            AND eliminado = 1
+            AND eliminado = true
         """
 
     elif filtro == "todos":
-
         query += """
-            AND eliminado = 0
+            AND eliminado = false
         """
 
     # =========================
-    # BUSCADOR CLIENTE/PRODUCTO
+    # BUSCADOR
     # =========================
     if buscar:
-
         query += """
             AND (
-                LOWER(cliente) LIKE ?
-                OR LOWER(producto) LIKE ?
+                LOWER(cliente) LIKE %s
+                OR LOWER(producto) LIKE %s
             )
         """
-
         params.append(f"%{buscar}%")
         params.append(f"%{buscar}%")
 
     # =========================
-    # FILTRO FECHA
+    # FILTRO FECHA (Postgres seguro)
     # =========================
     if fecha:
-
         query += """
-            AND DATE(fecha) = ?
+            AND DATE(fecha) = %s
         """
-
         params.append(fecha)
 
     # =========================
     # FILTRO DOMICILIARIO
     # =========================
     if domiciliario:
-
         query += """
-            AND LOWER(
-                COALESCE(domiciliario, '')
-            ) LIKE ?
+            AND LOWER(COALESCE(domiciliario, '')) LIKE %s
         """
-
         params.append(f"%{domiciliario}%")
 
     # =========================
@@ -1051,17 +1100,18 @@ def pedidos():
     query += " ORDER BY id DESC"
 
     # =========================
-    # DEBUG
-    # =========================
-    print("QUERY:", query)
-    print("PARAMS:", params)
-
-    # =========================
-    # EJECUTAR
+    # EJECUCIÓN
     # =========================
     cursor.execute(query, params)
+    rows = cursor.fetchall()
 
-    pedidos = cursor.fetchall()
+    # =========================
+    # CONVERTIR A DICT
+    # =========================
+    pedidos = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in rows
+    ]
 
     conn.close()
 
@@ -1083,67 +1133,78 @@ def cartera():
     estado = request.args.get("estado", "")
     fecha = request.args.get("fecha", "")
 
-    facturas = obtener_facturas(empresa_id)
-
-    facturas = [dict(f) for f in facturas]
-
-    # =========================
-    # TOTALES GLOBALES
-    # =========================
-    total_facturado = 0
-    total_abonado = 0
-    total_deben = 0
+    conn = conectar()
+    cursor = conn.cursor()
 
     # =========================
-    # CALCULAR SALDO REAL
+    # QUERY BASE (con cálculo en SQL)
     # =========================
-    for f in facturas:
+    query = """
+        SELECT 
+            id,
+            cliente,
+            fecha,
+            total,
+            abono,
+            (total - abono) AS saldo,
+            CASE 
+                WHEN (total - abono) <= 0 THEN 'pagado'
+                WHEN abono > 0 THEN 'parcial'
+                ELSE 'pendiente'
+            END AS estado_calculado
+        FROM facturas
+        WHERE empresa_id = %s
+    """
 
-        total = f["total"] or 0
-        abono = f["abono"] or 0
-
-        saldo = total - abono
-        f["saldo"] = saldo
-
-        total_facturado += total
-        total_abonado += abono
-
-        if saldo > 0:
-            total_deben += saldo
-
-        if saldo <= 0:
-            f["estado_calculado"] = "pagado"
-        elif abono > 0:
-            f["estado_calculado"] = "parcial"
-        else:
-            f["estado_calculado"] = "pendiente"
+    params = [empresa_id]
 
     # =========================
-    # FILTRO CLIENTE
+    # FILTROS SQL (MEJOR QUE PYTHON)
     # =========================
     if cliente_filtro:
-        facturas = [
-            f for f in facturas
-            if cliente_filtro.lower() in f["cliente"].lower()
-        ]
+        query += " AND LOWER(cliente) LIKE %s"
+        params.append(f"%{cliente_filtro.lower()}%")
 
-    # =========================
-    # FILTRO FECHA
-    # =========================
     if fecha:
-        facturas = [
-            f for f in facturas
-            if f["fecha"] and str(f["fecha"]).startswith(fecha)
-        ]
+        query += " AND DATE(fecha) = %s"
+        params.append(fecha)
+
+    if estado:
+        query += " AND CASE WHEN (total - abono) <= 0 THEN 'pagado' WHEN abono > 0 THEN 'parcial' ELSE 'pendiente' END = %s"
+        params.append(estado)
+
+    query += " ORDER BY id DESC"
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
 
     # =========================
-    # FILTRO ESTADO
+    # CONVERTIR A DICCIONARIO
     # =========================
-    if estado:
-        facturas = [
-            f for f in facturas
-            if f["estado_calculado"] == estado
-        ]
+    facturas = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in rows
+    ]
+
+    # =========================
+    # TOTALES (EN SQL - MÁS RÁPIDO)
+    # =========================
+    cursor.execute("""
+        SELECT 
+            COALESCE(SUM(total),0),
+            COALESCE(SUM(abono),0),
+            COALESCE(SUM(total - abono),0)
+        FROM facturas
+        WHERE empresa_id = %s
+    """, (empresa_id,))
+
+    t = cursor.fetchone()
+
+    total_facturado = t[0]
+    total_abonado = t[1]
+    total_deben = t[2]
+
+    conn.close()
 
     return render_template(
         "cartera.html",
@@ -1187,20 +1248,21 @@ def abonar_factura(factura_id):
     abono_nuevo = float(request.form["abono"])
     observacion = request.form.get("observacion", "")
 
-    conn = sqlite3.connect("pedidos.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    conn = conectar()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # 🔎 traer factura
     cursor.execute("""
-        SELECT * FROM facturas
-        WHERE id=? AND empresa_id=?
+        SELECT *
+        FROM facturas
+        WHERE id = %s AND empresa_id = %s
     """, (factura_id, empresa_id))
 
     factura = cursor.fetchone()
 
     if not factura:
-        return "Factura no existe"
+        conn.close()
+        return "Factura no existe", 404
 
     total = factura["total"]
     abono_actual = factura["abono"] or 0
@@ -1217,8 +1279,9 @@ def abonar_factura(factura_id):
     # 💰 actualizar factura
     cursor.execute("""
         UPDATE facturas
-        SET abono=?, estado=?
-        WHERE id=? AND empresa_id=?
+        SET abono = %s,
+            estado = %s
+        WHERE id = %s AND empresa_id = %s
     """, (nuevo_abono, estado, factura_id, empresa_id))
 
     # 📜 guardar historial
@@ -1231,7 +1294,7 @@ def abonar_factura(factura_id):
             observacion,
             empresa_id
         )
-        VALUES (?, ?, ?, datetime('now'), ?, ?)
+        VALUES (%s, %s, %s, NOW(), %s, %s)
     """, (
         factura_id,
         factura["cliente"],
@@ -1251,17 +1314,14 @@ def ver_recibo_abono(recibo_id):
     if "usuario" not in session:
         return redirect("/")
 
-    import sqlite3
-
-    conn = sqlite3.connect("pedidos.db")
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    conn = conectar()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
         SELECT *
         FROM recibos_abono
-        WHERE id=?
-        AND empresa_id=?
+        WHERE id = %s
+        AND empresa_id = %s
     """, (
         recibo_id,
         session["empresa_id"]
