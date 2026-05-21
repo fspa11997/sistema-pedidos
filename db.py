@@ -297,7 +297,7 @@ def crear_usuario(usuario, password, rol, empresa_id):
 # =========================
 def validar_usuario(usuario, password, empresa_id):
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
         SELECT id, usuario, password, rol, empresa_id
@@ -313,10 +313,7 @@ def validar_usuario(usuario, password, empresa_id):
 
     password_bd = user["password"]
 
-    if isinstance(password_bd, str):
-        password_bd = password_bd.encode("utf-8")
-
-    if bcrypt.checkpw(password.encode("utf-8"), password_bd):
+    if bcrypt.checkpw(password.encode("utf-8"), password_bd.encode("utf-8")):
         return user
 
     return None
