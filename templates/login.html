@@ -173,8 +173,8 @@
             </option>
 
             {% for e in empresas %}
-                <option value="{{ e[0] }}">
-                    {{ e[1] }}
+                <option value="{{ e.id }}">
+                    {{ e.nombre }}
                 </option>
             {% endfor %}
 
