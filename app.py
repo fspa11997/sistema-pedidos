@@ -40,7 +40,7 @@ zona_colombia = pytz.timezone("America/Bogota")
 @app.route("/", methods=["GET", "POST"])
 def login():
     empresas = obtener_empresas()
-    print("EMPRESAS:", empresas)
+
     if request.method == "POST":
         user = request.form["usuario"]
         pwd = request.form["password"]

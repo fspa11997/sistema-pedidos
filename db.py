@@ -1,16 +1,12 @@
-from dotenv import load_dotenv
 import pytz
 import os
 import psycopg2
 import psycopg2.extras
 import bcrypt
 from datetime import datetime
-import os
+from dotenv import load_dotenv
 
 load_dotenv()
-
-print("DIR ACTUAL:", os.getcwd())
-print("ARCHIVOS:", os.listdir())
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL)
@@ -389,8 +385,9 @@ def obtener_clientes(empresa_id):
 # OBTENER EMPRESAS
 # =========================
 def obtener_empresas():
+
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor()
 
     cursor.execute("""
         SELECT id, nombre
