@@ -391,7 +391,7 @@ def obtener_empresas():
     cursor.execute("SELECT id, nombre FROM empresas")
     data = cursor.fetchall()
 
-    print("🔥 EMPRESAS DESDE DB:", data)
+   
 
     conn.close()
     return data
