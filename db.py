@@ -528,7 +528,7 @@ def obtener_pedidos_pendientes(empresa_id):
         SELECT * FROM pedidos
         WHERE empresa_id = %s
         AND estado = 'pendiente'
-        AND eliminado = 0
+        AND NOT eliminado
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -545,7 +545,7 @@ def obtener_pedidos_entregados(empresa_id):
         SELECT * FROM pedidos
         WHERE empresa_id = %s
         AND estado = 'entregado'
-        AND eliminado = 0
+        AND NOT eliminado
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -650,7 +650,7 @@ def total_ventas_dia(empresa_id):
         FROM pedidos
         WHERE DATE(fecha) = CURRENT_DATE
         AND empresa_id = %s
-        AND eliminado = 0
+        AND NOT eliminado
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"]
@@ -672,7 +672,7 @@ def total_ventas_mes(empresa_id):
         FROM pedidos
         WHERE DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)
         AND empresa_id = %s
-        AND eliminado = 0
+        AND NOT eliminado
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"]
@@ -694,7 +694,7 @@ def producto_top_mes(empresa_id):
         FROM pedidos
         WHERE DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)
         AND empresa_id = %s
-        AND eliminado = 0
+        AND NOT eliminado
         GROUP BY producto
         ORDER BY total DESC
         LIMIT 1
@@ -995,7 +995,7 @@ def crear_factura_empresa(empresa_id):
         FROM pedidos
         WHERE empresa_id = %s
         AND estado = 'pendiente'
-        AND eliminado = 0
+        AND NOT eliminado
     """, (empresa_id,))
 
     pedidos = cursor.fetchall()
