@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clientes • ST Gestión</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- 🔵 HEADER -->
+<div class="header-title">
+
+    <h2>👥 CLIENTES</h2>
+
+    <p style="margin:0; font-size:13px; color:#666;">
+        Gestión de clientes registrados
+    </p>
+
+    <!-- BOTONES DERECHA -->
+    <div style="
+        position:absolute;
+        right:0;
+        top:0;
+        display:flex;
+        gap:10px;
+    ">
+
+        <a href="/clientes">
+            <button class="btn-green">
+                🔄 Actualizar
+            </button>
+        </a>
+
+        <a href="/dashboard">
+            <button class="btn-blue">
+                ⬅ Volver
+            </button>
+        </a>
+
+    </div>
+
+</div>
+
+<br>
+
+<!-- 🔥 BOTÓN NUEVO CLIENTE -->
+<button
+    onclick="toggleFormCliente()"
+    class="btn-blue"
+    style="margin-bottom:15px;"
+>
+    ➕ Nuevo Cliente
+</button>
+
+<!-- 🔥 FORMULARIO CARD -->
+<div
+    id="formCliente"
+    class="filters-card"
+    style="display:none; max-width:700px;"
+>
+
+    <form method="POST"
+          action="/crear_cliente"
+          class="filters-form-modern">
+
+        <input type="text"
+               name="nombre"
+               placeholder="👤 Nombre"
+               required>
+
+        <input type="text"
+               name="direccion"
+               placeholder="📍 Dirección">
+
+        <input type="text"
+               name="ciudad"
+               placeholder="🏙 Ciudad">
+
+        <input type="text"
+               name="telefono"
+               placeholder="📞 Teléfono">
+
+        <select name="tipo_id">
+            <option value="cc">CC</option>
+            <option value="nit">NIT</option>
+        </select>
+
+        <input type="text"
+               name="identificacion"
+               placeholder="🪪 Identificación">
+
+        <button type="submit" class="btn-green">
+            💾 Guardar Cliente
+        </button>
+
+    </form>
+
+</div>
+
+<br>
+
+<!-- 📊 TABLA -->
+<div class="table-card">
+
+<table>
+
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Dirección</th>
+            <th>Ciudad</th>
+            <th>Teléfono</th>
+            <th>Identificación</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for c in clientes %}
+        <tr>
+
+            <td>
+                <b>{{ c.nombre }}</b>
+            </td>
+
+            <td>{{ c.direccion }}</td>
+
+            <td>{{ c.ciudad }}</td>
+
+            <td>{{ c.telefono }}</td>
+
+            <td>{{ c.identificacion }}</td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+<!-- TOGGLE -->
+<script>
+
+function toggleFormCliente() {
+
+    let f = document.getElementById("formCliente");
+
+    if (f.style.display === "none") {
+        f.style.display = "block";
+    } else {
+        f.style.display = "none";
+    }
+}
+
+</script>
+
+</body>
+</html>

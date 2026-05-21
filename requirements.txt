@@ -1,0 +1,5 @@
+flask
+gunicorn
+bcrypt
+pytz
+psycopg2-binary
