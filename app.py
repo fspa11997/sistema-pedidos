@@ -44,7 +44,10 @@ def login():
     if request.method == "POST":
         user = request.form["usuario"]
         pwd = request.form["password"]
-        empresa_id = request.form["empresa"]
+        empresa_id = request.form.get("empresa")
+
+        if not empresa_id:
+            return render_template("login.html", empresas=empresas, error="Selecciona una empresa")
 
         usuario = validar_usuario(user, pwd, empresa_id)
 
