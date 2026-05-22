@@ -898,10 +898,10 @@ def ventas():
     return render_template(
         "ventas.html",
         ventas=ventas,
-        dia=dia,
-        mes=mes,
-        diario=diario,
-        mensual=mensual
+        dia=dia or {},
+        mes=mes or {},
+        diario=diario or [],
+        mensual=mensual or []
     )
 
 @app.route("/reportes")
