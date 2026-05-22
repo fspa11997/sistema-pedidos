@@ -358,7 +358,7 @@ def crear_cliente(nombre, direccion, ciudad, telefono, tipo_id, identificacion, 
 def obtener_clientes(empresa_id):
 
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
         SELECT *
@@ -367,12 +367,7 @@ def obtener_clientes(empresa_id):
         ORDER BY id DESC
     """, (empresa_id,))
 
-    rows = cursor.fetchall()
-
-    clientes = [
-        dict(zip([col[0] for col in cursor.description], row))
-        for row in rows
-    ]
+    clientes = cursor.fetchall()
 
     conn.close()
     return clientes
