@@ -508,7 +508,7 @@ def crear_factura_route():
     # CONEXIÓN POSTGRESQL
     # =========================
     conn = conectar()
-    conn.row_factory = psycopg2.extras.RealDictCursor
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor = conn.cursor()
 
     productos_factura = []
@@ -1203,9 +1203,9 @@ def cartera():
 
     t = cursor.fetchone()
 
-    total_facturado = t[0]
-    total_abonado = t[1]
-    total_deben = t[2]
+    total_facturado = t.get("total", 0)
+    total_abonado = t.get("total_abonado", 0)
+    total_deben = t.get("total_deben", 0)
     
     conn.close()
 
