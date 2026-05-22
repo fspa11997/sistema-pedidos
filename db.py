@@ -385,14 +385,15 @@ def obtener_empresas():
     conn = conectar()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    cursor.execute("SELECT id, nombre FROM empresas")
-    data = cursor.fetchall()
+    cursor.execute("""
+        SELECT id, nombre
+        FROM empresas
+    """)
 
-   
+    data = cursor.fetchall()
 
     conn.close()
     return data
-
 
 # =========================
 # OBTENER PRODUCTOS

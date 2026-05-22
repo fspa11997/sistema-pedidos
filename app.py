@@ -1206,7 +1206,7 @@ def cartera():
     total_facturado = t[0]
     total_abonado = t[1]
     total_deben = t[2]
-
+    
     conn.close()
 
     return render_template(
