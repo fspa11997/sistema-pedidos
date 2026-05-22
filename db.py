@@ -814,7 +814,7 @@ def crear_factura(
         empresa_id
     ))
 
-    factura_id = cursor.fetchone()[0]
+    factura_id = cursor.fetchone()["id"]
 
     conn.commit()
     conn.close()
@@ -1009,7 +1009,7 @@ def crear_factura_empresa(empresa_id):
         RETURNING id
     """, ("FACTURA EMPRESA", 0, empresa_id))
 
-    factura_id = cursor.fetchone()[0]
+    factura_id = cursor.fetchone()["id"]
 
     for p in pedidos:
 
