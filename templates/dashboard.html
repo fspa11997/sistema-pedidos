@@ -503,12 +503,12 @@
                 <td>{{ "{:,.0f}".format(p.precio) }}</td>
                 <td>
                     {{ p.fecha.strftime('%d/%m/%Y') }}
-                    {{ p.fecha[11:16] }}
+                    {{ p.fecha.strftime('%H:%M') }}
                 </td>
                 <td>
                     {% if p.fecha_entrega %}
-                        {{ p.fecha_entrega[8:10] }}/{{ p.fecha_entrega[5:7] }}/{{ p.fecha_entrega[0:4] }}
-                        {{ p.fecha_entrega[11:16] }}
+                        {{ p.fecha_entrega.strftime('%d') }}/{{ p.fecha_entrega.strftime('%m') }}/{{ p.fecha_entrega.strftime('%Y') }}
+                        {{ p.fecha_entrega.strftime('%H:%M') }}
                     {% else %}
                         -
                     {% endif %}
