@@ -129,7 +129,7 @@
             <td>{{ p["cantidad"] }}</td>
 
             <td>
-                {{ "%.2f"|format(p["peso"] or 0) }}
+                {{ "%.2f"|format((p["peso"] or 0) | float) }}
             </td>
 
             <td>
