@@ -181,12 +181,12 @@
 
                     <!-- ABONO -->
                     <td>
-                        ${{ "{:,.0f}".format(float(f.abono or 0)) }}
+                        ${{ "{:,.0f}".format(f.abono or 0) }}
                     </td>
 
                     <!-- SALDO -->
                     <td>
-                        ${{ "{:,.0f}".format((f.total or 0) - float(f.abono or 0)) }}
+                        ${{ "{:,.0f}".format((f.total or 0) - (f.abono or 0)) }}
                     </td>
 
                     <!-- ESTADO -->
