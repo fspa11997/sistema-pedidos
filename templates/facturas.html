@@ -176,7 +176,7 @@
                     <td>{{ f.ciudad }}</td>
 
                     <td class="total">
-                        ${{ "{:,.0f}".format(float(f.total or 0)) }}
+                        ${{ "{:,.0f}".format(f.total or 0) }}
                     </td>
 
                     <!-- ABONO -->
@@ -186,7 +186,7 @@
 
                     <!-- SALDO -->
                     <td>
-                        ${{ "{:,.0f}".format(float(f.total or 0) - float(f.abono or 0)) }}
+                        ${{ "{:,.0f}".format((f.total or 0) - float(f.abono or 0)) }}
                     </td>
 
                     <!-- ESTADO -->
