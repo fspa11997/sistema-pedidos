@@ -502,7 +502,7 @@
                 <td>{{ "%.2f"|format(p.peso or 0) }}</td>
                 <td>{{ "{:,.0f}".format(p.precio) }}</td>
                 <td>
-                    {{ p.fecha[8:10] }}/{{ p.fecha[5:7] }}/{{ p.fecha[0:4] }}
+                    {{ p.fecha.strftime('%d/%m/%Y') }}
                     {{ p.fecha[11:16] }}
                 </td>
                 <td>
