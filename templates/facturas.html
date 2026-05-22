@@ -176,7 +176,7 @@
                     <td>{{ f.ciudad }}</td>
 
                     <td class="total">
-                        ${{ "{:,.0f}".format(f.facturado | float) }}
+                        ${{ "{:,.0f}".format(float(f.total or 0)) }}
                     </td>
 
                     <!-- ABONO -->
