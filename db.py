@@ -1247,7 +1247,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     cursor.execute("""
         SELECT NOW()
     """)
-    fecha = cursor.fetchone()[0]
+    fecha = cursor.fetchone()["id"]
 
     # =========================
     # HISTORIAL
@@ -1299,7 +1299,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
 
     # ⚠️ PostgreSQL NO usa lastrowid
     cursor.execute("SELECT currval(pg_get_serial_sequence('recibos_abono','id'))")
-    recibo_id = cursor.fetchone()[0]
+    recibo_id = cursor.fetchone()["id"]
 
     conn.close()
 
