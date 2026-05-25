@@ -1007,6 +1007,7 @@ def clientes():
         "clientes.html",
         clientes=clientes
     )
+
 @app.route("/pedidos")
 def pedidos():
 
@@ -1025,10 +1026,10 @@ def pedidos():
     domiciliario = request.args.get("domiciliario", "").strip().lower()
 
     # =========================
-    # CONEXIÓN POSTGRES
+    # CONEXIÓN POSTGRES (FIX IMPORTANTE)
     # =========================
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # =========================
     # QUERY BASE
@@ -1080,16 +1081,14 @@ def pedidos():
         params.append(f"%{buscar}%")
 
     # =========================
-    # FILTRO FECHA (Postgres seguro)
+    # FECHA
     # =========================
     if fecha:
-        query += """
-            AND DATE(fecha) = %s
-        """
+        query += " AND DATE(fecha) = %s"
         params.append(fecha)
 
     # =========================
-    # FILTRO DOMICILIARIO
+    # DOMICILIARIO
     # =========================
     if domiciliario:
         query += """
@@ -1109,13 +1108,11 @@ def pedidos():
     rows = cursor.fetchall()
 
     # =========================
-    # CONVERTIR A DICT
+    # YA VIENE COMO DICT (NO ZIP)
     # =========================
-    columns = [col[0] for col in cursor.description]
-
     pedidos = []
-    for row in rows:
-        item = dict(zip(columns, row))
+
+    for item in rows:
 
         item["precio"] = float(item["precio"] or 0)
         item["cantidad"] = int(item["cantidad"] or 0)
@@ -1144,7 +1141,7 @@ def cartera():
     fecha = request.args.get("fecha", "")
 
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # =========================
     # QUERY BASE
@@ -1195,15 +1192,12 @@ def cartera():
     rows = cursor.fetchall()
 
     # =========================
-    # CONVERSIÓN SEGURA A DICCIONARIO
+    # NORMALIZACIÓN SEGURA
     # =========================
-    columns = [col[0] for col in cursor.description]
-
     facturas = []
-    for row in rows:
-        item = dict(zip(columns, row))
 
-        # 🔥 FIX CRÍTICO (EVITA ERROR JINJA)
+    for item in rows:
+
         item["total"] = float(item["total"] or 0)
         item["abono"] = float(item["abono"] or 0)
         item["saldo"] = float(item["saldo"] or 0)
