@@ -134,7 +134,7 @@
 
             <td>
                 <b>
-                    ${{ "{:,.0f}".format(p["precio"] or 0) }}
+                    ${{ "{:,.0f}".format((p["precio"] or 0) | float) }} 
                 </b>
             </td>
 

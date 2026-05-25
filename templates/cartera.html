@@ -96,19 +96,19 @@
 
             <!-- 💰 TOTAL -->
             <td>
-                <b>${{ "{:,.0f}".format(f.total or 0) }}</b>
+                <b>$${{ "{:,.0f}".format(float(f.total or 0)) }}</b>
             </td>
 
             <!-- 💵 ABONO -->
             <td>
                 <span style="color:green; font-weight:bold;">
-                    ${{ "{:,.0f}".format(f.abono or 0) }}
+                    $${{ "{:,.0f}".format(float(f.total or 0)) }}
                 </span>
             </td>
 
             <!-- 📉 SALDO -->
             <td>
-                {% set saldo = (f.total or 0) - (f.abono or 0) %}
+                {% set saldo = float(f.total or 0) - float(f.abono or 0) %}
                 <b>${{ "{:,.0f}".format(saldo) }}</b>
             </td>
 
@@ -117,7 +117,7 @@
                 {% if saldo <= 0 %}
                     <span class="badge entregado">✅ Pagado</span>
 
-                {% elif (f.abono or 0) > 0 %}
+                {% elif (f.abono or 0 | float) > 0 %}
                     <span class="badge alerta-naranja">⚠ Parcial</span>
 
                 {% else %}

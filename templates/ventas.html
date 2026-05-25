@@ -235,17 +235,17 @@
 
             <div class="total-box blue-box">
                 <h3>Total Facturado Hoy</h3>
-                <p>${{ "{:,.0f}".format(dia.facturado or 0) }}</p>
+                <p>${{ "{:,.0f}".format(dia.facturado | float) }}</p>
             </div>
 
             <div class="total-box blue-box">
                 <h3>Total Abonado Hoy</h3>
-                <p>${{ "{:,.0f}".format(dia.abonado or 0) }}</p>
+                <p>${{ "{:,.0f}".format(dia.abonado | float) }}</p>
             </div>
 
             <div class="total-box blue-box">
                 <h3>Total Deuda Hoy</h3>
-                <p>${{ "{:,.0f}".format(dia.deben or 0) }}</p>
+                <p>${{ "{:,.0f}".format(dia.deben | float) }}</p>
             </div>
 
         </div>
@@ -267,17 +267,17 @@
 
             <div class="total-box green-box">
                 <h3>Total Facturado Mes</h3>
-                <p>${{ "{:,.0f}".format(mes.facturado or 0) }}</p>
+                <p>${{ "{:,.0f}".format(mes.facturado | float) }}</p>
             </div>
 
             <div class="total-box green-box">
                 <h3>Total Abonado Mes</h3>
-                <p>${{ "{:,.0f}".format(mes.abonado or 0) }}</p>
+                <p>${{ "{:,.0f}".format(mes.abonado | float) }}</p>
             </div>
 
             <div class="total-box green-box">
                 <h3>Total Deuda Mes</h3>
-                <p>${{ "{:,.0f}".format(mes.deben or 0) }}</p>
+                <p>${{ "{:,.0f}".format(mes.deben | float) }}</p>
             </div>
 
         </div>
@@ -331,15 +331,15 @@
                         <td>{{ d.dia }}</td>
 
                         <td>
-                            ${{ "{:,.0f}".format(d.facturado or 0) }}
+                            ${{ "{:,.0f}".format(d.facturado | float) }}
                         </td>
 
                         <td>
-                            ${{ "{:,.0f}".format(d.abonado or 0) }}
+                            ${{ "{:,.0f}".format(d.abonado | float) }}
                         </td>
 
                         <td>
-                            ${{ "{:,.0f}".format(d.deben or 0) }}
+                            ${{ "{:,.0f}".format(d.deben | float) }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -400,15 +400,15 @@
                         <td>{{ m.mes }}</td>
 
                         <td>
-                            ${{ "{:,.0f}".format(m.facturado or 0) }}
+                            ${{ "{:,.0f}".format(m.facturado | float) }}
                         </td>
 
                         <td>
-                            ${{ "{:,.0f}".format(m.abonado or 0) }}
+                            ${{ "{:,.0f}".format(m.abonado | float) }}
                         </td>
 
                         <td>
-                            ${{ "{:,.0f}".format(m.deben or 0) }}
+                            ${{ "{:,.0f}".format(m.deben | float) }}
                         </td>
 
                     </tr>

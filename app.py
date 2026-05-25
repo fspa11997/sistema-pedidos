@@ -1111,10 +1111,17 @@ def pedidos():
     # =========================
     # CONVERTIR A DICT
     # =========================
-    pedidos = [
-        dict(zip([col[0] for col in cursor.description], row))
-        for row in rows
-    ]
+    columns = [col[0] for col in cursor.description]
+
+    pedidos = []
+    for row in rows:
+        item = dict(zip(columns, row))
+
+        item["precio"] = float(item["precio"] or 0)
+        item["cantidad"] = int(item["cantidad"] or 0)
+        item["peso"] = float(item["peso"] or 0)
+
+        pedidos.append(item)
 
     conn.close()
 
