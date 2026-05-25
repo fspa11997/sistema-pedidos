@@ -1090,8 +1090,14 @@ def cartera():
 
     conn = conectar()
 
+    # =========================
+    # CURSOR REALDICT (CORRECTO)
+    # =========================
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
+    # =========================
+    # QUERY PRINCIPAL
+    # =========================
     query = """
         SELECT 
             id,
@@ -1111,6 +1117,9 @@ def cartera():
 
     params = [empresa_id]
 
+    # =========================
+    # FILTROS
+    # =========================
     if cliente_filtro:
         query += " AND LOWER(cliente) LIKE %s"
         params.append(f"%{cliente_filtro.lower()}%")
@@ -1131,35 +1140,48 @@ def cartera():
 
     query += " ORDER BY id DESC"
 
+    # =========================
+    # EJECUTAR
+    # =========================
     cursor.execute(query, params)
     rows = cursor.fetchall()
 
+    # =========================
+    # LIMPIEZA SEGURA DE DATOS
+    # =========================
     facturas = []
 
     for item in rows:
+
         item["total"] = float(item.get("total") or 0)
         item["abono"] = float(item.get("abono") or 0)
         item["saldo"] = float(item.get("saldo") or 0)
 
         facturas.append(item)
 
+    # =========================
+    # TOTALES (FIX DEFINITIVO)
+    # =========================
     cursor.execute("""
         SELECT 
-            COALESCE(SUM(total),0),
-            COALESCE(SUM(abono),0),
-            COALESCE(SUM(total - abono),0)
+            COALESCE(SUM(total),0) AS total_facturado,
+            COALESCE(SUM(abono),0) AS total_abonado,
+            COALESCE(SUM(total - abono),0) AS total_deben
         FROM facturas
         WHERE empresa_id = %s
     """, (empresa_id,))
 
     t = cursor.fetchone()
 
-    total_facturado = t[0] or 0
-    total_abonado = t[1] or 0
-    total_deben = t[2] or 0
+    total_facturado = float(t["total_facturado"] or 0)
+    total_abonado = float(t["total_abonado"] or 0)
+    total_deben = float(t["total_deben"] or 0)
 
     conn.close()
 
+    # =========================
+    # RENDER
+    # =========================
     return render_template(
         "cartera.html",
         facturas=facturas,
