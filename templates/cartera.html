@@ -96,19 +96,19 @@
 
             <!-- 💰 TOTAL -->
             <td>
-                <b>$${{ "{:,.0f}".format(float(f.total or 0)) }}</b>
+                <b>${{ "{:,.0f}".format(f.total) }}</b>
             </td>
 
             <!-- 💵 ABONO -->
             <td>
-                <span style="color:green; font-weight:bold;">
-                    $${{ "{:,.0f}".format(float(f.total or 0)) }}
+                 <span style="color:green; font-weight:bold;">
+                    ${{ "{:,.0f}".format(f.abono) }}
                 </span>
             </td>
 
             <!-- 📉 SALDO -->
             <td>
-                {% set saldo = float(f.total or 0) - float(f.abono or 0) %}
+                {% set saldo = (f.total or 0) - (f.abono or 0) %}
                 <b>${{ "{:,.0f}".format(saldo) }}</b>
             </td>
 
@@ -117,7 +117,7 @@
                 {% if saldo <= 0 %}
                     <span class="badge entregado">✅ Pagado</span>
 
-                {% elif (f.abono or 0 | float) > 0 %}
+                {% elif (f.abono or 0) > 0 %}
                     <span class="badge alerta-naranja">⚠ Parcial</span>
 
                 {% else %}
@@ -152,7 +152,7 @@
 <!-- 💰 MODAL ABONO -->
 <div id="modalAbono" style="display:none;">
 
-    <form method="POST" action="/abonar_credito">
+    <form id="formAbono" method="POST" action="/abonar_credito">
 
         <input type="hidden" name="factura_id" id="facturaIdInput">
 
@@ -178,33 +178,17 @@
 
 </div>
 <script>
-function abrirAbono(id) {
-    console.log("Factura ID:", id);
-
-    // ejemplo: abrir modal
-    document.getElementById("modalAbono").style.display = "block";
-
-    // opcional: guardar ID en formulario
-    document.getElementById("formAbono").action = "/abonar_factura/" + id;
-}
-
 function abrirAbono(facturaId) {
 
-    document.getElementById("modalAbono").style.display = "flex";
+    // abrir modal
+    document.getElementById("modalAbono").style.display = "block";
 
-    document.getElementById("facturaIdInput").value = facturaId;        
+    // asignar ID al input hidden
+    document.getElementById("facturaIdInput").value = facturaId;
 }
 
 function cerrarAbono() {
-
     document.getElementById("modalAbono").style.display = "none";
-}
-
-function abrirAbono(facturaId){
-
-    document.getElementById("modalAbono").style.display = "block";
-
-    document.getElementById("facturaIdInput").value = facturaId;
 }
 </script>
 </body>

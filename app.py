@@ -1147,7 +1147,7 @@ def cartera():
     cursor = conn.cursor()
 
     # =========================
-    # QUERY BASE (con cálculo en SQL)
+    # QUERY BASE
     # =========================
     query = """
         SELECT 
@@ -1169,7 +1169,7 @@ def cartera():
     params = [empresa_id]
 
     # =========================
-    # FILTROS SQL (MEJOR QUE PYTHON)
+    # FILTROS
     # =========================
     if cliente_filtro:
         query += " AND LOWER(cliente) LIKE %s"
@@ -1180,7 +1180,13 @@ def cartera():
         params.append(fecha)
 
     if estado:
-        query += " AND CASE WHEN (total - abono) <= 0 THEN 'pagado' WHEN abono > 0 THEN 'parcial' ELSE 'pendiente' END = %s"
+        query += """
+            AND CASE 
+                WHEN (total - abono) <= 0 THEN 'pagado'
+                WHEN abono > 0 THEN 'parcial'
+                ELSE 'pendiente'
+            END = %s
+        """
         params.append(estado)
 
     query += " ORDER BY id DESC"
@@ -1189,15 +1195,23 @@ def cartera():
     rows = cursor.fetchall()
 
     # =========================
-    # CONVERTIR A DICCIONARIO
+    # CONVERSIÓN SEGURA A DICCIONARIO
     # =========================
-    facturas = [
-        dict(zip([col[0] for col in cursor.description], row))
-        for row in rows
-    ]
+    columns = [col[0] for col in cursor.description]
+
+    facturas = []
+    for row in rows:
+        item = dict(zip(columns, row))
+
+        # 🔥 FIX CRÍTICO (EVITA ERROR JINJA)
+        item["total"] = float(item["total"] or 0)
+        item["abono"] = float(item["abono"] or 0)
+        item["saldo"] = float(item["saldo"] or 0)
+
+        facturas.append(item)
 
     # =========================
-    # TOTALES (EN SQL - MÁS RÁPIDO)
+    # TOTALES
     # =========================
     cursor.execute("""
         SELECT 
@@ -1210,10 +1224,10 @@ def cartera():
 
     t = cursor.fetchone()
 
-    total_facturado = t.get("total", 0)
-    total_abonado = t.get("total_abonado", 0)
-    total_deben = t.get("total_deben", 0)
-    
+    total_facturado = t[0] or 0
+    total_abonado = t[1] or 0
+    total_deben = t[2] or 0
+
     conn.close()
 
     return render_template(
