@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg2.extras
 import pytz
 import os
 from datetime import datetime
@@ -1016,24 +1016,15 @@ def pedidos():
 
     empresa_id = session["empresa_id"]
 
-    # =========================
-    # FILTROS
-    # =========================
     filtro = request.args.get("filtro", "pendientes")
-
     buscar = request.args.get("buscar", "").strip().lower()
     fecha = request.args.get("fecha", "")
     domiciliario = request.args.get("domiciliario", "").strip().lower()
 
-    # =========================
-    # CONEXIÓN POSTGRES (FIX IMPORTANTE)
-    # =========================
     conn = conectar()
+
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    # =========================
-    # QUERY BASE
-    # =========================
     query = """
         SELECT *
         FROM pedidos
@@ -1042,81 +1033,38 @@ def pedidos():
 
     params = [empresa_id]
 
-    # =========================
-    # FILTRO ESTADO
-    # =========================
     if filtro == "pendientes":
-        query += """
-            AND estado = 'pendiente'
-            AND eliminado = false
-        """
-
+        query += " AND estado = 'pendiente' AND eliminado = false"
     elif filtro == "entregados":
-        query += """
-            AND estado = 'entregado'
-            AND eliminado = false
-        """
-
+        query += " AND estado = 'entregado' AND eliminado = false"
     elif filtro == "eliminados":
-        query += """
-            AND eliminado = true
-        """
-
+        query += " AND eliminado = true"
     elif filtro == "todos":
-        query += """
-            AND eliminado = false
-        """
+        query += " AND eliminado = false"
 
-    # =========================
-    # BUSCADOR
-    # =========================
     if buscar:
-        query += """
-            AND (
-                LOWER(cliente) LIKE %s
-                OR LOWER(producto) LIKE %s
-            )
-        """
-        params.append(f"%{buscar}%")
-        params.append(f"%{buscar}%")
+        query += " AND (LOWER(cliente) LIKE %s OR LOWER(producto) LIKE %s)"
+        params += [f"%{buscar}%", f"%{buscar}%"]
 
-    # =========================
-    # FECHA
-    # =========================
     if fecha:
         query += " AND DATE(fecha) = %s"
         params.append(fecha)
 
-    # =========================
-    # DOMICILIARIO
-    # =========================
     if domiciliario:
-        query += """
-            AND LOWER(COALESCE(domiciliario, '')) LIKE %s
-        """
+        query += " AND LOWER(COALESCE(domiciliario,'')) LIKE %s"
         params.append(f"%{domiciliario}%")
 
-    # =========================
-    # ORDEN
-    # =========================
     query += " ORDER BY id DESC"
 
-    # =========================
-    # EJECUCIÓN
-    # =========================
     cursor.execute(query, params)
     rows = cursor.fetchall()
 
-    # =========================
-    # YA VIENE COMO DICT (NO ZIP)
-    # =========================
     pedidos = []
 
     for item in rows:
-
-        item["precio"] = float(item["precio"] or 0)
-        item["cantidad"] = int(item["cantidad"] or 0)
-        item["peso"] = float(item["peso"] or 0)
+        item["precio"] = float(item.get("precio") or 0)
+        item["cantidad"] = int(item.get("cantidad") or 0)
+        item["peso"] = float(item.get("peso") or 0)
 
         pedidos.append(item)
 
@@ -1141,11 +1089,9 @@ def cartera():
     fecha = request.args.get("fecha", "")
 
     conn = conectar()
+
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-    # =========================
-    # QUERY BASE
-    # =========================
     query = """
         SELECT 
             id,
@@ -1165,9 +1111,6 @@ def cartera():
 
     params = [empresa_id]
 
-    # =========================
-    # FILTROS
-    # =========================
     if cliente_filtro:
         query += " AND LOWER(cliente) LIKE %s"
         params.append(f"%{cliente_filtro.lower()}%")
@@ -1191,22 +1134,15 @@ def cartera():
     cursor.execute(query, params)
     rows = cursor.fetchall()
 
-    # =========================
-    # NORMALIZACIÓN SEGURA
-    # =========================
     facturas = []
 
     for item in rows:
-
-        item["total"] = float(item["total"] or 0)
-        item["abono"] = float(item["abono"] or 0)
-        item["saldo"] = float(item["saldo"] or 0)
+        item["total"] = float(item.get("total") or 0)
+        item["abono"] = float(item.get("abono") or 0)
+        item["saldo"] = float(item.get("saldo") or 0)
 
         facturas.append(item)
 
-    # =========================
-    # TOTALES
-    # =========================
     cursor.execute("""
         SELECT 
             COALESCE(SUM(total),0),
