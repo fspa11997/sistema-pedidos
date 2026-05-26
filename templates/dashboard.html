@@ -633,6 +633,148 @@ tipoPago.addEventListener("change", actualizarPago);
 
 actualizarPago();
 
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.querySelector('form[action="/crear_factura"]');
+
+    if (!form) return;
+
+    form.addEventListener("submit", function (e) {
+
+        // =========================
+        // CAMPOS
+        // =========================
+        const tipoVenta = form.querySelector('[name="tipo_venta"]').value;
+
+        const cliente = form.querySelector('[name="cliente"]');
+        const direccion = form.querySelector('[name="direccion"]');
+        const ciudad = form.querySelector('[name="ciudad"]');
+        const telefono = form.querySelector('[name="telefono"]');
+        const identificacion = form.querySelector('[name="identificacion"]');
+        const plazoPago = form.querySelector('[name="plazo_pago"]');
+        const abono = form.querySelector('[name="abono"]');
+
+        const productos = form.querySelectorAll('[name="producto[]"]');
+        const cantidades = form.querySelectorAll('[name="cantidad[]"]');
+        const pesos = form.querySelectorAll('[name="peso[]"]');
+
+        // =========================
+        // LIMPIAR MENSAJES
+        // =========================
+        const todosCampos = [
+            cliente,
+            direccion,
+            ciudad,
+            telefono,
+            identificacion,
+            plazoPago,
+            abono
+        ];
+
+        todosCampos.forEach(campo => {
+            if (campo) campo.setCustomValidity("");
+        });
+
+        productos.forEach(p => p.setCustomValidity(""));
+        cantidades.forEach(c => c.setCustomValidity(""));
+        pesos.forEach(p => p.setCustomValidity(""));
+
+        // =========================
+        // FUNCIÓN ERROR
+        // =========================
+        function error(campo, mensaje) {
+            campo.setCustomValidity(mensaje);
+            campo.reportValidity();
+            campo.focus();
+            e.preventDefault();
+            return true;
+        }
+
+        // =========================
+        // VALIDACIONES GENERALES
+        // =========================
+
+        if (!cliente.value.trim()) {
+            return error(cliente, "Debe seleccionar un cliente");
+        }
+
+        if (!direccion.value.trim()) {
+            return error(direccion, "Debe ingresar dirección");
+        }
+
+        if (!ciudad.value.trim()) {
+            return error(ciudad, "Debe ingresar ciudad");
+        }
+
+        if (!telefono.value.trim()) {
+            return error(telefono, "Debe ingresar teléfono");
+        }
+
+        if (!identificacion.value.trim()) {
+            return error(identificacion, "Debe ingresar identificación");
+        }
+
+        // =========================
+        // VALIDAR PRODUCTOS
+        // =========================
+
+        for (let i = 0; i < productos.length; i++) {
+
+            if (!productos[i].value.trim()) {
+                return error(productos[i], "Debe seleccionar producto");
+            }
+
+            if (
+                cantidades[i].value === "" ||
+                parseFloat(cantidades[i].value) <= 0
+            ) {
+                return error(cantidades[i], "Cantidad inválida");
+            }
+
+            if (
+                pesos[i].value === "" ||
+                parseFloat(pesos[i].value) <= 0
+            ) {
+                return error(pesos[i], "Peso inválido");
+            }
+        }
+
+        // =========================
+        // VALIDACIÓN CRÉDITO
+        // =========================
+
+        if (tipoVenta === "credito") {
+
+            if (!plazoPago.value) {
+                return error(plazoPago, "Debe seleccionar fecha de pago");
+            }
+
+            if (
+                abono.value === "" ||
+                parseFloat(abono.value) < 0
+            ) {
+                return error(abono, "Debe ingresar un abono válido");
+            }
+        }
+
+        // =========================
+        // VALIDACIÓN CONTADO
+        // =========================
+
+        if (tipoVenta === "contado") {
+
+            // abono puede ser 0
+            // plazo puede ir vacío
+
+            if (abono.value === "") {
+                abono.value = 0;
+            }
+        }
+
+    });
+
+});
 </script>
 <div id="modalInventario" style="
     display:none;
