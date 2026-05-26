@@ -474,27 +474,50 @@ def crear_factura_route():
     # =========================
     # DATOS CLIENTE
     # =========================
-    cliente = request.form["cliente"]
-    direccion = request.form["direccion"]
-    ciudad = request.form["ciudad"]
-    telefono = request.form["telefono"]
+    cliente = request.form.get("cliente", "").strip()
+    direccion = request.form.get("direccion", "").strip()
+    ciudad = request.form.get("ciudad", "").strip()
+    telefono = request.form.get("telefono", "").strip()
 
-    tipo_id = request.form["tipo_id"]
-    identificacion = request.form["identificacion"]
+    tipo_id = request.form.get("tipo_id", "").strip()
+    identificacion = request.form.get("identificacion", "").strip()
 
-    domiciliario = request.form.get("domiciliario", "")
+    domiciliario = request.form.get("domiciliario", "").strip()
 
-    # =========================
-    # TIPOS
-    # =========================
-    tipo_precio = request.form.get("tipo_precio", "")
-    tipo_venta = request.form.get("tipo_venta", "contado")
+    tipo_precio = request.form.get("tipo_precio", "").strip()
+    tipo_venta = request.form.get("tipo_venta", "contado").strip()
 
-    # =========================
-    # CRÉDITO / CONTADO
-    # =========================
     plazo_pago = request.form.get("plazo_pago", None)
+
     abono_raw = request.form.get("abono")
+
+    # =========================
+    # VALIDACIÓN BÁSICA (SIN RETURN 400)
+    # =========================
+    if not cliente:
+        flash("El cliente es obligatorio", "error")
+        return redirect("/dashboard")
+
+    if not direccion:
+        flash("La dirección es obligatoria", "error")
+        return redirect("/dashboard")
+
+    if not ciudad:
+        flash("La ciudad es obligatoria", "error")
+        return redirect("/dashboard")
+
+    if not telefono:
+        flash("El teléfono es obligatorio", "error")
+        return redirect("/dashboard")
+
+    if not identificacion:
+        flash("La identificación es obligatoria", "error")
+        return redirect("/dashboard")
+
+    # 🔥 DOMICILIARIO OBLIGATORIO (ya corregido)
+    if not domiciliario:
+        flash("El domiciliario es obligatorio", "error")
+        return redirect("/dashboard")
 
     # =========================
     # PRODUCTOS
@@ -504,23 +527,8 @@ def crear_factura_route():
     pesos = request.form.getlist("peso[]")
 
     if not productos:
-        return "Debe agregar productos", 400
-
-    # =========================
-    # VALIDACIÓN CAMPOS OBLIGATORIOS
-    # =========================
-    campos_obligatorios = [
-        "cliente",
-        "direccion",
-        "ciudad",
-        "telefono",
-        "tipo_id",
-        "identificacion"
-    ]
-
-    for c in campos_obligatorios:
-        if not request.form.get(c):
-            return f"El campo {c} es obligatorio", 400
+        flash("Debe agregar al menos un producto", "error")
+        return redirect("/dashboard")
 
     # =========================
     # VALIDAR PRODUCTOS
@@ -531,42 +539,44 @@ def crear_factura_route():
             cantidad = float(cantidades[i] or 0)
             peso = float(pesos[i] or 0)
         except:
-            return "Error en cantidad o peso", 400
+            flash("Error en cantidad o peso", "error")
+            return redirect("/dashboard")
 
         if cantidad <= 0:
-            return "La cantidad debe ser mayor a 0", 400
+            flash("La cantidad debe ser mayor a 0", "error")
+            return redirect("/dashboard")
 
         if peso <= 0:
-            return "El peso debe ser mayor a 0", 400
+            flash("El peso debe ser mayor a 0", "error")
+            return redirect("/dashboard")
 
     # =========================
-    # NORMALIZAR ABONO (IMPORTANTE)
+    # ABONO
     # =========================
     try:
         abono = float(abono_raw) if abono_raw not in [None, ""] else 0
     except:
-        return "Abono inválido", 400
+        flash("Abono inválido", "error")
+        return redirect("/dashboard")
 
     # =========================
-    # REGLA POR TIPO DE VENTA
+    # REGLAS POR TIPO
     # =========================
     if tipo_venta == "credito":
 
-        # crédito: permitido 0 o más
         if abono < 0:
-            return "El abono no puede ser negativo", 400
+            flash("El abono no puede ser negativo", "error")
+            return redirect("/dashboard")
 
     elif tipo_venta == "contado":
-
-        # contado: siempre 0 si viene vacío
-        if abono is None:
-            abono = 0
+        abono = 0  # contado siempre 0
 
     else:
-        return "Tipo de venta inválido", 400
+        flash("Tipo de venta inválido", "error")
+        return redirect("/dashboard")
 
     # =========================
-    # CONEXIÓN POSTGRESQL
+    # CONEXIÓN BD
     # =========================
     conn = conectar()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -610,10 +620,7 @@ def crear_factura_route():
     # =========================
     # CLIENTE FORMATEADO
     # =========================
-    if tipo_id == "nit":
-        cliente_final = f"{cliente} - NIT: {identificacion}"
-    else:
-        cliente_final = f"{cliente} - CC: {identificacion}"
+    cliente_final = f"{cliente} - NIT: {identificacion}" if tipo_id == "nit" else f"{cliente} - CC: {identificacion}"
 
     # =========================
     # CREAR FACTURA
@@ -633,7 +640,7 @@ def crear_factura_route():
     )
 
     # =========================
-    # CREAR PEDIDOS RELACIONADOS
+    # PEDIDOS
     # =========================
     for p in productos_factura:
 
@@ -652,6 +659,7 @@ def crear_factura_route():
             empresa_id=empresa_id
         )
 
+    flash("Factura creada correctamente", "success")
     return redirect(f"/factura/{factura_id}")
        
 

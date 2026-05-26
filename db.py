@@ -1328,9 +1328,12 @@ def validar_factura(data):
 
     campos_obligatorios = [
         "cliente",
-        "ciudad",
         "direccion",
-        "telefono"
+        "ciudad",
+        "telefono",
+        "tipo_id",
+        "identificacion",
+        "domiciliario"   # 👈 AQUI
     ]
 
     # -------------------------
