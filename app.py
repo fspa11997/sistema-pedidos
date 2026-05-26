@@ -2,7 +2,8 @@ import psycopg2.extras
 import pytz
 import os
 from datetime import datetime
-from flask import Flask, render_template, session, redirect, request
+from flask import Flask, flash, render_template, session, redirect, request
+
 
 from db import (
     validar_usuario,
@@ -493,7 +494,7 @@ def crear_factura_route():
     # CRÉDITO / CONTADO
     # =========================
     plazo_pago = request.form.get("plazo_pago", None)
-    abono = float(request.form.get("abono") or 0)
+    abono_raw = request.form.get("abono")
 
     # =========================
     # PRODUCTOS
@@ -506,7 +507,7 @@ def crear_factura_route():
         return "Debe agregar productos", 400
 
     # =========================
-    # VALIDACIÓN BASE
+    # VALIDACIÓN CAMPOS OBLIGATORIOS
     # =========================
     campos_obligatorios = [
         "cliente",
@@ -539,16 +540,27 @@ def crear_factura_route():
             return "El peso debe ser mayor a 0", 400
 
     # =========================
+    # NORMALIZAR ABONO (IMPORTANTE)
+    # =========================
+    try:
+        abono = float(abono_raw) if abono_raw not in [None, ""] else 0
+    except:
+        return "Abono inválido", 400
+
+    # =========================
     # REGLA POR TIPO DE VENTA
     # =========================
     if tipo_venta == "credito":
 
+        # crédito: permitido 0 o más
         if abono < 0:
             return "El abono no puede ser negativo", 400
 
     elif tipo_venta == "contado":
 
-        abono = abono or 0
+        # contado: siempre 0 si viene vacío
+        if abono is None:
+            abono = 0
 
     else:
         return "Tipo de venta inválido", 400
