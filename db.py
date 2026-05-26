@@ -1328,16 +1328,13 @@ def validar_factura(data):
 
     campos_obligatorios = [
         "cliente",
-        "producto",
-        "cantidad",
-        "precio",
         "ciudad",
         "direccion",
         "telefono"
     ]
 
     # -------------------------
-    # VALIDACIÓN BASE
+    # VALIDACIÓN BASE (texto)
     # -------------------------
     for campo in campos_obligatorios:
         valor = data.get(campo)
@@ -1345,40 +1342,73 @@ def validar_factura(data):
         if valor is None or str(valor).strip() == "":
             return False, f"El campo {campo} es obligatorio"
 
-        # numéricos deben ser > 0
-        if campo in ["cantidad", "precio"]:
-            try:
-                if float(valor) <= 0:
-                    return False, f"El campo {campo} debe ser mayor que 0"
-            except:
-                return False, f"El campo {campo} debe ser numérico"
+    # -------------------------
+    # VALIDACIÓN PRODUCTOS
+    # -------------------------
+    productos = data.get("producto", [])
+    cantidades = data.get("cantidad", [])
+    precios = data.get("precio", [])
+
+    if not productos:
+        return False, "Debe agregar al menos un producto"
+
+    for i in range(len(productos)):
+        try:
+            if float(cantidades[i]) <= 0:
+                return False, "Cantidad inválida (debe ser mayor a 0)"
+        except:
+            return False, "Cantidad inválida"
+
+        try:
+            if float(precios[i]) <= 0:
+                return False, "Precio inválido (debe ser mayor a 0)"
+        except:
+            return False, "Precio inválido"
+
+    # -------------------------
+    # VALIDACIÓN DOMICILIARIO (OPCIONAL)
+    # -------------------------
+    domiciliario = data.get("domiciliario", "")
+    if domiciliario is None:
+        domiciliario = ""
 
     # -------------------------
     # CRÉDITO
     # -------------------------
     if tipo == "credito":
 
-        abono = data.get("abono") or 0
+        abono = data.get("abono")
+
+        if abono is None or str(abono).strip() == "":
+            abono = 0
 
         try:
             abono = float(abono)
-            if abono < 0:
-                return False, "El abono no puede ser negativo"
         except:
             return False, "Abono inválido"
+
+        if abono < 0:
+            return False, "El abono no puede ser negativo"
 
     # -------------------------
     # CONTADO
     # -------------------------
     elif tipo == "contado":
 
-        # fecha puede ser vacía → no validamos
-        abono = data.get("abono") or 0
+        # puede venir vacío → lo dejamos en 0
+        abono = data.get("abono")
+
+        if abono is None or str(abono).strip() == "":
+            abono = 0
 
         try:
             abono = float(abono)
         except:
             return False, "Abono inválido"
+
+        # opcional: no negativo
+        if abono < 0:
+            return False, "El abono no puede ser negativo"
 
     else:
         return False, "Tipo de factura inválido"
