@@ -653,7 +653,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!ciudad.value.trim()) return error(ciudad, "Debe ingresar ciudad");
         if (!telefono.value.trim()) return error(telefono, "Debe ingresar teléfono");
         if (!identificacion.value.trim()) return error(identificacion, "Debe ingresar identificación");
-        if (!domiciliario.value.trim()) return error(domiciliario, "Debe ingresar domiciliario");
+        if (!domiciliario || !domiciliario.value || !domiciliario.value.trim()) {return error(domiciliario, "Debe ingresar domiciliario");}   
 
         // =========================
         // PRODUCTOS
