@@ -614,95 +614,112 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("formFactura");
     if (!form) return;
 
+    const tipoVenta = () => document.getElementById("tipoVenta").value;
+
+    function numVal(value) {
+        return parseFloat(value);
+    }
+
+    function isEmpty(v) {
+        return v === null || v === undefined || v.toString().trim() === "";
+    }
+
+    function error(campo, mensaje, e) {
+        campo.setCustomValidity(mensaje);
+        campo.reportValidity();
+        campo.focus();
+        e.preventDefault();
+        throw new Error("stop");
+    }
+
     form.addEventListener("submit", function (e) {
 
-        const tipoVenta = document.getElementById("tipoVenta").value;
+        try {
 
-        const cliente = form.querySelector('[name="cliente"]');
-        const direccion = form.querySelector('[name="direccion"]');
-        const ciudad = form.querySelector('[name="ciudad"]');
-        const telefono = form.querySelector('[name="telefono"]');
-        const identificacion = form.querySelector('[name="identificacion"]');
-        const plazoPago = form.querySelector('[name="plazo_pago"]');
-        const abono = form.querySelector('[name="abono"]');
-        const domiciliario = form.querySelector('[name="domiciliario"]');
-        console.log("DOMICILIARIO ELEMENT:", domiciliario);
-        console.log("DOMICILIARIO VALUE:", domiciliario?.value);
-        const productos = form.querySelectorAll('[name="producto[]"]');
-        const cantidades = form.querySelectorAll('[name="cantidad[]"]');
-        const pesos = form.querySelectorAll('[name="peso[]"]');
+            const tipo = tipoVenta();
 
-        // =========================
-        // LIMPIAR ERRORES
-        // =========================
-        [cliente, direccion, ciudad, telefono, identificacion, plazoPago, abono, domiciliario]
-            .forEach(c => c && c.setCustomValidity(""));
+            const cliente = form.querySelector('[name="cliente"]');
+            const direccion = form.querySelector('[name="direccion"]');
+            const ciudad = form.querySelector('[name="ciudad"]');
+            const telefono = form.querySelector('[name="telefono"]');
+            const identificacion = form.querySelector('[name="identificacion"]');
+            const domiciliario = form.querySelector('[name="domiciliario"]');
+            const plazoPago = form.querySelector('[name="plazo_pago"]');
+            const abono = form.querySelector('[name="abono"]');
 
-        productos.forEach(p => p.setCustomValidity(""));
-        cantidades.forEach(c => c.setCustomValidity(""));
-        pesos.forEach(p => p.setCustomValidity(""));
+            const productos = form.querySelectorAll('[name="producto[]"]');
+            const cantidades = form.querySelectorAll('[name="cantidad[]"]');
+            const pesos = form.querySelectorAll('[name="peso[]"]');
 
-        function error(campo, mensaje) {
-            campo.setCustomValidity(mensaje);
-            campo.reportValidity();
-            campo.focus();
-            e.preventDefault();
-        }
+            // limpiar
+            [cliente, direccion, ciudad, telefono, identificacion, domiciliario, plazoPago, abono]
+                .forEach(c => c && c.setCustomValidity(""));
 
-        // =========================
-        // VALIDACIÓN BASE
-        // =========================
-        if (!cliente.value.trim()) return error(cliente, "Debe seleccionar cliente");
-        if (!direccion.value.trim()) return error(direccion, "Debe ingresar dirección");
-        if (!ciudad.value.trim()) return error(ciudad, "Debe ingresar ciudad");
-        if (!telefono.value.trim()) return error(telefono, "Debe ingresar teléfono");
-        if (!identificacion.value.trim()) return error(identificacion, "Debe ingresar identificación");
+            productos.forEach(p => p.setCustomValidity(""));
+            cantidades.forEach(c => c.setCustomValidity(""));
+            pesos.forEach(p => p.setCustomValidity(""));
 
-        // 👇 DOMICILIARIO (CORREGIDO Y SEGURO)
-        if (!domiciliario || !domiciliario.value || !domiciliario.value.trim()) {
-            return error(domiciliario, "Debe ingresar domiciliario");
-        }
+            // =========================
+            // VALIDACIÓN BASE
+            // =========================
 
-        // =========================
-        // PRODUCTOS
-        // =========================
-        for (let i = 0; i < productos.length; i++) {
+            if (isEmpty(cliente.value)) error(cliente, "Seleccione cliente", e);
+            if (isEmpty(direccion.value)) error(direccion, "Ingrese dirección", e);
+            if (isEmpty(ciudad.value)) error(ciudad, "Ingrese ciudad", e);
+            if (isEmpty(telefono.value)) error(telefono, "Ingrese teléfono", e);
+            if (isEmpty(identificacion.value)) error(identificacion, "Ingrese identificación", e);
+            if (isEmpty(domiciliario.value)) error(domiciliario, "Ingrese domiciliario", e);
 
-            if (!productos[i].value.trim()) {
-                return error(productos[i], "Debe seleccionar producto");
+            // =========================
+            // PRODUCTOS
+            // =========================
+
+            for (let i = 0; i < productos.length; i++) {
+
+                if (isEmpty(productos[i].value))
+                    error(productos[i], "Seleccione producto", e);
+
+                if (isEmpty(cantidades[i].value) || numVal(cantidades[i].value) <= 0)
+                    error(cantidades[i], "Cantidad debe ser mayor a 0", e);
+
+                if (isEmpty(pesos[i].value) || numVal(pesos[i].value) <= 0)
+                    error(pesos[i], "Peso debe ser mayor a 0", e);
             }
 
-            if (!cantidades[i].value || parseFloat(cantidades[i].value) <= 0) {
-                return error(cantidades[i], "Cantidad debe ser mayor a 0");
+            // =========================
+            // REGLA CONTADO
+            // =========================
+            if (tipo === "contado") {
+
+                if (isEmpty(abono.value)) {
+                    abono.value = 0;
+                }
+
+                if (abono.value < 0) {
+                    error(abono, "Abono inválido", e);
+                }
+
+                // fecha puede estar vacía → OK
             }
 
-            if (!pesos[i].value || parseFloat(pesos[i].value) <= 0) {
-                return error(pesos[i], "Peso debe ser mayor a 0");
-            }
-        }
+            // =========================
+            // REGLA CRÉDITO
+            // =========================
+            if (tipo === "credito") {
 
-        // =========================
-        // CONTADO
-        // =========================
-        if (tipoVenta === "contado") {
+                if (isEmpty(plazoPago.value))
+                    error(plazoPago, "Ingrese fecha límite", e);
 
-            if (!abono.value || abono.value === "") {
-                abono.value = 0;
-            }
-        }
+                if (isEmpty(abono.value)) {
+                    abono.value = 0;
+                }
 
-        // =========================
-        // CRÉDITO
-        // =========================
-        if (tipoVenta === "credito") {
-
-            if (!plazoPago.value) {
-                return error(plazoPago, "Debe ingresar fecha de pago");
+                if (numVal(abono.value) < 0)
+                    error(abono, "Abono no puede ser negativo", e);
             }
 
-            if (abono.value === "" || parseFloat(abono.value) < 0) {
-                return error(abono, "Abono no puede ser menor que cero");
-            }
+        } catch (err) {
+            return;
         }
 
     });
