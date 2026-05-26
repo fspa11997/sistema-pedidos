@@ -29,7 +29,8 @@ from db import (
     conectar,
     crear_cliente,
     obtener_clientes,
-    registrar_abono
+    registrar_abono,
+    validar_factura
 )
 
 
@@ -489,7 +490,7 @@ def crear_factura_route():
     tipo_venta = request.form.get("tipo_venta", "contado")
 
     # =========================
-    # CRÉDITO
+    # CRÉDITO / CONTADO
     # =========================
     plazo_pago = request.form.get("plazo_pago", None)
     abono = float(request.form.get("abono") or 0)
@@ -505,19 +506,66 @@ def crear_factura_route():
         return "Debe agregar productos", 400
 
     # =========================
+    # VALIDACIÓN BASE
+    # =========================
+    campos_obligatorios = [
+        "cliente",
+        "direccion",
+        "ciudad",
+        "telefono",
+        "tipo_id",
+        "identificacion"
+    ]
+
+    for c in campos_obligatorios:
+        if not request.form.get(c):
+            return f"El campo {c} es obligatorio", 400
+
+    # =========================
+    # VALIDAR PRODUCTOS
+    # =========================
+    for i in range(len(productos)):
+
+        try:
+            cantidad = float(cantidades[i] or 0)
+            peso = float(pesos[i] or 0)
+        except:
+            return "Error en cantidad o peso", 400
+
+        if cantidad <= 0:
+            return "La cantidad debe ser mayor a 0", 400
+
+        if peso <= 0:
+            return "El peso debe ser mayor a 0", 400
+
+    # =========================
+    # REGLA POR TIPO DE VENTA
+    # =========================
+    if tipo_venta == "credito":
+
+        if abono < 0:
+            return "El abono no puede ser negativo", 400
+
+    elif tipo_venta == "contado":
+
+        abono = abono or 0
+
+    else:
+        return "Tipo de venta inválido", 400
+
+    # =========================
     # CONEXIÓN POSTGRESQL
     # =========================
     conn = conectar()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cursor = conn.cursor()
 
     productos_factura = []
 
     for i in range(len(productos)):
 
         producto = productos[i]
-        cantidad = int(cantidades[i] or 0)
-        peso = float(pesos[i] or 0)
+        cantidad = float(cantidades[i])
+        peso = float(pesos[i])
 
         cursor.execute("""
             SELECT * FROM productos

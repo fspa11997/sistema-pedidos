@@ -1323,6 +1323,68 @@ def obtener_historial_abonos(factura_id, empresa_id):
     conn.close()
     return pagos 
 
+def validar_factura(data):
+    tipo = data.get("tipo")  # credito o contado
+
+    campos_obligatorios = [
+        "cliente",
+        "producto",
+        "cantidad",
+        "precio",
+        "ciudad",
+        "direccion",
+        "telefono"
+    ]
+
+    # -------------------------
+    # VALIDACIÓN BASE
+    # -------------------------
+    for campo in campos_obligatorios:
+        valor = data.get(campo)
+
+        if valor is None or str(valor).strip() == "":
+            return False, f"El campo {campo} es obligatorio"
+
+        # numéricos deben ser > 0
+        if campo in ["cantidad", "precio"]:
+            try:
+                if float(valor) <= 0:
+                    return False, f"El campo {campo} debe ser mayor que 0"
+            except:
+                return False, f"El campo {campo} debe ser numérico"
+
+    # -------------------------
+    # CRÉDITO
+    # -------------------------
+    if tipo == "credito":
+
+        abono = data.get("abono") or 0
+
+        try:
+            abono = float(abono)
+            if abono < 0:
+                return False, "El abono no puede ser negativo"
+        except:
+            return False, "Abono inválido"
+
+    # -------------------------
+    # CONTADO
+    # -------------------------
+    elif tipo == "contado":
+
+        # fecha puede ser vacía → no validamos
+        abono = data.get("abono") or 0
+
+        try:
+            abono = float(abono)
+        except:
+            return False, "Abono inválido"
+
+    else:
+        return False, "Tipo de factura inválido"
+
+    return True, "OK"
+
 #guadar cambios railway y git
 #git add .
 #git commit -m "fix: migrate fully to postgres"
