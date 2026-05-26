@@ -608,6 +608,7 @@ function agregarProducto() {
 // =========================
 // VALIDACIÓN FACTURA
 // =========================
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const form = document.getElementById("formFactura");
@@ -630,7 +631,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const cantidades = form.querySelectorAll('[name="cantidad[]"]');
         const pesos = form.querySelectorAll('[name="peso[]"]');
 
-        // limpiar errores
+        // =========================
+        // LIMPIAR ERRORES
+        // =========================
         [cliente, direccion, ciudad, telefono, identificacion, plazoPago, abono, domiciliario]
             .forEach(c => c && c.setCustomValidity(""));
 
@@ -646,14 +649,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // =========================
-        // VALIDACIÓN BASE (TODOS)
+        // VALIDACIÓN BASE
         // =========================
         if (!cliente.value.trim()) return error(cliente, "Debe seleccionar cliente");
         if (!direccion.value.trim()) return error(direccion, "Debe ingresar dirección");
         if (!ciudad.value.trim()) return error(ciudad, "Debe ingresar ciudad");
         if (!telefono.value.trim()) return error(telefono, "Debe ingresar teléfono");
         if (!identificacion.value.trim()) return error(identificacion, "Debe ingresar identificación");
-        if (!domiciliario || !domiciliario.value || !domiciliario.value.trim()) {return error(domiciliario, "Debe ingresar domiciliario");}   
+
+        // 👇 DOMICILIARIO (CORREGIDO Y SEGURO)
+        if (!domiciliario || !domiciliario.value || !domiciliario.value.trim()) {
+            return error(domiciliario, "Debe ingresar domiciliario");
+        }
 
         // =========================
         // PRODUCTOS
@@ -674,20 +681,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // =========================
-        // REGLA CONTADO
+        // CONTADO
         // =========================
         if (tipoVenta === "contado") {
 
-            // abono puede ser 0
             if (!abono.value || abono.value === "") {
                 abono.value = 0;
             }
-
-            // fecha opcional → NO validar
         }
 
         // =========================
-        // REGLA CRÉDITO
+        // CRÉDITO
         // =========================
         if (tipoVenta === "credito") {
 
@@ -703,6 +707,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
 </script>
 <div id="modalInventario" style="
     display:none;
