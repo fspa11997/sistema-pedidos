@@ -643,10 +643,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const ciudad = form.querySelector('[name="ciudad"]');
             const telefono = form.querySelector('[name="telefono"]');
             const identificacion = form.querySelector('[name="identificacion"]');
-            const domiciliario = form.querySelector('[name="domiciliario"]');
+            
             const plazoPago = form.querySelector('[name="plazo_pago"]');
             const abono = form.querySelector('[name="abono"]');
-
             const productos = form.querySelectorAll('[name="producto[]"]');
             const cantidades = form.querySelectorAll('[name="cantidad[]"]');
             const pesos = form.querySelectorAll('[name="peso[]"]');
@@ -668,14 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (isEmpty(ciudad.value)) error(ciudad, "Ingrese ciudad", e);
             if (isEmpty(telefono.value)) error(telefono, "Ingrese teléfono", e);
             if (isEmpty(identificacion.value)) error(identificacion, "Ingrese identificación", e);
-            if (!domiciliario) {
-                console.error("❌ No existe input domiciliario en el DOM");
-                return;
-            }
-
-            if (isEmpty(domiciliario.value)) {
-                error(domiciliario, "Ingrese domiciliario", e);
-            }
+            
 
             // =========================
             // PRODUCTOS
