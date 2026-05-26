@@ -626,7 +626,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const plazoPago = form.querySelector('[name="plazo_pago"]');
         const abono = form.querySelector('[name="abono"]');
         const domiciliario = form.querySelector('[name="domiciliario"]');
-
+        console.log("DOMICILIARIO ELEMENT:", domiciliario);
+        console.log("DOMICILIARIO VALUE:", domiciliario?.value);
         const productos = form.querySelectorAll('[name="producto[]"]');
         const cantidades = form.querySelectorAll('[name="cantidad[]"]');
         const pesos = form.querySelectorAll('[name="peso[]"]');
