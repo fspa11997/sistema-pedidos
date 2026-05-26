@@ -624,13 +624,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const identificacion = form.querySelector('[name="identificacion"]');
         const plazoPago = form.querySelector('[name="plazo_pago"]');
         const abono = form.querySelector('[name="abono"]');
+        const domiciliario = form.querySelector('[name="domiciliario"]');
 
         const productos = form.querySelectorAll('[name="producto[]"]');
         const cantidades = form.querySelectorAll('[name="cantidad[]"]');
         const pesos = form.querySelectorAll('[name="peso[]"]');
 
         // limpiar errores
-        [cliente, direccion, ciudad, telefono, identificacion, plazoPago, abono]
+        [cliente, direccion, ciudad, telefono, identificacion, plazoPago, abono, domiciliario]
             .forEach(c => c && c.setCustomValidity(""));
 
         productos.forEach(p => p.setCustomValidity(""));
@@ -645,27 +646,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // =========================
-        // VALIDACIÓN CLIENTE
+        // VALIDACIÓN BASE (TODOS)
         // =========================
-        if (!cliente.value.trim()) {
-            return error(cliente, "Debe seleccionar un cliente");
-        }
-
-        if (!direccion.value.trim()) {
-            return error(direccion, "Debe ingresar dirección");
-        }
-
-        if (!ciudad.value.trim()) {
-            return error(ciudad, "Debe ingresar ciudad");
-        }
-
-        if (!telefono.value.trim()) {
-            return error(telefono, "Debe ingresar teléfono");
-        }
-
-        if (!identificacion.value.trim()) {
-            return error(identificacion, "Debe ingresar identificación");
-        }
+        if (!cliente.value.trim()) return error(cliente, "Debe seleccionar cliente");
+        if (!direccion.value.trim()) return error(direccion, "Debe ingresar dirección");
+        if (!ciudad.value.trim()) return error(ciudad, "Debe ingresar ciudad");
+        if (!telefono.value.trim()) return error(telefono, "Debe ingresar teléfono");
+        if (!identificacion.value.trim()) return error(identificacion, "Debe ingresar identificación");
+        if (!domiciliario.value.trim()) return error(domiciliario, "Debe ingresar domiciliario");
 
         // =========================
         // PRODUCTOS
@@ -676,37 +664,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 return error(productos[i], "Debe seleccionar producto");
             }
 
-            if (cantidades[i].value === "" || parseFloat(cantidades[i].value) <= 0) {
-                return error(cantidades[i], "Cantidad inválida");
+            if (!cantidades[i].value || parseFloat(cantidades[i].value) <= 0) {
+                return error(cantidades[i], "Cantidad debe ser mayor a 0");
             }
 
-            if (pesos[i].value === "" || parseFloat(pesos[i].value) <= 0) {
-                return error(pesos[i], "Peso inválido");
+            if (!pesos[i].value || parseFloat(pesos[i].value) <= 0) {
+                return error(pesos[i], "Peso debe ser mayor a 0");
             }
         }
 
         // =========================
-        // CONTADO
+        // REGLA CONTADO
         // =========================
         if (tipoVenta === "contado") {
 
-            if (!abono.value) {
+            // abono puede ser 0
+            if (!abono.value || abono.value === "") {
                 abono.value = 0;
             }
 
+            // fecha opcional → NO validar
         }
 
         // =========================
-        // CRÉDITO
+        // REGLA CRÉDITO
         // =========================
         if (tipoVenta === "credito") {
 
             if (!plazoPago.value) {
-                return error(plazoPago, "Debe seleccionar fecha límite de pago");
+                return error(plazoPago, "Debe ingresar fecha de pago");
             }
 
             if (abono.value === "" || parseFloat(abono.value) < 0) {
-                return error(abono, "Abono inválido");
+                return error(abono, "Abono no puede ser menor que cero");
             }
         }
 
