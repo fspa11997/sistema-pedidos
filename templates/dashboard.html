@@ -285,7 +285,7 @@
 
         <h3>📦 Nueva Venta ✅</h3>
 
-        <form method="POST" action="/crear_factura" class="venta-form">
+        <form id="formFactura" method="POST" action="/crear_factura" class="venta-form">
 
             <div class="venta-grid">
 
@@ -312,14 +312,14 @@
                         {% endfor %}
                     </select>
 
-                    <input type="text" name="cliente" placeholder="Cliente" required readonly>
+                    <input type="text" id="cliente" name="cliente" placeholder="Cliente" required readonly>
 
                     <select name="tipo_id" required>
                         <option value="cc">CC</option>
                         <option value="nit">NIT</option>
                     </select>
 
-                    <input type="text" name="identificacion" placeholder="Identificación" required>
+                    <input type="text" id="identificacion" name="identificacion" placeholder="Identificación" required>
 
                     <!-- 💰 TIPO DE PRECIO -->
                      <label for="fechaLimite">
@@ -341,9 +341,9 @@
 
                     </select>
 
-                    <input type="text" name="direccion" placeholder="Dirección">
-                    <input type="text" name="ciudad" placeholder="Ciudad">
-                    <input type="text" name="telefono" placeholder="Teléfono">
+                    <input type="text" id="direccion" name="direccion" placeholder="Dirección">
+                    <input type="text" id="ciudad" name="ciudad" placeholder="Ciudad">
+                    <input type="text" id="telefono" name="telefono" placeholder="Teléfono">
 
                     
                     
@@ -356,9 +356,9 @@
                         type="number"
                         step="0.01"
                         name="abono"
-                        id="abonoInput"
+                        id="abono"
                         placeholder="Abono inicial"
-                        value="Abono inicial"
+                        value="0"
                     >
 
                     <!-- 📅 FECHA LIMITE -->
@@ -369,7 +369,7 @@
                     <input
                         type="date"
                         name="plazo_pago"
-                        id="fechaLimite"
+                        id="plazo_pago"
                     >
 
                 </div>
@@ -394,8 +394,8 @@
                                 {% endfor %}
                             </select>
 
-                            <input type="number" name="cantidad[]" placeholder="Unid" value="Unid">
-                            <input type="number" step="0.01" name="peso[]" placeholder="Kg" value="Kg">
+                            <input type="number" name="cantidad[]" class="cantidad" placeholder="Unid">
+                            <input type="number" step="0.01" name="peso[]" class="peso" placeholder="Kg">
 
                             <button type="button" onclick="this.parentElement.remove()">❌</button>
                         </div>
@@ -546,32 +546,43 @@
 
 
 <script>
+
+// =========================
+// TOGGLES (los tuyos)
+// =========================
 function toggleForm() {
     const form = document.getElementById("formUsuario");
     form.style.display = form.style.display === "none" ? "block" : "none";
 }
+
 function toggleEmpresa() {
     const form = document.getElementById("formEmpresa");
     form.style.display = form.style.display === "none" ? "block" : "none";
 }
+
 function toggleInventario() {
     const modal = document.getElementById("modalInventario");
-
-    if (modal.style.display === "none" || modal.style.display === "") {
-        modal.style.display = "block";
-    } else {
-        modal.style.display = "none";
-    }
+    modal.style.display = (modal.style.display === "block") ? "none" : "block";
 }
+
 function toggleProductos() {
     const modal = document.getElementById("modalProductos");
-
-    if (modal.style.display === "none" || modal.style.display === "") {
-        modal.style.display = "block";
-    } else {
-        modal.style.display = "none";
-    }
+    modal.style.display = (modal.style.display === "block") ? "none" : "block";
 }
+
+function toggleMetricas() {
+    const div = document.getElementById("metricas");
+    div.style.display = (div.style.display === "none") ? "flex" : "none";
+}
+
+function togglePedidos() {
+    const modal = document.getElementById("pedidosModal");
+    modal.style.display = (modal.style.display === "block") ? "none" : "block";
+}
+
+// =========================
+// AGREGAR PRODUCTO (CORREGIDO)
+// =========================
 function agregarProducto() {
     const container = document.getElementById("productos");
 
@@ -586,7 +597,6 @@ function agregarProducto() {
         </select>
 
         <input type="number" name="cantidad[]" placeholder="Unidades" value="0">
-
         <input type="number" step="0.01" name="peso[]" placeholder="Kilos" value="0">
 
         <button type="button" onclick="this.parentElement.remove()">❌</button>
@@ -594,58 +604,18 @@ function agregarProducto() {
 
     container.appendChild(div);
 }
-function toggleMetricas() {
-    const div = document.getElementById("metricas");
 
-    if (div.style.display === "none") {
-        div.style.display = "flex";
-    } else {
-        div.style.display = "none";
-    }
-}
-
-function togglePedidos() {
-    const modal = document.getElementById("pedidosModal");
-
-    if (modal.style.display === "none" || modal.style.display === "") {
-        modal.style.display = "block";
-    } else {
-        modal.style.display = "none";
-    }
-}
-const tipoPago = document.getElementById("tipoPago");
-const fechaLimite = document.getElementById("fechaLimite");
-const abonadoInput = document.getElementById("abonadoInput");
-
-function actualizarPago() {
-
-    if (tipoPago.value === "credito") {
-        fechaLimite.style.display = "block";
-        abonadoInput.disabled = false;
-    } else {
-        fechaLimite.style.display = "none";
-        fechaLimite.value = "";
-        abonadoInput.value = 0;
-    }
-}
-
-tipoPago.addEventListener("change", actualizarPago);
-
-actualizarPago();
-
-
+// =========================
+// VALIDACIÓN FACTURA
+// =========================
 document.addEventListener("DOMContentLoaded", function () {
 
-    const form = document.querySelector('form[action="/crear_factura"]');
-
+    const form = document.getElementById("formFactura");
     if (!form) return;
 
     form.addEventListener("submit", function (e) {
 
-        // =========================
-        // CAMPOS
-        // =========================
-        const tipoVenta = form.querySelector('[name="tipo_venta"]').value;
+        const tipoVenta = document.getElementById("tipoVenta").value;
 
         const cliente = form.querySelector('[name="cliente"]');
         const direccion = form.querySelector('[name="direccion"]');
@@ -659,42 +629,24 @@ document.addEventListener("DOMContentLoaded", function () {
         const cantidades = form.querySelectorAll('[name="cantidad[]"]');
         const pesos = form.querySelectorAll('[name="peso[]"]');
 
-        // =========================
-        // LIMPIAR MENSAJES
-        // =========================
-        const todosCampos = [
-            cliente,
-            direccion,
-            ciudad,
-            telefono,
-            identificacion,
-            plazoPago,
-            abono
-        ];
-
-        todosCampos.forEach(campo => {
-            if (campo) campo.setCustomValidity("");
-        });
+        // limpiar errores
+        [cliente, direccion, ciudad, telefono, identificacion, plazoPago, abono]
+            .forEach(c => c && c.setCustomValidity(""));
 
         productos.forEach(p => p.setCustomValidity(""));
         cantidades.forEach(c => c.setCustomValidity(""));
         pesos.forEach(p => p.setCustomValidity(""));
 
-        // =========================
-        // FUNCIÓN ERROR
-        // =========================
         function error(campo, mensaje) {
             campo.setCustomValidity(mensaje);
             campo.reportValidity();
             campo.focus();
             e.preventDefault();
-            return true;
         }
 
         // =========================
-        // VALIDACIONES GENERALES
+        // VALIDACIÓN CLIENTE
         // =========================
-
         if (!cliente.value.trim()) {
             return error(cliente, "Debe seleccionar un cliente");
         }
@@ -716,59 +668,45 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // =========================
-        // VALIDAR PRODUCTOS
+        // PRODUCTOS
         // =========================
-
         for (let i = 0; i < productos.length; i++) {
 
             if (!productos[i].value.trim()) {
                 return error(productos[i], "Debe seleccionar producto");
             }
 
-            if (
-                cantidades[i].value === "" ||
-                parseFloat(cantidades[i].value) <= 0
-            ) {
+            if (cantidades[i].value === "" || parseFloat(cantidades[i].value) <= 0) {
                 return error(cantidades[i], "Cantidad inválida");
             }
 
-            if (
-                pesos[i].value === "" ||
-                parseFloat(pesos[i].value) <= 0
-            ) {
+            if (pesos[i].value === "" || parseFloat(pesos[i].value) <= 0) {
                 return error(pesos[i], "Peso inválido");
             }
         }
 
         // =========================
-        // VALIDACIÓN CRÉDITO
+        // CONTADO
         // =========================
+        if (tipoVenta === "contado") {
 
-        if (tipoVenta === "credito") {
-
-            if (!plazoPago.value) {
-                return error(plazoPago, "Debe seleccionar fecha de pago");
+            if (!abono.value) {
+                abono.value = 0;
             }
 
-            if (
-                abono.value === "" ||
-                parseFloat(abono.value) < 0
-            ) {
-                return error(abono, "Debe ingresar un abono válido");
-            }
         }
 
         // =========================
-        // VALIDACIÓN CONTADO
+        // CRÉDITO
         // =========================
+        if (tipoVenta === "credito") {
 
-        if (tipoVenta === "contado") {
+            if (!plazoPago.value) {
+                return error(plazoPago, "Debe seleccionar fecha límite de pago");
+            }
 
-            // abono puede ser 0
-            // plazo puede ir vacío
-
-            if (abono.value === "") {
-                abono.value = 0;
+            if (abono.value === "" || parseFloat(abono.value) < 0) {
+                return error(abono, "Abono inválido");
             }
         }
 
