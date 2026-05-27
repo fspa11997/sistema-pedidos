@@ -564,6 +564,10 @@ def crear_factura_route():
     # =========================
     if tipo_venta == "credito":
 
+        if not plazo_pago:
+            flash("En ventas a crédito la fecha límite de pago es obligatoria", "error")
+            return redirect("/dashboard")
+
         if abono < 0:
             flash("El abono no puede ser negativo", "error")
             return redirect("/dashboard")

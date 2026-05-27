@@ -733,13 +733,12 @@ def crear_factura(
         abono = 0
 
     # =========================
-    # CALCULAR TOTAL (CORREGIDO)
+    # CALCULAR TOTAL
     # =========================
     for p in productos:
 
         producto = p.get("producto")
 
-        # 🔥 precio SIEMPRE desde backend
         tipo_precio_item = p.get("tipo_precio") or tipo_precio
 
         precio = float(
@@ -751,13 +750,12 @@ def crear_factura(
         )
 
         peso = float(p.get("peso") or 0)
-        cantidad = int(p.get("cantidad") or 0)
 
         subtotal = precio * peso
         total += subtotal
 
     # =========================
-    # CONTROL DE ABONO Y SALDO
+    # ABONO / SALDO
     # =========================
     abono = min(abono, total)
     saldo = total - abono
@@ -778,7 +776,7 @@ def crear_factura(
         saldo = 0
 
     # =========================
-    # INSERT FACTURA (POSTGRES)
+    # INSERT FACTURA
     # =========================
     cursor.execute("""
         INSERT INTO facturas (
@@ -816,18 +814,18 @@ def crear_factura(
 
     factura_id = cursor.fetchone()["id"]
 
-    conn.commit()
-    conn.close()
-
-    return factura_id
-
     # =========================
-    # DETALLE FACTURA
+    # DETALLE FACTURA (AHORA SÍ)
     # =========================
     for p in productos:
-        precio = float(p.get("precio") or 0)
-        peso = float(p.get("peso") or 0)
+
+        producto = p.get("producto")
         cantidad = int(p.get("cantidad") or 0)
+        peso = float(p.get("peso") or 0)
+
+        precio = float(
+            obtener_precio_producto(producto, empresa_id, tipo_precio) or 0
+        )
 
         subtotal = precio * peso
 
@@ -843,7 +841,7 @@ def crear_factura(
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (
             factura_id,
-            p.get("producto"),
+            producto,
             cantidad,
             peso,
             precio,
