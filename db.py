@@ -3,10 +3,17 @@ import os
 import psycopg2
 import psycopg2.extras
 import bcrypt
-from datetime import datetime
+from utils.time import ahora_utc
+from datetime import datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
+
+UTC = timezone.utc
+COLOMBIA = pytz.timezone("America/Bogota")
+
+def ahora():
+    return datetime.now(UTC)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL)
@@ -151,7 +158,7 @@ def inicializar_db():
             tipo TEXT,
             cantidad INTEGER,
             peso DOUBLE PRECISION,
-            fecha TEXT,
+            TIMESTAMP WITH TIME ZONE,
             empresa_id INTEGER
         )
     """)
@@ -211,7 +218,7 @@ def inicializar_db():
             factura_id INTEGER,
             cliente TEXT,
             abono DOUBLE PRECISION,
-            fecha TEXT,
+            TIMESTAMP WITH TIME ZONE,
             observacion TEXT,
             empresa_id INTEGER
         )
@@ -228,7 +235,7 @@ def inicializar_db():
             valor_abono DOUBLE PRECISION,
             saldo_anterior DOUBLE PRECISION,
             saldo_nuevo DOUBLE PRECISION,
-            fecha TEXT,
+            TIMESTAMP WITH TIME ZONE,
             empresa_id INTEGER
         )
     """)
@@ -579,10 +586,8 @@ def cambiar_estado(id, estado):
     conn = conectar()
     cursor = conn.cursor()
 
-    zona_colombia = pytz.timezone("America/Bogota")
-
     if estado == "entregado":
-        fecha_entrega = datetime.now(zona_colombia).strftime("%Y-%m-%d %H:%M:%S")
+        fecha_entrega = ahora()
     else:
         fecha_entrega = None
 
@@ -720,7 +725,7 @@ def crear_factura(
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    fecha = ahora()
 
     total = 0
 
@@ -919,9 +924,6 @@ def registrar_compra(producto, cantidad, peso, empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # 🔍 verificar si existe
     cursor.execute("""
         SELECT id FROM inventario
         WHERE producto = %s AND empresa_id = %s
@@ -1083,7 +1085,7 @@ def crear_credito(cliente, factura_id, total, empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    fecha = ahora()
 
     cursor.execute("""
         INSERT INTO creditos (
@@ -1185,7 +1187,6 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         conn.close()
         return None
 
-    # convertir a dict seguro
     factura = dict(zip([col[0] for col in cursor.description], factura))
 
     actual_abono = factura["abono"] or 0
@@ -1206,7 +1207,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         estado = "pendiente"
 
     # =========================
-    # FACTURA UPDATE
+    # UPDATE FACTURA
     # =========================
     cursor.execute("""
         UPDATE facturas
@@ -1214,15 +1215,10 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
             estado = %s
         WHERE id = %s
         AND empresa_id = %s
-    """, (
-        nuevo_abono,
-        estado,
-        factura_id,
-        empresa_id
-    ))
+    """, (nuevo_abono, estado, factura_id, empresa_id))
 
     # =========================
-    # CREDITO UPDATE
+    # UPDATE CREDITO
     # =========================
     cursor.execute("""
         UPDATE creditos
@@ -1231,21 +1227,12 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
             estado = %s
         WHERE factura_id = %s
         AND empresa_id = %s
-    """, (
-        nuevo_abono,
-        saldo,
-        estado,
-        factura_id,
-        empresa_id
-    ))
+    """, (nuevo_abono, saldo, estado, factura_id, empresa_id))
 
     # =========================
-    # FECHA
+    # FECHA CENTRALIZADA (UTC)
     # =========================
-    cursor.execute("""
-        SELECT NOW()
-    """)
-    fecha = cursor.fetchone()["id"]
+    fecha = ahora_utc()
 
     # =========================
     # HISTORIAL
@@ -1295,8 +1282,14 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
 
     conn.commit()
 
-    # ⚠️ PostgreSQL NO usa lastrowid
-    cursor.execute("SELECT currval(pg_get_serial_sequence('recibos_abono','id'))")
+    cursor.execute("""
+        SELECT id
+        FROM recibos_abono
+        WHERE factura_id = %s
+        ORDER BY id DESC
+        LIMIT 1
+    """, (factura_id,))
+
     recibo_id = cursor.fetchone()["id"]
 
     conn.close()
