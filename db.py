@@ -1418,7 +1418,7 @@ def validar_factura(data):
 
     return True, "OK"
 
-#guadar cambios railway y git
+#guadar cambios railway y git :)
 #git add .
 #git commit -m "fix: migrate fully to postgres"
 #git push origin main
