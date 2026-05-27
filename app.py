@@ -663,7 +663,6 @@ def crear_factura_route():
             empresa_id=empresa_id
         )
 
-    flash("Factura creada correctamente", "success")
     return redirect(f"/factura/{factura_id}")
        
 
@@ -1282,7 +1281,7 @@ def abonar_credito_route():
         observacion=observacion,
         empresa_id=session["empresa_id"]
     )
-
+    flash("abono guardado", "success")
     return redirect("/cartera")
 
 @app.route("/abonar_factura/<int:factura_id>", methods=["POST"])
