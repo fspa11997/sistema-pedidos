@@ -884,7 +884,7 @@ def ventas():
         SELECT *
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = false
+        AND eliminado = 0
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -996,7 +996,7 @@ def reportes():
         SELECT COALESCE(SUM(precio), 0) as total
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = false
+        AND eliminado = 0
     """, (empresa_id,))
 
     total = cursor.fetchone()[0]
@@ -1008,7 +1008,7 @@ def reportes():
         SELECT COUNT(*) as total_pedidos
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = false
+        AND eliminado = 0
     """, (empresa_id,))
 
     total_pedidos = cursor.fetchone()[0]
@@ -1105,13 +1105,13 @@ def pedidos():
     params = [empresa_id]
 
     if filtro == "pendientes":
-        query += " AND estado = 'pendiente' AND eliminado = false"
+        query += " AND estado = 'pendiente' AND eliminado = 0"
     elif filtro == "entregados":
-        query += " AND estado = 'entregado' AND eliminado = false"
+        query += " AND estado = 'entregado' AND eliminado = 0"
     elif filtro == "eliminados":
-        query += " AND eliminado = true"
+        query += " AND eliminado = 1"
     elif filtro == "todos":
-        query += " AND eliminado = false"
+        query += " AND eliminado = 0"
 
     if buscar:
         query += " AND (LOWER(cliente) LIKE %s OR LOWER(producto) LIKE %s)"
