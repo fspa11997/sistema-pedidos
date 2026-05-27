@@ -29,6 +29,7 @@
 
     <form method="GET" action="/cartera" class="filters-form-modern">
 
+        <input type="number"name="id"placeholder="🆔 ID Factura"value="{{ request.args.get('id', '') }}">
         <input type="text" name="cliente" placeholder="🔎 Cliente">
 
         <select name="estado">

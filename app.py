@@ -1155,6 +1155,7 @@ def cartera():
 
     empresa_id = session["empresa_id"]
 
+    factura_id = request.args.get("id")
     cliente_filtro = request.args.get("cliente", "")
     estado = request.args.get("estado", "")
     fecha = request.args.get("fecha", "")
@@ -1191,6 +1192,10 @@ def cartera():
     # =========================
     # FILTROS
     # =========================
+    if factura_id:
+        query += " AND id = %s"
+        params.append(factura_id)
+
     if cliente_filtro:
         query += " AND LOWER(cliente) LIKE %s"
         params.append(f"%{cliente_filtro.lower()}%")
