@@ -904,7 +904,8 @@ def ventas():
             COALESCE(SUM(total - abono),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND (fecha AT TIME ZONE 'America/Bogota')::date = (NOW() AT TIME ZONE 'America/Bogota')::date
+        AND (fecha AT TIME ZONE 'America/Bogota')::date 
+            = (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
 
     dia = dict(zip(
@@ -920,7 +921,8 @@ def ventas():
             COALESCE(SUM(total - abono),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
+        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') 
+            = TO_CHAR(NOW(), 'YYYY-MM')
     """, (empresa_id,))
 
     mes = dict(zip(
@@ -1174,7 +1176,7 @@ def cartera():
         SELECT 
             id,
             cliente,
-            fecha,
+            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha,
             total,
             abono,
             (total - abono) AS saldo,
@@ -1370,7 +1372,9 @@ def ver_recibo_abono(recibo_id):
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
-        SELECT *
+        SELECT 
+            *,
+            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha
         FROM recibos_abono
         WHERE id = %s
         AND empresa_id = %s

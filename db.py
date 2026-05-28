@@ -487,8 +487,8 @@ def obtener_pedidos(empresa_id):
             cantidad,
             peso,
             precio,
-            fecha,
-            fecha_entrega,
+            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha,
+            TO_CHAR(fecha_entrega, 'YYYY-MM-DD HH24:MI') AS fecha_entrega,
             estado,
             eliminado
         FROM pedidos
@@ -973,7 +973,9 @@ def obtener_facturas(empresa_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT *
+        SELECT 
+            *,
+            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha_formateada
         FROM facturas
         WHERE empresa_id = %s
         ORDER BY id DESC
@@ -1305,7 +1307,9 @@ def obtener_historial_abonos(factura_id, empresa_id):
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute("""
-        SELECT *
+        SELECT 
+            *,
+            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha
         FROM pagos_credito
         WHERE factura_id = %s
         AND empresa_id = %s
