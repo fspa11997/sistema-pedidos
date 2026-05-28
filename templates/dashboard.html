@@ -512,8 +512,8 @@
                 <td>{{ "%.2f"|format(p.peso or 0) }}</td>
                 <td>{{ "{:,.0f}".format(p.precio) }}</td>
                 <td>
-                    {{ p.fecha.strftime('%d/%m/%Y') }}
-                    {{ p.fecha.strftime('%H:%M') }}
+                    {{ p.fecha.split(' ')[0] }}
+                    {{ p.fecha.split(' ')[0] }}
                 </td>
                 <td>
                     {% if p.fecha_entrega %}
