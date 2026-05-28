@@ -740,7 +740,7 @@ def ver_facturas():
 
     # 🔍 filtro fecha
     if fecha:
-        query += " AND fecha::date = %s"
+        query += " AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     query += " ORDER BY id DESC"
@@ -904,7 +904,7 @@ def ventas():
             COALESCE(SUM(total - abono),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND DATE(fecha) = CURRENT_DATE
+        AND (fecha AT TIME ZONE 'America/Bogota')::date = (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
 
     dia = dict(zip(
@@ -920,7 +920,7 @@ def ventas():
             COALESCE(SUM(total - abono),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND TO_CHAR(fecha, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
+        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
     """, (empresa_id,))
 
     mes = dict(zip(
@@ -931,7 +931,7 @@ def ventas():
     # ================= HISTÓRICO DIARIO =================
     cursor.execute("""
         SELECT 
-            DATE(fecha) as dia,
+            (fecha AT TIME ZONE 'America/Bogota')::date as dia,
             SUM(total) as facturado,
             SUM(abono) as abonado,
             SUM(total - abono) as deben
@@ -949,7 +949,7 @@ def ventas():
     # ================= HISTÓRICO MENSUAL =================
     cursor.execute("""
         SELECT 
-            TO_CHAR(fecha, 'YYYY-MM') as mes,
+            TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') as mes,
             SUM(total) as facturado,
             SUM(abono) as abonado,
             SUM(total - abono) as deben
@@ -1118,7 +1118,7 @@ def pedidos():
         params += [f"%{buscar}%", f"%{buscar}%"]
 
     if fecha:
-        query += " AND DATE(fecha) = %s"
+        query += "AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     if domiciliario:
@@ -1201,7 +1201,7 @@ def cartera():
         params.append(f"%{cliente_filtro.lower()}%")
 
     if fecha:
-        query += " AND DATE(fecha) = %s"
+        query += " (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     if estado:

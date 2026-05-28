@@ -12,8 +12,11 @@ load_dotenv()
 UTC = timezone.utc
 COLOMBIA = pytz.timezone("America/Bogota")
 
-def ahora():
+def ahora_utc():
     return datetime.now(UTC)
+
+def ahora_local():
+    return datetime.now(UTC).astimezone(COLOMBIA)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL)
@@ -91,8 +94,8 @@ def inicializar_db():
             tipo_precio TEXT,
             estado TEXT DEFAULT 'pendiente',
             eliminado INTEGER DEFAULT 0,
-            fecha TIMESTAMP DEFAULT NOW(),
-            fecha_entrega TIMESTAMP,
+            fecha TIMESTAMPTZ,
+            fecha_entrega TIMESTAMPTZ,
             empresa_id INTEGER
         )
     """)
@@ -107,7 +110,7 @@ def inicializar_db():
             direccion TEXT,
             ciudad TEXT,
             telefono TEXT,
-            fecha TIMESTAMP,
+            fecha TIMESTAMPTZ,
             total DOUBLE PRECISION,
             abono DOUBLE PRECISION DEFAULT 0,
             estado TEXT,
@@ -158,7 +161,7 @@ def inicializar_db():
             tipo TEXT,
             cantidad INTEGER,
             peso DOUBLE PRECISION,
-            TIMESTAMP WITH TIME ZONE,
+            fecha TIMESTAMPTZ,
             empresa_id INTEGER
         )
     """)
@@ -204,7 +207,7 @@ def inicializar_db():
             saldo DOUBLE PRECISION,
             estado TEXT,
             plazo_pago TEXT,
-            fecha TIMESTAMP,
+            fecha TIMESTAMPTZ,
             empresa_id INTEGER
         )
     """)
@@ -218,7 +221,7 @@ def inicializar_db():
             factura_id INTEGER,
             cliente TEXT,
             abono DOUBLE PRECISION,
-            TIMESTAMP WITH TIME ZONE,
+            fecha TIMESTAMPTZ,
             observacion TEXT,
             empresa_id INTEGER
         )
@@ -235,7 +238,7 @@ def inicializar_db():
             valor_abono DOUBLE PRECISION,
             saldo_anterior DOUBLE PRECISION,
             saldo_nuevo DOUBLE PRECISION,
-            TIMESTAMP WITH TIME ZONE,
+            fecha TIMESTAMPTZ,
             empresa_id INTEGER
         )
     """)
@@ -649,7 +652,7 @@ def total_ventas_dia(empresa_id):
     cursor.execute("""
         SELECT COALESCE(SUM(precio), 0) AS total
         FROM pedidos
-        WHERE DATE(fecha) = CURRENT_DATE
+        WHERE (fecha AT TIME ZONE 'America/Bogota')::date = (NOW() AT TIME ZONE 'America/Bogota')::date
         AND empresa_id = %s
         AND eliminado = 0
     """, (empresa_id,))
@@ -725,7 +728,7 @@ def crear_factura(
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = ahora()
+    fecha = ahora_utc()
 
     total = 0
 
@@ -1085,7 +1088,7 @@ def crear_credito(cliente, factura_id, total, empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = ahora()
+    fecha = ahora_utc()
 
     cursor.execute("""
         INSERT INTO creditos (
