@@ -1183,6 +1183,8 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     # =========================
     # FACTURA
     # =========================
+    print("FACTURA_ID:", factura_id)
+    print("EMPRESA_ID:", empresa_id)
     cursor.execute("""
         SELECT id, cliente, total, abono
         FROM facturas
@@ -1196,7 +1198,6 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         conn.close()
         return None
 
-    factura = cursor.fetchone()
 
     actual_abono = factura["abono"] or 0
     nuevo_abono = actual_abono + abono
