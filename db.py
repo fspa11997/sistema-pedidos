@@ -3,10 +3,11 @@ import os
 import psycopg2
 import psycopg2.extras
 import bcrypt
+from utils.time import ahora_utc
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
-load_dotenv()   
+load_dotenv()
 
 UTC = timezone.utc
 COLOMBIA = pytz.timezone("America/Bogota")
@@ -26,17 +27,10 @@ def conectar():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL no configurada en Railway")
 
-    conn = psycopg2.connect(
+    return psycopg2.connect(
         DATABASE_URL,
         cursor_factory=psycopg2.extras.RealDictCursor
     )
-
-    # 🔥 IMPORTANTE: forzar zona horaria
-    cursor = conn.cursor()
-    cursor.execute("SET TIME ZONE 'UTC'")
-    cursor.close()
-
-    return conn
 
 def inicializar_db():
     conn = conectar()

@@ -1,8 +1,9 @@
 import psycopg2.extras
 import pytz
 import os
+from datetime import datetime
 from flask import Flask, flash, render_template, session, redirect, request
-from utils import a_colombia
+
 
 from db import (
     validar_usuario,
@@ -78,8 +79,11 @@ def dashboard():
     empresa_id = session["empresa_id"]
     rol = session.get("rol")
 
+    # =========================
+    # CONEXIÓN POSTGRESQL
+    # =========================
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor()
 
     # =========================
     # USUARIOS
@@ -121,17 +125,17 @@ def dashboard():
     if usuario_filtro:
         usuarios = [
             u for u in usuarios
-            if usuario_filtro in (u.get("usuario") or "").lower()
+            if usuario_filtro in (u["usuario"] or "").lower()
         ]
 
     if rol_filtro:
         usuarios = [
             u for u in usuarios
-            if rol_filtro in (u.get("rol") or "").lower()
+            if rol_filtro in (u["rol"] or "").lower()
         ]
 
     # =========================
-    # DATOS DB
+    # DATOS DB (YA POSTGRES VIA db.py)
     # =========================
     empresas = obtener_empresas()
 
@@ -692,10 +696,6 @@ def ver_factura(id):
     if not factura:
         return "Factura no encontrada o no pertenece a esta empresa", 404
 
-    # 🔥 CONVERSIÓN AQUÍ
-    if factura and "fecha" in factura:
-        factura["fecha"] = a_colombia(factura["fecha"]).strftime("%Y-%m-%d %H:%M")
-
     return render_template(
         "factura.html",
         factura=factura,
@@ -711,7 +711,7 @@ def ver_facturas():
     empresa_id = session["empresa_id"]
 
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor()
 
     # =========================
     # FILTROS
@@ -721,19 +721,7 @@ def ver_facturas():
     fecha = request.args.get("fecha", "")
 
     query = """
-        SELECT 
-            id,
-            cliente,
-            direccion,
-            ciudad,
-            telefono,
-            total,
-            abono,
-            estado,
-            tipo_venta,
-            tipo_precio,
-            empresa_id,
-            (fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Bogota') AS fecha
+        SELECT *
         FROM facturas
         WHERE empresa_id = %s
     """
@@ -750,19 +738,15 @@ def ver_facturas():
         query += " AND id::text ILIKE %s"
         params.append(f"%{factura}%")
 
-    # 🔍 filtro fecha (YA CORREGIDO)
+    # 🔍 filtro fecha
     if fecha:
-        query += " AND fecha::date = %s"
+        query += " AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     query += " ORDER BY id DESC"
 
     cursor.execute(query, params)
-
     facturas = cursor.fetchall()
-
-    for f in facturas:
-        f["fecha"] = a_colombia(f["fecha"]).strftime("%Y-%m-%d %H:%M")
 
     conn.close()
 
@@ -893,7 +877,7 @@ def ventas():
     empresa_id = session["empresa_id"]
 
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor()
 
     # ================= VENTAS =================
     cursor.execute("""
@@ -906,9 +890,11 @@ def ventas():
 
     ventas = cursor.fetchall()
 
-    for v in ventas:
-        if "fecha" in v:
-            v["fecha"] = a_colombia(v["fecha"]).strftime("%Y-%m-%d %H:%M")
+    # convertir a dict manual (Postgres NO usa sqlite Row)
+    ventas = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in ventas
+    ]
 
     # ================= RESUMEN DIARIO =================
     cursor.execute("""
@@ -918,11 +904,13 @@ def ventas():
             COALESCE(SUM(total - abono),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND (fecha AT TIME ZONE 'America/Bogota')::date 
-            = (NOW() AT TIME ZONE 'America/Bogota')::date
+        AND (fecha AT TIME ZONE 'America/Bogota')::date = (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
 
-    dia = dict(cursor.fetchone() or {})
+    dia = dict(zip(
+        [col[0] for col in cursor.description],
+        cursor.fetchone()
+    ))
 
     # ================= RESUMEN MENSUAL =================
     cursor.execute("""
@@ -932,16 +920,18 @@ def ventas():
             COALESCE(SUM(total - abono),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM')
-            = TO_CHAR(NOW() AT TIME ZONE 'America/Bogota', 'YYYY-MM')
+        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
     """, (empresa_id,))
 
-    mes = dict(cursor.fetchone() or {})
+    mes = dict(zip(
+        [col[0] for col in cursor.description],
+        cursor.fetchone()
+    ))
 
     # ================= HISTÓRICO DIARIO =================
     cursor.execute("""
         SELECT 
-            (fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Bogota')::date as dia,
+            (fecha AT TIME ZONE 'America/Bogota')::date as dia,
             SUM(total) as facturado,
             SUM(abono) as abonado,
             SUM(total - abono) as deben
@@ -951,12 +941,15 @@ def ventas():
         ORDER BY dia DESC
     """, (empresa_id,))
 
-    diario = [dict(row) for row in cursor.fetchall()]
+    diario = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in cursor.fetchall()
+    ]
 
     # ================= HISTÓRICO MENSUAL =================
     cursor.execute("""
         SELECT 
-            TO_CHAR(fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Bogota', 'YYYY-MM') as mes,
+            TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') as mes,
             SUM(total) as facturado,
             SUM(abono) as abonado,
             SUM(total - abono) as deben
@@ -966,17 +959,20 @@ def ventas():
         ORDER BY mes DESC
     """, (empresa_id,))
 
-    mensual = [dict(row) for row in cursor.fetchall()]
+    mensual = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in cursor.fetchall()
+    ]
 
     conn.close()
 
     return render_template(
         "ventas.html",
         ventas=ventas,
-        dia=dia,
-        mes=mes,
-        diario=diario,
-        mensual=mensual
+        dia=dia or {},
+        mes=mes or {},
+        diario=diario or [],
+        mensual=mensual or []
     )
 
 @app.route("/reportes")
@@ -1122,7 +1118,7 @@ def pedidos():
         params += [f"%{buscar}%", f"%{buscar}%"]
 
     if fecha:
-        query += "AND fecha::date = %s"
+        query += "AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     if domiciliario:
@@ -1165,6 +1161,10 @@ def cartera():
     fecha = request.args.get("fecha", "")
 
     conn = conectar()
+
+    # =========================
+    # CURSOR REALDICT (CORRECTO)
+    # =========================
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # =========================
@@ -1174,7 +1174,7 @@ def cartera():
         SELECT 
             id,
             cliente,
-            (fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Bogota') AS fecha,
+            fecha,
             total,
             abono,
             (total - abono) AS saldo,
@@ -1200,9 +1200,8 @@ def cartera():
         query += " AND LOWER(cliente) LIKE %s"
         params.append(f"%{cliente_filtro.lower()}%")
 
-    # 🔥 FIX IMPORTANTE (te faltaba AND y conversión correcta)
     if fecha:
-        query += " AND fecha::date = %s"
+        query += " (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     if estado:
@@ -1217,25 +1216,27 @@ def cartera():
 
     query += " ORDER BY id DESC"
 
+    # =========================
+    # EJECUTAR
+    # =========================
     cursor.execute(query, params)
     rows = cursor.fetchall()
 
     # =========================
-    # LIMPIEZA SEGURA
+    # LIMPIEZA SEGURA DE DATOS
     # =========================
     facturas = []
 
     for item in rows:
+
         item["total"] = float(item.get("total") or 0)
         item["abono"] = float(item.get("abono") or 0)
         item["saldo"] = float(item.get("saldo") or 0)
-        facturas.append(item)
-
-        item["fecha"] = a_colombia(item["fecha"]).strftime("%Y-%m-%d %H:%M")
 
         facturas.append(item)
+
     # =========================
-    # TOTALES
+    # TOTALES (FIX DEFINITIVO)
     # =========================
     cursor.execute("""
         SELECT 
@@ -1254,6 +1255,9 @@ def cartera():
 
     conn.close()
 
+    # =========================
+    # RENDER
+    # =========================
     return render_template(
         "cartera.html",
         facturas=facturas,
