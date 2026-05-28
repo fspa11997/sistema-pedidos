@@ -517,8 +517,8 @@
                 </td>
                 <td>
                     {% if p.fecha_entrega %}
-                        {{ p.fecha_entrega.strftime('%d') }}/{{ p.fecha_entrega.strftime('%m') }}/{{ p.fecha_entrega.strftime('%Y') }}
-                        {{ p.fecha_entrega.strftime('%H:%M') }}
+                        {{ p.fecha_entrega }}
+                        {{ p.fecha_entrega }}
                     {% else %}
                         -
                     {% endif %}
