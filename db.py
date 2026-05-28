@@ -590,7 +590,7 @@ def cambiar_estado(id, estado):
     cursor = conn.cursor()
 
     if estado == "entregado":
-        fecha_entrega = ahora()
+        fecha_entrega = ahora_utc()
     else:
         fecha_entrega = None
 
