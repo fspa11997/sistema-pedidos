@@ -1183,8 +1183,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     # =========================
     # FACTURA
     # =========================
-    print("FACTURA_ID:", factura_id)
-    print("EMPRESA_ID:", empresa_id)
+    
     cursor.execute("""
         SELECT id, cliente, total, abono
         FROM facturas
