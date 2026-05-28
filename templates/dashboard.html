@@ -512,16 +512,10 @@
                 <td>{{ "%.2f"|format(p.peso or 0) }}</td>
                 <td>{{ "{:,.0f}".format(p.precio) }}</td>
                 <td>
-                    {{ p.fecha.split(' ')[0] }}
-                    {{ p.fecha.split(' ')[0] }}
+                    {{ p.fecha[:10] if p.fecha else '-' }}
                 </td>
                 <td>
-                    {% if p.fecha_entrega %}
-                        {{ p.fecha_entrega }}
-                        {{ p.fecha_entrega }}
-                    {% else %}
-                        -
-                    {% endif %}
+                    {{ p.fecha_entrega[:10] if p.fecha_entrega else '-' }}
                 </td>
                 <td>
                     {% if p.estado == 'pendiente' %}

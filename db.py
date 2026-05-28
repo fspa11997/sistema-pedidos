@@ -487,8 +487,8 @@ def obtener_pedidos(empresa_id):
             cantidad,
             peso,
             precio,
-            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha,
-            TO_CHAR(fecha_entrega, 'YYYY-MM-DD HH24:MI') AS fecha_entrega,
+            fecha,
+            fecha_entrega,  
             estado,
             eliminado
         FROM pedidos
@@ -1133,8 +1133,12 @@ def abonar_credito(credito_id, valor):
         conn.close()
         return
 
-    nuevo_abono = c["abonado"] + valor
-    nuevo_saldo = c["saldo"] - valor
+    actual_abonado = float(c["abonado"] or 0)
+    actual_saldo = float(c["saldo"] or 0)
+    valor = float(valor)
+
+    nuevo_abono = actual_abonado + valor
+    nuevo_saldo = actual_saldo - valor
 
     estado = "pagado" if nuevo_saldo <= 0 else "pendiente"
 
@@ -1192,7 +1196,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         conn.close()
         return None
 
-    factura = dict(zip([col[0] for col in cursor.description], factura))
+    factura = cursor.fetchone()
 
     actual_abono = factura["abono"] or 0
     nuevo_abono = actual_abono + abono
