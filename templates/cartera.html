@@ -88,7 +88,7 @@
 
             <td><b>{{ f.cliente }}</b></td>
 
-            <td>{{ f.fecha }}</td>
+            <td>{{ f.fecha.strftime('%Y-%m-%d %H:%M') if f.fecha else '-' }}</td>
 
             <!-- 📅 PLAZO DE PAGO -->
             <td>
@@ -98,7 +98,7 @@
             <!-- 💰 TOTAL -->
             <td>
                 <b>${{ "{:,.0f}".format(f.total) }}</b>
-            </td>
+            </td>       
 
             <!-- 💵 ABONO -->
             <td>

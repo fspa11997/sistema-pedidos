@@ -202,7 +202,7 @@
                         {% endif %}
                     </td>
 
-                    <td>{{ f.fecha }}</td>
+                    <td>{{ f.fecha.strftime('%Y-%m-%d %H:%M') if f.fecha else '-' }}</td>
 
                     <td>
                         <a href="/factura/{{ f.id }}">
