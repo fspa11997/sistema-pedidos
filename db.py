@@ -1313,7 +1313,7 @@ def obtener_historial_abonos(factura_id, empresa_id):
         FROM pagos_credito
         WHERE factura_id = %s
         AND empresa_id = %s
-        ORDER BY fecha DESC
+        ORDER BY pagos_credito.fecha DESC
     """, (factura_id, empresa_id))
 
     pagos = cursor.fetchall()
