@@ -1203,7 +1203,7 @@ def cartera():
         params.append(f"%{cliente_filtro.lower()}%")
 
     if fecha:
-        query += " (fecha AT TIME ZONE 'America/Bogota')::date = %s"
+        query += " AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
         params.append(fecha)
 
     if estado:
