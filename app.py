@@ -888,7 +888,7 @@ def ventas():
     empresa_id = session["empresa_id"]
 
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor()
 
     # ================= VENTAS =================
     cursor.execute("""
@@ -901,20 +901,21 @@ def ventas():
 
     ventas = cursor.fetchall()
 
-    # 🔥 convertir fecha como en cartera (IMPORTANTE)
-    for v in ventas:
-        if "fecha" in v:
-            v["fecha"] = a_colombia(v["fecha"])
+    ventas = [
+        dict(zip([col[0] for col in cursor.description], row))
+        for row in ventas
+    ]
 
     # ================= RESUMEN DIARIO =================
     cursor.execute("""
         SELECT 
             COALESCE(SUM(total),0) as facturado,
             COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(total - abono),0) as deben
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND (fecha::date = (NOW() AT TIME ZONE 'America/Bogota')::date)
+        AND (fecha AT TIME ZONE 'America/Bogota')::date 
+            = (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
 
     dia = dict(zip(
@@ -927,10 +928,11 @@ def ventas():
         SELECT 
             COALESCE(SUM(total),0) as facturado,
             COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(total - abono),0) as deben
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        AND TO_CHAR(fecha, 'YYYY-MM') = TO_CHAR(NOW(), 'YYYY-MM')
+        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') 
+            = TO_CHAR(NOW() AT TIME ZONE 'America/Bogota', 'YYYY-MM')
     """, (empresa_id,))
 
     mes = dict(zip(
@@ -941,13 +943,13 @@ def ventas():
     # ================= HISTÓRICO DIARIO =================
     cursor.execute("""
         SELECT 
-            fecha::date as dia,
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
+            (fecha AT TIME ZONE 'America/Bogota')::date as dia,
+            COALESCE(SUM(total),0) as facturado,
+            COALESCE(SUM(abono),0) as abonado,
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        GROUP BY fecha::date
+        GROUP BY (fecha AT TIME ZONE 'America/Bogota')::date
         ORDER BY dia DESC
     """, (empresa_id,))
 
@@ -959,13 +961,13 @@ def ventas():
     # ================= HISTÓRICO MENSUAL =================
     cursor.execute("""
         SELECT 
-            TO_CHAR(fecha, 'YYYY-MM') as mes,
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
+            TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') as mes,
+            COALESCE(SUM(total),0) as facturado,
+            COALESCE(SUM(abono),0) as abonado,
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
         FROM facturas
         WHERE empresa_id = %s
-        GROUP BY TO_CHAR(fecha, 'YYYY-MM')
+        GROUP BY TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM')
         ORDER BY mes DESC
     """, (empresa_id,))
 
