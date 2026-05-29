@@ -15,9 +15,6 @@ COLOMBIA = pytz.timezone("America/Bogota")
 def ahora_utc():
     return datetime.now(UTC)
 
-def ahora_local():
-    return datetime.now(UTC).astimezone(COLOMBIA)
-
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL)
 
@@ -975,7 +972,10 @@ def obtener_facturas(empresa_id):
     cursor.execute("""
         SELECT 
             *,
-            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha_formateada
+            TO_CHAR(
+                fecha AT TIME ZONE 'America/Bogota',
+                'YYYY-MM-DD HH24:MI'
+            ) AS fecha_formateada
         FROM facturas
         WHERE empresa_id = %s
         ORDER BY id DESC
@@ -1004,13 +1004,13 @@ def crear_factura_empresa(empresa_id):
     if not pedidos:
         conn.close()
         return None
-
+    
     total = 0
 
     # 🔥 crear factura (usar NOW() directo)
     cursor.execute("""
         INSERT INTO facturas (cliente, fecha, total, empresa_id)
-        VALUES (%s, NOW(), %s, %s)
+        VALUES (%s, %s, %s, %s)
         RETURNING id
     """, ("FACTURA EMPRESA", 0, empresa_id))
 
@@ -1313,7 +1313,10 @@ def obtener_historial_abonos(factura_id, empresa_id):
     cursor.execute("""
         SELECT 
             *,
-            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha
+            TO_CHAR(
+                fecha AT TIME ZONE 'America/Bogota',
+                'YYYY-MM-DD HH24:MI'
+            ) AS fecha
         FROM pagos_credito
         WHERE factura_id = %s
         AND empresa_id = %s

@@ -3,7 +3,7 @@ import pytz
 import os
 from datetime import datetime
 from flask import Flask, flash, render_template, session, redirect, request
-
+from utils.time import ahora_utc
 
 from db import (
     validar_usuario,
@@ -1176,7 +1176,10 @@ def cartera():
         SELECT 
             id,
             cliente,
-            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha,
+            TO_CHAR(
+                fecha AT TIME ZONE 'America/Bogota',
+                'YYYY-MM-DD HH24:MI'
+            ) AS fecha,
             total,
             abono,
             (total - abono) AS saldo,
@@ -1301,7 +1304,7 @@ def abonar_factura(factura_id):
 
     abono_nuevo = float(request.form["abono"])
     observacion = request.form.get("observacion", "")
-
+    fecha = ahora_utc()
     conn = conectar()
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
@@ -1348,14 +1351,15 @@ def abonar_factura(factura_id):
             observacion,
             empresa_id
         )
-        VALUES (%s, %s, %s, NOW(), %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """, (
-        factura_id,
-        factura["cliente"],
-        abono_nuevo,
-        observacion,
-        empresa_id
-    ))
+            factura_id,
+            factura["cliente"],
+            abono_nuevo,
+            fecha,
+            observacion,
+            empresa_id
+        ))
 
     conn.commit()
     conn.close()
@@ -1374,7 +1378,10 @@ def ver_recibo_abono(recibo_id):
     cursor.execute("""
         SELECT 
             *,
-            TO_CHAR(fecha, 'YYYY-MM-DD HH24:MI') AS fecha
+            TO_CHAR(
+                fecha AT TIME ZONE 'America/Bogota',
+                'YYYY-MM-DD HH24:MI'
+            ) AS fecha
         FROM recibos_abono
         WHERE id = %s
         AND empresa_id = %s
