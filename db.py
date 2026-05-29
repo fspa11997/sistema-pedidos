@@ -24,10 +24,17 @@ def conectar():
     if not DATABASE_URL:
         raise Exception("DATABASE_URL no configurada en Railway")
 
-    return psycopg2.connect(
+    conn = psycopg2.connect(
         DATABASE_URL,
         cursor_factory=psycopg2.extras.RealDictCursor
     )
+
+    # 🔥 FORZAR ZONA HORARIA DE SESIÓN
+    cursor = conn.cursor()
+    cursor.execute("SET TIME ZONE 'UTC'")
+    cursor.close()
+
+    return conn
 
 def inicializar_db():
     conn = conectar()
