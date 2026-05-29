@@ -888,9 +888,13 @@ def ventas():
     empresa_id = session["empresa_id"]
 
     conn = conectar()
-    cursor = conn.cursor()
 
-    # ================= FACTURAS (VENTAS REALES) =================
+    # 🔥 IMPORTANTE
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    # =====================================================
+    # FACTURAS (VENTAS REALES)
+    # =====================================================
     cursor.execute("""
         SELECT *
         FROM facturas
@@ -900,90 +904,123 @@ def ventas():
 
     ventas = cursor.fetchall()
 
-    ventas = [
-        dict(zip([col[0] for col in cursor.description], row))
-        for row in ventas
-    ]
+    # 🔥 NORMALIZAR DATOS
+    for v in ventas:
 
-    # ================= RESUMEN DIARIO =================
+        v["total"] = float(v.get("total") or 0)
+        v["abono"] = float(v.get("abono") or 0)
+
+        if v.get("fecha"):
+            v["fecha"] = a_colombia(v["fecha"])
+
+    # =====================================================
+    # RESUMEN DIARIO
+    # =====================================================
     cursor.execute("""
         SELECT 
-            COALESCE(SUM(total),0) as facturado,
-            COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+            COALESCE(SUM(total),0) AS facturado,
+            COALESCE(SUM(abono),0) AS abonado,
+            COALESCE(SUM(total - abono),0) AS deben
         FROM facturas
         WHERE empresa_id = %s
-        AND (fecha AT TIME ZONE 'America/Bogota')::date
-            = (NOW() AT TIME ZONE 'America/Bogota')::date
+        AND (fecha AT TIME ZONE 'America/Bogota')::date =
+            (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
 
-    dia = dict(zip(
-        [col[0] for col in cursor.description],
-        cursor.fetchone()
-    ))
+    dia = cursor.fetchone() or {}
 
-    # ================= RESUMEN MENSUAL =================
+    dia["facturado"] = float(dia.get("facturado") or 0)
+    dia["abonado"] = float(dia.get("abonado") or 0)
+    dia["deben"] = float(dia.get("deben") or 0)
+
+    # =====================================================
+    # RESUMEN MENSUAL
+    # =====================================================
     cursor.execute("""
         SELECT 
-            COALESCE(SUM(total),0) as facturado,
-            COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+            COALESCE(SUM(total),0) AS facturado,
+            COALESCE(SUM(abono),0) AS abonado,
+            COALESCE(SUM(total - abono),0) AS deben
         FROM facturas
         WHERE empresa_id = %s
-        AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM')
-            = TO_CHAR(NOW() AT TIME ZONE 'America/Bogota', 'YYYY-MM')
+        AND DATE_TRUNC(
+            'month',
+            fecha AT TIME ZONE 'America/Bogota'
+        ) = DATE_TRUNC(
+            'month',
+            NOW() AT TIME ZONE 'America/Bogota'
+        )
     """, (empresa_id,))
 
-    mes = dict(zip(
-        [col[0] for col in cursor.description],
-        cursor.fetchone()
-    ))
+    mes = cursor.fetchone() or {}
 
-    # ================= HISTÓRICO DIARIO =================
+    mes["facturado"] = float(mes.get("facturado") or 0)
+    mes["abonado"] = float(mes.get("abonado") or 0)
+    mes["deben"] = float(mes.get("deben") or 0)
+
+    # =====================================================
+    # HISTÓRICO DIARIO
+    # =====================================================
     cursor.execute("""
         SELECT 
-            (fecha AT TIME ZONE 'America/Bogota')::date as dia,
-            COALESCE(SUM(total),0) as facturado,
-            COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+            (fecha AT TIME ZONE 'America/Bogota')::date AS dia,
+            COALESCE(SUM(total),0) AS facturado,
+            COALESCE(SUM(abono),0) AS abonado,
+            COALESCE(SUM(total - abono),0) AS deben
         FROM facturas
         WHERE empresa_id = %s
         GROUP BY (fecha AT TIME ZONE 'America/Bogota')::date
         ORDER BY dia DESC
     """, (empresa_id,))
 
-    diario = [
-        dict(zip([col[0] for col in cursor.description], row))
-        for row in cursor.fetchall()
-    ]
+    diario = cursor.fetchall()
 
-    # ================= HISTÓRICO MENSUAL =================
+    for d in diario:
+        d["facturado"] = float(d.get("facturado") or 0)
+        d["abonado"] = float(d.get("abonado") or 0)
+        d["deben"] = float(d.get("deben") or 0)
+
+    # =====================================================
+    # HISTÓRICO MENSUAL
+    # =====================================================
     cursor.execute("""
         SELECT 
-            TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') as mes,
-            COALESCE(SUM(total),0) as facturado,
-            COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+            TO_CHAR(
+                fecha AT TIME ZONE 'America/Bogota',
+                'YYYY-MM'
+            ) AS mes,
+
+            COALESCE(SUM(total),0) AS facturado,
+            COALESCE(SUM(abono),0) AS abonado,
+            COALESCE(SUM(total - abono),0) AS deben
+
         FROM facturas
         WHERE empresa_id = %s
-        GROUP BY TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM')
+
+        GROUP BY TO_CHAR(
+            fecha AT TIME ZONE 'America/Bogota',
+            'YYYY-MM'
+        )
+
         ORDER BY mes DESC
     """, (empresa_id,))
 
-    mensual = [
-        dict(zip([col[0] for col in cursor.description], row))
-        for row in cursor.fetchall()
-    ]
+    mensual = cursor.fetchall()
+
+    for m in mensual:
+        m["facturado"] = float(m.get("facturado") or 0)
+        m["abonado"] = float(m.get("abonado") or 0)
+        m["deben"] = float(m.get("deben") or 0)
 
     conn.close()
 
     return render_template(
         "ventas.html",
         ventas=ventas,
-        dia=dia or {},
-        mes=mes or {},
-        diario=diario or [],
-        mensual=mensual or []
+        dia=dia,
+        mes=mes,
+        diario=diario,
+        mensual=mensual
     )
 
 @app.route("/reportes")

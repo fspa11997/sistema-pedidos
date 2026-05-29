@@ -675,16 +675,15 @@ def total_ventas_dia(empresa_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT COALESCE(SUM(precio), 0) AS total
-        FROM pedidos
-        WHERE (fecha AT TIME ZONE 'America/Bogota')::date = (NOW() AT TIME ZONE 'America/Bogota')::date
-        AND empresa_id = %s
-        AND eliminado = 0
+        SELECT COALESCE(SUM(total), 0) AS total
+        FROM facturas
+        WHERE empresa_id = %s
+        AND (fecha AT TIME ZONE 'America/Bogota')::date =
+            (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"]
     conn.close()
-
     return total
 
 
@@ -697,16 +696,15 @@ def total_ventas_mes(empresa_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT COALESCE(SUM(precio), 0) AS total
-        FROM pedidos
-        WHERE DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)
-        AND empresa_id = %s
-        AND eliminado = 0
+        SELECT COALESCE(SUM(total), 0) AS total
+        FROM facturas
+        WHERE empresa_id = %s
+        AND DATE_TRUNC('month', fecha AT TIME ZONE 'America/Bogota')
+            = DATE_TRUNC('month', NOW() AT TIME ZONE 'America/Bogota')
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"]
     conn.close()
-
     return total
 
 
@@ -720,19 +718,17 @@ def producto_top_mes(empresa_id):
 
     cursor.execute("""
         SELECT producto, SUM(cantidad) AS total
-        FROM pedidos
-        WHERE DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)
-        AND empresa_id = %s
-        AND eliminado = 0
+        FROM detalle_factura df
+        JOIN facturas f ON f.id = df.factura_id
+        WHERE f.empresa_id = %s
+        AND DATE_TRUNC('month', f.fecha AT TIME ZONE 'America/Bogota')
+            = DATE_TRUNC('month', NOW() AT TIME ZONE 'America/Bogota')
         GROUP BY producto
         ORDER BY total DESC
         LIMIT 1
     """, (empresa_id,))
 
-    data = cursor.fetchone()
-    conn.close()
-
-    return data
+    return cursor.fetchone()
 
 
 
@@ -1015,10 +1011,17 @@ def obtener_facturas(empresa_id):
     return data
 
 def crear_factura_empresa(empresa_id):
-    conn = conectar()
-    cursor = conn.cursor()
 
-    # 🔥 obtener pedidos pendientes
+    conn = conectar()
+
+    # 🔥 IMPORTANTE
+    cursor = conn.cursor(
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
+
+    # =====================================================
+    # OBTENER PEDIDOS PENDIENTES
+    # =====================================================
     cursor.execute("""
         SELECT *
         FROM pedidos
@@ -1032,28 +1035,64 @@ def crear_factura_empresa(empresa_id):
     if not pedidos:
         conn.close()
         return None
-    
+
     total = 0
 
-    # 🔥 crear factura (usar NOW() directo)
+    # =====================================================
+    # FECHA UTC REAL
+    # =====================================================
+    fecha = ahora_utc()
+
+    # =====================================================
+    # CREAR FACTURA VACÍA
+    # =====================================================
     cursor.execute("""
-        INSERT INTO facturas (cliente, fecha, total, empresa_id)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO facturas (
+            cliente,
+            fecha,
+            total,
+            abono,
+            estado,
+            tipo_venta,
+            empresa_id
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         RETURNING id
-    """, ("FACTURA EMPRESA", 0, empresa_id))
+    """, (
+        "FACTURA EMPRESA",
+        fecha,
+        0,
+        0,
+        "pendiente",
+        "contado",
+        empresa_id
+    ))
 
     factura_id = cursor.fetchone()["id"]
 
+    # =====================================================
+    # DETALLES FACTURA
+    # =====================================================
     for p in pedidos:
 
-        precio_unitario = obtener_precio_producto(
-            p["producto"],
-            empresa_id
-        ) or 0
+        precio_unitario = float(
+            obtener_precio_producto(
+                p["producto"],
+                empresa_id,
+                p.get("tipo_precio", "individual")
+            ) or 0
+        )
 
-        subtotal = precio_unitario * p["peso"]
+        cantidad = int(p.get("cantidad") or 0)
+        peso = float(p.get("peso") or 0)
+
+        subtotal = precio_unitario * peso
+
         total += subtotal
 
+        # =========================================
+        # INSERT DETALLE
+        # =========================================
         cursor.execute("""
             INSERT INTO detalle_factura (
                 factura_id,
@@ -1067,25 +1106,40 @@ def crear_factura_empresa(empresa_id):
         """, (
             factura_id,
             p["producto"],
-            p["cantidad"],
-            p["peso"],
+            cantidad,
+            peso,
             precio_unitario,
             subtotal
         ))
 
-        # 🔥 marcar pedido como entregado
+        # =========================================
+        # MARCAR PEDIDO ENTREGADO
+        # =========================================
         cursor.execute("""
             UPDATE pedidos
-            SET estado = 'entregado'
+            SET estado = 'entregado',
+                fecha_entrega = %s
             WHERE id = %s
-        """, (p["id"],))
+        """, (
+            fecha,
+            p["id"]
+        ))
 
-    # 🔥 actualizar total final
+    # =====================================================
+    # ACTUALIZAR TOTAL FACTURA
+    # =====================================================
     cursor.execute("""
         UPDATE facturas
-        SET total = %s
+        SET total = %s,
+            abono = %s,
+            estado = %s
         WHERE id = %s
-    """, (total, factura_id))
+    """, (
+        total,
+        total,
+        "pagado",
+        factura_id
+    ))
 
     conn.commit()
     conn.close()
