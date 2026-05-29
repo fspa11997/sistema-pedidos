@@ -890,12 +890,11 @@ def ventas():
     conn = conectar()
     cursor = conn.cursor()
 
-    # ================= VENTAS =================
+    # ================= FACTURAS (VENTAS REALES) =================
     cursor.execute("""
         SELECT *
-        FROM pedidos
+        FROM facturas
         WHERE empresa_id = %s
-        AND eliminado = 0
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -909,12 +908,11 @@ def ventas():
     # ================= RESUMEN DIARIO =================
     cursor.execute("""
         SELECT 
-            COALESCE(SUM(precio),0) as facturado,
+            COALESCE(SUM(total),0) as facturado,
             COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(precio,0) - COALESCE(abono,0)),0) as deben
-        FROM pedidos
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+        FROM facturas
         WHERE empresa_id = %s
-        AND eliminado = 0
         AND (fecha AT TIME ZONE 'America/Bogota')::date
             = (NOW() AT TIME ZONE 'America/Bogota')::date
     """, (empresa_id,))
@@ -927,12 +925,11 @@ def ventas():
     # ================= RESUMEN MENSUAL =================
     cursor.execute("""
         SELECT 
-            COALESCE(SUM(precio),0) as facturado,
+            COALESCE(SUM(total),0) as facturado,
             COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(precio,0) - COALESCE(abono,0)),0) as deben
-        FROM pedidos
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+        FROM facturas
         WHERE empresa_id = %s
-        AND eliminado = 0
         AND TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM')
             = TO_CHAR(NOW() AT TIME ZONE 'America/Bogota', 'YYYY-MM')
     """, (empresa_id,))
@@ -946,12 +943,11 @@ def ventas():
     cursor.execute("""
         SELECT 
             (fecha AT TIME ZONE 'America/Bogota')::date as dia,
-            COALESCE(SUM(precio),0) as facturado,
+            COALESCE(SUM(total),0) as facturado,
             COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(precio,0) - COALESCE(abono,0)),0) as deben
-        FROM pedidos
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+        FROM facturas
         WHERE empresa_id = %s
-        AND eliminado = 0
         GROUP BY (fecha AT TIME ZONE 'America/Bogota')::date
         ORDER BY dia DESC
     """, (empresa_id,))
@@ -965,12 +961,11 @@ def ventas():
     cursor.execute("""
         SELECT 
             TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM') as mes,
-            COALESCE(SUM(precio),0) as facturado,
+            COALESCE(SUM(total),0) as facturado,
             COALESCE(SUM(abono),0) as abonado,
-            COALESCE(SUM(COALESCE(precio,0) - COALESCE(abono,0)),0) as deben
-        FROM pedidos
+            COALESCE(SUM(COALESCE(total,0) - COALESCE(abono,0)),0) as deben
+        FROM facturas
         WHERE empresa_id = %s
-        AND eliminado = 0
         GROUP BY TO_CHAR(fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM')
         ORDER BY mes DESC
     """, (empresa_id,))
