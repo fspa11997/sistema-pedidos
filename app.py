@@ -3,7 +3,6 @@ import pytz
 import os
 from datetime import datetime
 from flask import Flask, flash, render_template, session, redirect, request
-from utils.time import ahora_utc
 
 from db import (
     validar_usuario,
@@ -31,7 +30,10 @@ from db import (
     crear_cliente,
     obtener_clientes,
     registrar_abono,
-    validar_factura
+    validar_factura,
+    a_colombia,
+    ahora_utc,
+    formatear_colombia
 )
 
 
@@ -711,14 +713,14 @@ def ver_facturas():
     empresa_id = session["empresa_id"]
 
     conn = conectar()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     # =========================
     # FILTROS
     # =========================
-    cliente = request.args.get("cliente", "")
-    factura = request.args.get("factura", "")
-    fecha = request.args.get("fecha", "")
+    cliente = request.args.get("cliente", "").strip()
+    factura = request.args.get("factura", "").strip()
+    fecha = request.args.get("fecha", "").strip()
 
     query = """
         SELECT *
@@ -738,17 +740,26 @@ def ver_facturas():
         query += " AND id::text ILIKE %s"
         params.append(f"%{factura}%")
 
-    # 🔍 filtro fecha
+    # 🔍 filtro fecha (CORRECTO: sin AT TIME ZONE)
     if fecha:
-        query += " AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
+        query += " AND fecha::date = %s"
         params.append(fecha)
 
     query += " ORDER BY id DESC"
 
     cursor.execute(query, params)
-    facturas = cursor.fetchall()
+    rows = cursor.fetchall()
 
     conn.close()
+
+    # =========================
+    # CONVERSIÓN DE FECHA (COMO CARTERA)
+    # =========================
+    facturas = []
+
+    for f in rows:
+        f["fecha"] = a_colombia(f["fecha"])
+        facturas.append(f)
 
     return render_template(
         "facturas.html",
@@ -1095,7 +1106,6 @@ def pedidos():
     domiciliario = request.args.get("domiciliario", "").strip().lower()
 
     conn = conectar()
-
     cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     query = """
@@ -1106,6 +1116,9 @@ def pedidos():
 
     params = [empresa_id]
 
+    # =========================
+    # FILTROS ESTADO
+    # =========================
     if filtro == "pendientes":
         query += " AND estado = 'pendiente' AND eliminado = 0"
     elif filtro == "entregados":
@@ -1115,14 +1128,23 @@ def pedidos():
     elif filtro == "todos":
         query += " AND eliminado = 0"
 
+    # =========================
+    # BUSQUEDA
+    # =========================
     if buscar:
         query += " AND (LOWER(cliente) LIKE %s OR LOWER(producto) LIKE %s)"
         params += [f"%{buscar}%", f"%{buscar}%"]
 
+    # =========================
+    # FECHA (CORREGIDA)
+    # =========================
     if fecha:
-        query += "AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
+        query += " AND fecha::date = %s"
         params.append(fecha)
 
+    # =========================
+    # DOMICILIARIO
+    # =========================
     if domiciliario:
         query += " AND LOWER(COALESCE(domiciliario,'')) LIKE %s"
         params.append(f"%{domiciliario}%")
@@ -1132,9 +1154,17 @@ def pedidos():
     cursor.execute(query, params)
     rows = cursor.fetchall()
 
+    # =========================
+    # NORMALIZACIÓN + FECHA (CLAVE)
+    # =========================
     pedidos = []
 
     for item in rows:
+
+        # 🔥 conversión de fecha (igual que cartera)
+        if "fecha" in item:
+            item["fecha"] = a_colombia(item["fecha"])
+
         item["precio"] = float(item.get("precio") or 0)
         item["cantidad"] = int(item.get("cantidad") or 0)
         item["peso"] = float(item.get("peso") or 0)
