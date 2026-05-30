@@ -289,11 +289,9 @@
 <!-- ================= HISTÓRICO DIARIO ================= -->
 <div class="card">
 
-    <button class="toggle-btn purple" onclick="toggleBox('histDia')">
-        📅 Histórico Diario
-    </button>
+    <h3 class="section-title">📅 Histórico Diario</h3>
 
-    <div id="histDia" class="hidden-box">
+    <div>
 
         <form method="GET" class="filter-form">
 
@@ -357,11 +355,9 @@
 <!-- ================= HISTÓRICO MENSUAL ================= -->
 <div class="card">
 
-    <button class="toggle-btn purple" onclick="toggleBox('histMes')">
-        📆 Histórico Mensual
-    </button>
+    <h3 class="section-title">📆 Histórico Mensual</h3>
 
-    <div id="histMes" class="hidden-box">
+    <div>
 
         <form method="GET" class="filter-form">
 
@@ -426,17 +422,6 @@
 
 <!-- ================= JS ================= -->
 <script>
-
-function toggleBox(id) {
-
-    const el = document.getElementById(id);
-
-    if (el.style.display === "block") {
-        el.style.display = "none";
-    } else {
-        el.style.display = "block";
-    }
-}
 
 </script>
 
