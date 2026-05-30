@@ -951,24 +951,44 @@ def ventas():
     # =====================================================
     # FORMAS DE PAGO HOY
     # =====================================================
+
     cursor.execute("""
         SELECT
-            COALESCE(forma_pago,'Sin especificar') AS forma_pago,
-            COALESCE(SUM(abono),0) AS total
-        FROM facturas
-        WHERE empresa_id = %s
-        AND (fecha AT TIME ZONE 'America/Bogota')::date =
-            (NOW() AT TIME ZONE 'America/Bogota')::date
+            forma_pago,
+            SUM(valor) AS total
+        FROM (
+
+            -- Ventas de contado hoy
+            SELECT
+                COALESCE(forma_pago,'Sin especificar') AS forma_pago,
+                COALESCE(abono,0) AS valor
+            FROM facturas
+            WHERE empresa_id = %s
+            AND (fecha AT TIME ZONE 'America/Bogota')::date =
+                (NOW() AT TIME ZONE 'America/Bogota')::date
+
+            UNION ALL
+
+            -- Abonos de cartera hoy
+            SELECT
+                COALESCE(forma_pago,'Sin especificar') AS forma_pago,
+                COALESCE(abono,0) AS valor
+            FROM pagos_credito
+            WHERE empresa_id = %s
+            AND (fecha AT TIME ZONE 'America/Bogota')::date =
+                (NOW() AT TIME ZONE 'America/Bogota')::date
+
+        ) t
+
         GROUP BY forma_pago
         ORDER BY total DESC
-    """, (empresa_id,))
+    """, (empresa_id, empresa_id))
 
     formas_pago_dia = cursor.fetchall()
 
     for f in formas_pago_dia:
         f["total"] = float(f.get("total") or 0)
 
-   
 
     # =====================================================
     # RESUMEN MENSUAL
@@ -995,25 +1015,51 @@ def ventas():
     mes["abonado"] = float(mes.get("abonado") or 0)
     mes["deben"] = float(mes.get("deben") or 0)
 
-     # =====================================================
+    # =====================================================
     # FORMAS DE PAGO MES
     # =====================================================
+
     cursor.execute("""
         SELECT
-            COALESCE(forma_pago,'Sin especificar') AS forma_pago,
-            COALESCE(SUM(abono),0) AS total
-        FROM facturas
-        WHERE empresa_id = %s
-        AND DATE_TRUNC(
-            'month',
-            fecha AT TIME ZONE 'America/Bogota'
-        ) = DATE_TRUNC(
-            'month',
-            NOW() AT TIME ZONE 'America/Bogota'
-        )
+            forma_pago,
+            SUM(valor) AS total
+        FROM (
+
+            -- Ventas del mes
+            SELECT
+                COALESCE(forma_pago,'Sin especificar') AS forma_pago,
+                COALESCE(abono,0) AS valor
+            FROM facturas
+            WHERE empresa_id = %s
+            AND DATE_TRUNC(
+                'month',
+                fecha AT TIME ZONE 'America/Bogota'
+            ) = DATE_TRUNC(
+                'month',
+                NOW() AT TIME ZONE 'America/Bogota'
+            )
+
+            UNION ALL
+
+            -- Abonos de cartera del mes
+            SELECT
+                COALESCE(forma_pago,'Sin especificar') AS forma_pago,
+                COALESCE(abono,0) AS valor
+            FROM pagos_credito
+            WHERE empresa_id = %s
+            AND DATE_TRUNC(
+                'month',
+                fecha AT TIME ZONE 'America/Bogota'
+            ) = DATE_TRUNC(
+                'month',
+                NOW() AT TIME ZONE 'America/Bogota'
+            )
+
+        ) t
+
         GROUP BY forma_pago
         ORDER BY total DESC
-    """, (empresa_id,))
+    """, (empresa_id, empresa_id))
 
     formas_pago_mes = cursor.fetchall()
 
