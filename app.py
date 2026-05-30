@@ -1229,30 +1229,36 @@ def cartera():
 
     conn = conectar()
 
-    # =========================
-    # CURSOR REALDICT (CORRECTO)
-    # =========================
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor(
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
 
-    # =========================
-    # QUERY PRINCIPAL
-    # =========================
     query = """
-        SELECT 
+        SELECT
             id,
             cliente,
+
             TO_CHAR(
                 fecha AT TIME ZONE 'America/Bogota',
                 'YYYY-MM-DD HH24:MI'
             ) AS fecha,
+
+            TO_CHAR(
+                plazo_pago,
+                'YYYY-MM-DD'
+            ) AS plazo_pago,
+
             total,
             abono,
+
             (total - abono) AS saldo,
-            CASE 
+
+            CASE
                 WHEN (total - abono) <= 0 THEN 'pagado'
                 WHEN abono > 0 THEN 'parcial'
                 ELSE 'pendiente'
             END AS estado_calculado
+
         FROM facturas
         WHERE empresa_id = %s
     """
@@ -1262,6 +1268,7 @@ def cartera():
     # =========================
     # FILTROS
     # =========================
+
     if factura_id:
         query += " AND id = %s"
         params.append(factura_id)
@@ -1271,12 +1278,16 @@ def cartera():
         params.append(f"%{cliente_filtro.lower()}%")
 
     if fecha:
-        query += " AND (fecha AT TIME ZONE 'America/Bogota')::date = %s"
+        query += """
+            AND (
+                fecha AT TIME ZONE 'America/Bogota'
+            )::date = %s
+        """
         params.append(fecha)
 
     if estado:
         query += """
-            AND CASE 
+            AND CASE
                 WHEN (total - abono) <= 0 THEN 'pagado'
                 WHEN abono > 0 THEN 'parcial'
                 ELSE 'pendiente'
@@ -1286,15 +1297,10 @@ def cartera():
 
     query += " ORDER BY id DESC"
 
-    # =========================
-    # EJECUTAR
-    # =========================
     cursor.execute(query, params)
+
     rows = cursor.fetchall()
 
-    # =========================
-    # LIMPIEZA SEGURA DE DATOS
-    # =========================
     facturas = []
 
     for item in rows:
@@ -1306,10 +1312,11 @@ def cartera():
         facturas.append(item)
 
     # =========================
-    # TOTALES (FIX DEFINITIVO)
+    # TOTALES
     # =========================
+
     cursor.execute("""
-        SELECT 
+        SELECT
             COALESCE(SUM(total),0) AS total_facturado,
             COALESCE(SUM(abono),0) AS total_abonado,
             COALESCE(SUM(total - abono),0) AS total_deben
@@ -1325,9 +1332,6 @@ def cartera():
 
     conn.close()
 
-    # =========================
-    # RENDER
-    # =========================
     return render_template(
         "cartera.html",
         facturas=facturas,
