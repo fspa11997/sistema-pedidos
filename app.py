@@ -961,8 +961,10 @@ def ventas():
             -- Ventas de contado hoy
             SELECT
                 COALESCE(forma_pago,'Sin especificar') AS forma_pago,
-                COALESCE(abono,0) AS valor
+                COALESCE(total,0) AS valor
             FROM facturas
+            WHERE empresa_id = %s
+            AND tipo_venta = 'contado'
             WHERE empresa_id = %s
             AND (fecha AT TIME ZONE 'America/Bogota')::date =
                 (NOW() AT TIME ZONE 'America/Bogota')::date
@@ -1028,8 +1030,10 @@ def ventas():
             -- Ventas del mes
             SELECT
                 COALESCE(forma_pago,'Sin especificar') AS forma_pago,
-                COALESCE(abono,0) AS valor
+                COALESCE(total,0) AS valor
             FROM facturas
+            WHERE empresa_id = %s
+            AND tipo_venta = 'contado'
             WHERE empresa_id = %s
             AND DATE_TRUNC(
                 'month',
