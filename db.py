@@ -1318,7 +1318,13 @@ def obtener_creditos(empresa_id):
     conn.close()
     return data
 
-def registrar_abono(factura_id, abono, observacion, empresa_id):
+def registrar_abono(
+    factura_id,
+    abono,
+    observacion,
+    forma_pago,
+    empresa_id
+):
 
     conn = conectar()
     cursor = conn.cursor()
@@ -1326,7 +1332,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     # =========================
     # FACTURA
     # =========================
-    
+
     cursor.execute("""
         SELECT id, cliente, total, abono
         FROM facturas
@@ -1340,7 +1346,6 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         conn.close()
         return None
 
-
     actual_abono = factura["abono"] or 0
     nuevo_abono = actual_abono + abono
 
@@ -1350,6 +1355,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     # =========================
     # ESTADO
     # =========================
+
     if saldo <= 0:
         estado = "pagado"
         saldo = 0
@@ -1361,17 +1367,24 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
     # =========================
     # UPDATE FACTURA
     # =========================
+
     cursor.execute("""
         UPDATE facturas
         SET abono = %s,
             estado = %s
         WHERE id = %s
         AND empresa_id = %s
-    """, (nuevo_abono, estado, factura_id, empresa_id))
+    """, (
+        nuevo_abono,
+        estado,
+        factura_id,
+        empresa_id
+    ))
 
     # =========================
     # UPDATE CREDITO
     # =========================
+
     cursor.execute("""
         UPDATE creditos
         SET abonado = %s,
@@ -1379,16 +1392,24 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
             estado = %s
         WHERE factura_id = %s
         AND empresa_id = %s
-    """, (nuevo_abono, saldo, estado, factura_id, empresa_id))
+    """, (
+        nuevo_abono,
+        saldo,
+        estado,
+        factura_id,
+        empresa_id
+    ))
 
     # =========================
     # FECHA CENTRALIZADA (UTC)
     # =========================
+
     fecha = ahora_utc()
 
     # =========================
-    # HISTORIAL
+    # HISTORIAL PAGOS
     # =========================
+
     cursor.execute("""
         INSERT INTO pagos_credito (
             factura_id,
@@ -1396,21 +1417,24 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
             abono,
             fecha,
             observacion,
+            forma_pago,
             empresa_id
         )
-        VALUES (%s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """, (
         factura_id,
         factura["cliente"],
         abono,
         fecha,
         observacion,
+        forma_pago,
         empresa_id
     ))
 
     # =========================
     # RECIBO
     # =========================
+
     cursor.execute("""
         INSERT INTO recibos_abono (
             factura_id,
@@ -1419,9 +1443,10 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
             saldo_anterior,
             saldo_nuevo,
             fecha,
+            forma_pago,
             empresa_id
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         factura_id,
         factura["cliente"],
@@ -1429,6 +1454,7 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         saldo_anterior,
         saldo,
         fecha,
+        forma_pago,
         empresa_id
     ))
 

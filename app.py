@@ -1461,6 +1461,7 @@ def abonar_credito_route():
 
     factura_id = request.form.get("factura_id")
     abono = request.form.get("abono")
+    forma_pago = request.form["forma_pago"]
     observacion = request.form.get("observacion", "")
 
     if not factura_id or not abono:
@@ -1470,6 +1471,7 @@ def abonar_credito_route():
         factura_id=int(factura_id),
         abono=float(abono),
         observacion=observacion,
+        forma_pago=forma_pago,
         empresa_id=session["empresa_id"]
     )
     flash("abono guardado", "success")
