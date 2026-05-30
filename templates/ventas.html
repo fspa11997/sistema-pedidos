@@ -253,6 +253,35 @@
     </div>
 
 </div>
+<div class="card">
+
+    <h3>💵 Ingresos por forma de pago (Hoy)</h3>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Forma de pago</th>
+                <th>Total recibido</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for f in formas_pago_dia %}
+            <tr>
+                <td>{{ f.forma_pago }}</td>
+                <td>
+                    ${{ "{:,.0f}".format(f.total) }}
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
 
 <!-- ================= RESUMEN MENSUAL ================= -->
 <div class="card">
@@ -283,6 +312,35 @@
         </div>
 
     </div>
+
+</div>
+<div class="card">
+
+    <h3>📆 Ingresos por forma de pago (Mes)</h3>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Forma de pago</th>
+                <th>Total recibido</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for f in formas_pago_mes %}
+            <tr>
+                <td>{{ f.forma_pago }}</td>
+                <td>
+                    ${{ "{:,.0f}".format(f.total) }}
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
 
 </div>
 

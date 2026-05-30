@@ -949,6 +949,28 @@ def ventas():
     dia["deben"] = float(dia.get("deben") or 0)
 
     # =====================================================
+    # FORMAS DE PAGO HOY
+    # =====================================================
+    cursor.execute("""
+        SELECT
+            COALESCE(forma_pago,'Sin especificar') AS forma_pago,
+            COALESCE(SUM(abono),0) AS total
+        FROM facturas
+        WHERE empresa_id = %s
+        AND (fecha AT TIME ZONE 'America/Bogota')::date =
+            (NOW() AT TIME ZONE 'America/Bogota')::date
+        GROUP BY forma_pago
+        ORDER BY total DESC
+    """, (empresa_id,))
+
+    formas_pago_dia = cursor.fetchall()
+
+    for f in formas_pago_dia:
+        f["total"] = float(f.get("total") or 0)
+
+   
+
+    # =====================================================
     # RESUMEN MENSUAL
     # =====================================================
     cursor.execute("""
@@ -973,7 +995,32 @@ def ventas():
     mes["abonado"] = float(mes.get("abonado") or 0)
     mes["deben"] = float(mes.get("deben") or 0)
 
-        # =====================================================
+     # =====================================================
+    # FORMAS DE PAGO MES
+    # =====================================================
+    cursor.execute("""
+        SELECT
+            COALESCE(forma_pago,'Sin especificar') AS forma_pago,
+            COALESCE(SUM(abono),0) AS total
+        FROM facturas
+        WHERE empresa_id = %s
+        AND DATE_TRUNC(
+            'month',
+            fecha AT TIME ZONE 'America/Bogota'
+        ) = DATE_TRUNC(
+            'month',
+            NOW() AT TIME ZONE 'America/Bogota'
+        )
+        GROUP BY forma_pago
+        ORDER BY total DESC
+    """, (empresa_id,))
+
+    formas_pago_mes = cursor.fetchall()
+
+    for f in formas_pago_mes:
+        f["total"] = float(f.get("total") or 0)
+
+    # =====================================================
     # HISTÓRICO DIARIO
     # =====================================================
 
@@ -1079,7 +1126,9 @@ def ventas():
         dia=dia,
         mes=mes,
         diario=diario,
-        mensual=mensual
+        mensual=mensual,
+        formas_pago_dia=formas_pago_dia,
+        formas_pago_mes=formas_pago_mes
     )
 
 @app.route("/reportes")
