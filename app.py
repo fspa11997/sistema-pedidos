@@ -1233,6 +1233,9 @@ def cartera():
         cursor_factory=psycopg2.extras.RealDictCursor
     )
 
+    # =========================
+    # QUERY PRINCIPAL
+    # =========================
     query = """
         SELECT
             id,
@@ -1243,10 +1246,7 @@ def cartera():
                 'YYYY-MM-DD HH24:MI'
             ) AS fecha,
 
-            TO_CHAR(
-                plazo_pago,
-                'YYYY-MM-DD'
-            ) AS plazo_pago,
+            plazo_pago,
 
             total,
             abono,
@@ -1296,6 +1296,10 @@ def cartera():
         params.append(estado)
 
     query += " ORDER BY id DESC"
+
+    # =========================
+    # EJECUTAR
+    # =========================
 
     cursor.execute(query, params)
 
