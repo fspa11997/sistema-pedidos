@@ -236,6 +236,10 @@
                 <span class="badge entregado">💵 Contado</span>
             {% endif %}
         </p>
+        <p>
+            <b>Forma de pago:</b>
+            {{ factura.forma_pago or "-" }}
+        </p>
 
         <p><b>Estado:</b>
             {% if factura.estado == "pendiente" %}
@@ -313,6 +317,10 @@
             {% else %}
                 <span class="badge entregado">💵 Contado</span>
             {% endif %}
+        </p>
+        <p>
+            <b>Forma de pago:</b>
+            {{ factura.forma_pago or "-" }}
         </p>
 
         <p><b>Estado:</b>

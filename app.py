@@ -488,7 +488,7 @@ def crear_factura_route():
 
     tipo_precio = request.form.get("tipo_precio", "").strip()
     tipo_venta = request.form.get("tipo_venta", "contado").strip()
-
+    forma_pago = request.form.get("forma_pago")
     plazo_pago = request.form.get("plazo_pago", "").strip()
 
     abono_raw = request.form.get("abono")
@@ -640,6 +640,7 @@ def crear_factura_route():
         productos=productos_factura,
         tipo_precio=tipo_precio,
         tipo_venta=tipo_venta,
+        forma_pago=forma_pago,
         plazo_pago=plazo_pago,
         abono=abono,
         domiciliario=domiciliario

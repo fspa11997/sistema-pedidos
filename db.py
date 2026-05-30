@@ -741,6 +741,7 @@ def crear_factura(
     productos,
     tipo_precio,
     tipo_venta,
+    forma_pago,
     plazo_pago=None,
     abono=0,
     domiciliario=""
@@ -818,6 +819,7 @@ def crear_factura(
             estado,
             tipo_precio,
             tipo_venta,
+            forma_pago,
             plazo_pago,
             abono,
             domiciliario,
@@ -835,6 +837,7 @@ def crear_factura(
         estado,
         tipo_precio,
         tipo_venta,
+        forma_pago,
         plazo_pago,
         abono,
         domiciliario,

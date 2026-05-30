@@ -155,8 +155,7 @@
                     <th>Cliente</th>
                     <th>Ciudad</th>
                     <th>Total</th>
-
-                    <!-- NUEVO -->
+                    <th>Forma Pago</th>
                     <th>Abono</th>
                     <th>Saldo</th>
                     <th>Estado</th>
@@ -177,6 +176,10 @@
 
                     <td class="total">
                         ${{ "{:,.0f}".format(f.total or 0) }}
+                    </td>
+                    <!-- FORMA DE PAGO -->
+                    <td>
+                        {{ f.forma_pago or "-" }}
                     </td>
 
                     <!-- ABONO -->
