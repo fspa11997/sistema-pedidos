@@ -948,8 +948,8 @@ def ventas():
     dia["abonado"] = float(dia.get("abonado") or 0)
     dia["deben"] = float(dia.get("deben") or 0)
 
-    # =====================================================
-    # FORMAS DE PAGO HOY
+   # =====================================================
+    # FORMAS DE PAGO HOY (CORREGIDO)
     # =====================================================
 
     cursor.execute("""
@@ -958,20 +958,19 @@ def ventas():
             SUM(valor) AS total
         FROM (
 
-            -- Ventas de contado hoy
+            -- Ventas de contado (SOLO contado)
             SELECT
                 COALESCE(forma_pago,'Sin especificar') AS forma_pago,
                 COALESCE(total,0) AS valor
             FROM facturas
             WHERE empresa_id = %s
             AND tipo_venta = 'contado'
-            WHERE empresa_id = %s
             AND (fecha AT TIME ZONE 'America/Bogota')::date =
                 (NOW() AT TIME ZONE 'America/Bogota')::date
 
             UNION ALL
 
-            -- Abonos de cartera hoy
+            -- Abonos de cartera
             SELECT
                 COALESCE(forma_pago,'Sin especificar') AS forma_pago,
                 COALESCE(abono,0) AS valor
@@ -990,7 +989,6 @@ def ventas():
 
     for f in formas_pago_dia:
         f["total"] = float(f.get("total") or 0)
-
 
     # =====================================================
     # RESUMEN MENSUAL
@@ -1030,10 +1028,8 @@ def ventas():
             -- Ventas del mes
             SELECT
                 COALESCE(forma_pago,'Sin especificar') AS forma_pago,
-                COALESCE(total,0) AS valor
+                COALESCE(abono,0) AS valor
             FROM facturas
-            WHERE empresa_id = %s
-            AND tipo_venta = 'contado'
             WHERE empresa_id = %s
             AND DATE_TRUNC(
                 'month',
