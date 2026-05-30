@@ -157,7 +157,8 @@
                 padding: 0;
             }
 
-            .btn-print {
+            .btn-print,
+            .btn-back {
                 display: none;
             }
 
@@ -174,12 +175,33 @@
             }
 
         }
+        .btn-back {
+            background: #2f80ed;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            margin-right: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #1c5ed6;
+        }
 
     </style>
 
 </head>
 
 <body>
+
+<a href="/ventas" class="btn-back">
+    ⬅ Volver
+</a>
 
 <button onclick="window.print()" class="btn-print">
     🖨 Imprimir

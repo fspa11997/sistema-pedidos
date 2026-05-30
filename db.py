@@ -907,16 +907,16 @@ def crear_factura(
             if stock_unidades < cantidad:
                 conn.rollback()
                 conn.close()
-                raise Exception(
-                    f"Inventario insuficiente de unidades para {producto}"
-                )
+                return {
+                    "error": f"No hay suficientes unidades de {producto}"
+                }
 
             if stock_kilos < peso:
                 conn.rollback()
                 conn.close()
-                raise Exception(
-                    f"Inventario insuficiente de kilos para {producto}"
-                )
+                return {
+                    "error": f"No hay suficientes kilos de {producto}"
+                }   
 
         # =========================
         # DESCONTAR INVENTARIO

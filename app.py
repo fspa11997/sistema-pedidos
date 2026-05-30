@@ -631,7 +631,7 @@ def crear_factura_route():
     # =========================
     # CREAR FACTURA
     # =========================
-    factura_id = crear_factura(
+    resultado = crear_factura(
         cliente=cliente_final,
         direccion=direccion,
         ciudad=ciudad,
@@ -644,6 +644,12 @@ def crear_factura_route():
         abono=abono,
         domiciliario=domiciliario
     )
+
+    if isinstance(resultado, dict) and "error" in resultado:
+        flash(resultado["error"], "error")
+        return redirect("/dashboard")
+
+    factura_id = resultado
 
     # =========================
     # PEDIDOS
