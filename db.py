@@ -844,7 +844,7 @@ def crear_factura(
     factura_id = cursor.fetchone()["id"]
 
     # =========================
-    # DETALLE FACTURA (AHORA SÍ)
+    # DETALLE FACTURA
     # =========================
     for p in productos:
 
@@ -853,11 +853,18 @@ def crear_factura(
         peso = float(p.get("peso") or 0)
 
         precio = float(
-            obtener_precio_producto(producto, empresa_id, tipo_precio) or 0
+            obtener_precio_producto(
+                producto,
+                empresa_id,
+                tipo_precio
+            ) or 0
         )
 
         subtotal = precio * peso
 
+        # =========================
+        # GUARDAR DETALLE
+        # =========================
         cursor.execute("""
             INSERT INTO detalle_factura (
                 factura_id,
@@ -875,6 +882,57 @@ def crear_factura(
             peso,
             precio,
             subtotal
+        ))
+
+        # =========================
+        # VALIDAR INVENTARIO
+        # =========================
+        cursor.execute("""
+            SELECT stock_unidades, stock_kilos
+            FROM inventario
+            WHERE producto = %s
+            AND empresa_id = %s
+        """, (
+            producto,
+            empresa_id
+        ))
+
+        stock = cursor.fetchone()
+
+        if stock:
+
+            stock_unidades = float(stock["stock_unidades"] or 0)
+            stock_kilos = float(stock["stock_kilos"] or 0)
+
+            if stock_unidades < cantidad:
+                conn.rollback()
+                conn.close()
+                raise Exception(
+                    f"Inventario insuficiente de unidades para {producto}"
+                )
+
+            if stock_kilos < peso:
+                conn.rollback()
+                conn.close()
+                raise Exception(
+                    f"Inventario insuficiente de kilos para {producto}"
+                )
+
+        # =========================
+        # DESCONTAR INVENTARIO
+        # =========================
+        cursor.execute("""
+            UPDATE inventario
+            SET
+                stock_unidades = stock_unidades - %s,
+                stock_kilos = stock_kilos - %s
+            WHERE producto = %s
+            AND empresa_id = %s
+        """, (
+            cantidad,
+            peso,
+            producto,
+            empresa_id
         ))
 
     # =========================
