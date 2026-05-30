@@ -73,7 +73,7 @@ def login():
 # DASHBOARD PRINCIPAL
 # =========================
 @app.route("/dashboard")
-def dashboard():
+def dashboard(): 
 
     if "usuario" not in session:
         return redirect("/")
@@ -892,6 +892,14 @@ def ventas():
         return redirect("/")
 
     empresa_id = session["empresa_id"]
+        # =====================================================
+    # FILTROS
+    # =====================================================
+    desde = request.args.get("desde")
+    hasta = request.args.get("hasta")
+
+    desde_mes = request.args.get("desde_mes")
+    hasta_mes = request.args.get("hasta_mes")
 
     conn = conectar()
 
@@ -964,20 +972,40 @@ def ventas():
     mes["abonado"] = float(mes.get("abonado") or 0)
     mes["deben"] = float(mes.get("deben") or 0)
 
-    # =====================================================
+        # =====================================================
     # HISTÓRICO DIARIO
     # =====================================================
-    cursor.execute("""
-        SELECT 
+
+    query_diario = """
+        SELECT
             (fecha AT TIME ZONE 'America/Bogota')::date AS dia,
             COALESCE(SUM(total),0) AS facturado,
             COALESCE(SUM(abono),0) AS abonado,
             COALESCE(SUM(total - abono),0) AS deben
         FROM facturas
         WHERE empresa_id = %s
+    """
+
+    params_diario = [empresa_id]
+
+    if desde:
+        query_diario += """
+            AND (fecha AT TIME ZONE 'America/Bogota')::date >= %s
+        """
+        params_diario.append(desde)
+
+    if hasta:
+        query_diario += """
+            AND (fecha AT TIME ZONE 'America/Bogota')::date <= %s
+        """
+        params_diario.append(hasta)
+
+    query_diario += """
         GROUP BY (fecha AT TIME ZONE 'America/Bogota')::date
         ORDER BY dia DESC
-    """, (empresa_id,))
+    """
+
+    cursor.execute(query_diario, params_diario)
 
     diario = cursor.fetchall()
 
@@ -986,11 +1014,12 @@ def ventas():
         d["abonado"] = float(d.get("abonado") or 0)
         d["deben"] = float(d.get("deben") or 0)
 
-    # =====================================================
+       # =====================================================
     # HISTÓRICO MENSUAL
     # =====================================================
-    cursor.execute("""
-        SELECT 
+
+    query_mensual = """
+        SELECT
             TO_CHAR(
                 fecha AT TIME ZONE 'America/Bogota',
                 'YYYY-MM'
@@ -1002,14 +1031,37 @@ def ventas():
 
         FROM facturas
         WHERE empresa_id = %s
+    """
 
+    params_mensual = [empresa_id]
+
+    if desde_mes:
+        query_mensual += """
+            AND DATE_TRUNC(
+                'month',
+                fecha AT TIME ZONE 'America/Bogota'
+            ) >= DATE_TRUNC('month', %s::date)
+        """
+        params_mensual.append(desde_mes)
+
+    if hasta_mes:
+        query_mensual += """
+            AND DATE_TRUNC(
+                'month',
+                fecha AT TIME ZONE 'America/Bogota'
+            ) <= DATE_TRUNC('month', %s::date)
+        """
+        params_mensual.append(hasta_mes)
+
+    query_mensual += """
         GROUP BY TO_CHAR(
             fecha AT TIME ZONE 'America/Bogota',
             'YYYY-MM'
         )
-
         ORDER BY mes DESC
-    """, (empresa_id,))
+    """
+
+    cursor.execute(query_mensual, params_mensual)
 
     mensual = cursor.fetchall()
 
