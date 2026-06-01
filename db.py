@@ -1477,10 +1477,12 @@ def registrar_abono(
 def obtener_historial_abonos(factura_id, empresa_id):
 
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor(
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
 
     cursor.execute("""
-        SELECT 
+        SELECT
             *,
             TO_CHAR(
                 fecha AT TIME ZONE 'America/Bogota',
@@ -1490,12 +1492,16 @@ def obtener_historial_abonos(factura_id, empresa_id):
         WHERE factura_id = %s
         AND empresa_id = %s
         ORDER BY pagos_credito.fecha DESC
-    """, (factura_id, empresa_id))
+    """, (
+        factura_id,
+        empresa_id
+    ))
 
     pagos = cursor.fetchall()
 
     conn.close()
-    return pagos 
+
+    return pagos
 
 def validar_factura(data):
     tipo = data.get("tipo")  # credito o contado

@@ -33,6 +33,7 @@
             <th>Factura</th>
             <th>Cliente</th>
             <th>Abono</th>
+            <th>Forma Pago</th>
             <th>Fecha</th>
             <th>Observación</th>
         </tr>
@@ -51,6 +52,10 @@
 
             <td style="color:green; font-weight:bold;">
                 ${{ "{:,.0f}".format(p.abono or 0) }}
+            </td>
+
+            <td>
+                {{ p.forma_pago or "-" }}
             </td>
 
             <td>{{ p.fecha }}</td>
