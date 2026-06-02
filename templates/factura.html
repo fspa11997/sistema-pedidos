@@ -362,7 +362,7 @@
         <p><b>Fecha:</b> {{ factura.fecha.strftime('%Y-%m-%d %H:%M') if factura.fecha else '-' }}</p>
 
         <hr>
-
+        <div class="pago-box"></div>
         <h3>💳 Información de Pago</h3>
 
         <p><b>Tipo de venta:</b>
@@ -394,7 +394,7 @@
         {% if factura.tipo_venta == "credito" %}
         <p><b>📅 Fecha límite:</b> {{ factura.plazo_pago or "-" }}</p>
         {% endif %}
-
+        </div>
         <table>
             <tr>
                 <th>Producto</th>
