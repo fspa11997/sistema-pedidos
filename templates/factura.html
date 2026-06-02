@@ -309,7 +309,7 @@
 
         <p><b>🚚 Domiciliario:</b> {{ factura.domiciliario }}</p>
 
-        <p><b>💰 Tarifa aplicada:</b>
+        <!-- <p><b>💰 Tarifa aplicada:</b>
             {% if factura.tipo_precio == "mayorista" %}
                 Mayorista
             {% elif factura.tipo_precio == "individual" %}
@@ -319,7 +319,7 @@
             {% else %}
                 -
             {% endif %}
-        </p>
+        </p>-->
 
         <p><b>Total factura:</b> ${{ "{:,.0f}".format(factura.total or 0) }}</p>
         <p><b>Abonado:</b> ${{ "{:,.0f}".format(factura.abono or 0) }}</p>
