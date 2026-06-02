@@ -65,50 +65,34 @@
 
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             margin-top: 15px;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border: 2px solid #2f80ed;
         }
 
         th {
-            background: linear-gradient(
-                135deg,
-                #2f80ed,
-                #1c5ed6
-            );
+            background: #2f80ed;
             color: white;
-            padding: 14px;
+            padding: 12px;
             font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
             text-align: center;
+            border: 1px solid #dbeafe;
+            font-weight: bold;
         }
 
         td {
-            padding: 12px;
+            padding: 10px;
             font-size: 13px;
-            border-bottom: 1px solid #eef2f7;
+            border: 1px solid #d1d5db;
             text-align: center;
         }
 
         tbody tr:nth-child(even) {
-            background: #f8fbff;
-        }
-
-        tbody tr:nth-child(odd) {
-            background: #ffffff;
+            background: #f3f8ff;
         }
 
         tbody tr:hover {
-            background: #eaf3ff;
-            transition: 0.2s;
-        }
-
-        tbody tr:last-child td {
-            border-bottom: none;
+            background: #e8f1ff;
         }
 
         /* =========================
@@ -144,9 +128,18 @@
 
         .total {
             text-align: right;
-            margin-top: 15px;
-            font-size: 16px;
+            margin-top: 20px;
+            font-size: 24px;
             font-weight: bold;
+            color: #166534;
+            background: linear-gradient(
+                135deg,
+                #dcfce7,
+                #bbf7d0
+            );
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #16a34a;
         }
 
         /* =========================
@@ -310,7 +303,15 @@
                 <td>{{ d.producto }}</td>
                 <td>{{ d.cantidad }}</td>
                 <td>{{ d.peso }}</td>
-                <td>${{ "{:,.0f}".format(d.subtotal) }}</td>
+
+                <td style="
+                    font-weight:bold;
+                    color:#16a34a;
+                    background:#f0fdf4;
+                ">
+                    ${{ "{:,.0f}".format(d.subtotal) }}
+                </td>
+
             </tr>
             {% endfor %}
         </table>
@@ -376,7 +377,15 @@
                 <td>{{ d.producto }}</td>
                 <td>{{ d.cantidad }}</td>
                 <td>{{ d.peso }}</td>
-                <td>${{ "{:,.0f}".format(d.subtotal) }}</td>
+
+                <td style="
+                    font-weight:bold;
+                    color:#16a34a;
+                    background:#f0fdf4;
+                ">
+                    ${{ "{:,.0f}".format(d.subtotal) }}
+                </td>
+
             </tr>
             {% endfor %}
         </table>
