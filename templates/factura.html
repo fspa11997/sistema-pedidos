@@ -274,7 +274,7 @@
         {% if factura.cliente == "FACTURA EMPRESA" %}
             <p style="color:purple;"><b>🏢 Facturación por empresa</b></p>
         {% else %}
-            <p><b>Cliente:</b> {{ factura.cliente }}</p>
+            <p><b>Cliente:</b> {{ factura.cliente|upper }}</p>
         {% endif %}
 
         <p><b>Dirección:</b> {{ factura.direccion }}</p>
@@ -382,7 +382,7 @@
 
         <h2>🧾 FACTURA No FS {{ factura.id }}</h2>
 
-        <p><b>Cliente:</b> {{ factura.cliente }}</p>
+        <p><b>Cliente:</b> {{ factura.cliente|upper }}</p>
         <p><b>Fecha:</b> {{ factura.fecha.strftime('%Y-%m-%d %H:%M') if factura.fecha else '-' }}</p>
 
         <hr>
