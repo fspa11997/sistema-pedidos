@@ -65,28 +65,50 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            border-radius: 8px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
             overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
         }
 
         th {
-            background: linear-gradient(135deg, #2f80ed, #1c5ed6);
+            background: linear-gradient(
+                135deg,
+                #2f80ed,
+                #1c5ed6
+            );
             color: white;
-            padding: 10px;
+            padding: 14px;
             font-size: 13px;
-            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
         }
 
         td {
-            border-bottom: 1px solid #eee;
-            padding: 10px;
+            padding: 12px;
             font-size: 13px;
+            border-bottom: 1px solid #eef2f7;
+            text-align: center;
         }
 
-        tr:hover {
-            background: #f7faff;
+        tbody tr:nth-child(even) {
+            background: #f8fbff;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: #ffffff;
+        }
+
+        tbody tr:hover {
+            background: #eaf3ff;
+            transition: 0.2s;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
         }
 
         /* =========================
