@@ -35,22 +35,24 @@
         }
 
         h2 {
-            margin: 0 0 10px 0;
-            font-size: 22px;
-            color: #2f80ed;
+            margin: 0 0 15px 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: #2563eb;
         }
 
         h3 {
-            margin-top: 15px;
-            margin-bottom: 10px;
-            color: #333;
-            border-left: 4px solid #2f80ed;
-            padding-left: 10px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 700;
         }
 
         p {
-            margin: 4px 0;
-            font-size: 14px;
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.5;
         }
 
         hr {
@@ -71,20 +73,19 @@
         }
 
         th {
-            background: #2f80ed;
+            background: linear-gradient(135deg,#2563eb,#1d4ed8);
             color: white;
-            padding: 12px;
-            font-size: 13px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 800;
             text-align: center;
-            border: 1px solid #dbeafe;
-            font-weight: bold;
         }
 
         td {
-            padding: 10px;
-            font-size: 13px;
-            border: 1px solid #d1d5db;
-            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
         }
 
         tbody tr:nth-child(even) {
@@ -100,11 +101,10 @@
         ========================= */
 
         .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
         }
         .info-pago {
             margin-top: 15px;
@@ -225,6 +225,19 @@
         .btn-back:hover {
             background: #1c5ed6;
         }
+        .valor-dinero{
+            color:#15803d;
+            font-weight:800;
+            font-size:16px;
+        }
+        .pago-box{
+            border:3px solid #2563eb;
+            border-radius:12px;
+            padding:18px;
+            margin:15px 0;
+            background:#f8fbff;
+            box-shadow:0 3px 10px rgba(37,99,235,.12);
+        }
 
     </style>
 
@@ -259,7 +272,7 @@
         <p><b>Fecha:</b> {{ factura.fecha.strftime('%Y-%m-%d %H:%M') if factura.fecha else '-' }}</p>
 
         <hr>
-
+        <div class="pago-box"></div>
         <h3>💳 Información de Pago</h3>
 
         <p><b>Tipo de venta:</b>
@@ -305,7 +318,7 @@
         {% if factura.tipo_venta == "credito" %}
         <p><b>📅 Fecha límite:</b> {{ factura.plazo_pago or "-" }}</p>
         {% endif %}
-
+        </div>
         <h3>📦 Detalle</h3>
 
         <table>
