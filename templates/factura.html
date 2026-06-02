@@ -285,7 +285,6 @@
         <hr>
         <div class="pago-box">
         <h3>💳 Información de Pago</h3>
-
         <p><b>Tipo de venta:</b>
             {% if factura.tipo_venta == "credito" %}
                 <span class="badge alerta-naranja">💳 Crédito</span>
@@ -325,11 +324,9 @@
         <p><b>Total factura:</b> ${{ "{:,.0f}".format(factura.total or 0) }}</p>
         <p><b>Abonado:</b> ${{ "{:,.0f}".format(factura.abono or 0) }}</p>
         <p><b>Saldo pendiente:</b> ${{ "{:,.0f}".format((factura.total or 0) - (factura.abono or 0)) }}</p>
-
         {% if factura.tipo_venta == "credito" %}
         <p><b>📅 Fecha límite:</b> {{ factura.plazo_pago or "-" }}</p>
-        {% endif %}
-        </div>
+        {% endif %}</div>
         <h3>📦 Detalle</h3>
 
         <table>
@@ -391,7 +388,6 @@
         <hr>
         <div class="pago-box">
         <h3>💳 Información de Pago</h3>
-
         <p><b>Tipo de venta:</b>
             {% if factura.tipo_venta == "credito" %}
                 <span class="badge alerta-naranja">💳 Crédito</span>
@@ -417,11 +413,9 @@
         <p><b>Total factura:</b> ${{ "{:,.0f}".format(factura.total or 0) }}</p>
         <p><b>Abonado:</b> ${{ "{:,.0f}".format(factura.abono or 0) }}</p>
         <p><b>Saldo pendiente:</b> ${{ "{:,.0f}".format((factura.total or 0) - (factura.abono or 0)) }}</p>
-
         {% if factura.tipo_venta == "credito" %}
         <p><b>📅 Fecha límite:</b> {{ factura.plazo_pago or "-" }}</p>
-        {% endif %}
-        </div>
+        {% endif %}</div>
         <table>
             <tr>
                 <th>Producto</th>
