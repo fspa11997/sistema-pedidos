@@ -8,4 +8,3 @@ hash_password = bcrypt.hashpw(
 )
 
 print(hash_password.decode("utf-8"))
-print(hash_password.decode("utf-8"))
