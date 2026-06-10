@@ -14,7 +14,7 @@ COLOMBIA = pytz.timezone("America/Bogota")
 # 🔥 SIEMPRE guardar en base de datos (UTC)
 def ahora_utc():
     return datetime.now(UTC)
-
+S
 
 # 🔥 CONVERTIR SOLO PARA MOSTRAR EN FRONTEND
 def a_colombia(dt):
