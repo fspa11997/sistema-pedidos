@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Factura</title>
+
+    <style>
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #eef2f7;
+            padding: 20px;
+            color: #222;
+        }
+
+        .hoja-carta {
+            width: 100%;
+        }
+
+        .media-carta {
+            background: white;
+            width: 92%;
+            min-height: 48vh;
+            margin: 15px auto;
+            padding: 25px;
+            border: 1px solid #e3e6ee;
+            box-sizing: border-box;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .linea-corte {
+            border-top: 2px dashed #999;
+            width: 92%;
+            margin: 20px auto;
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: #2563eb;
+        }
+
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 12px 0;
+        }
+
+        /* =========================
+        TABLA
+        ========================= */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border: 3px solid #2563eb;
+            box-shadow: 0 4px 12px rgba(37,99,235,.15);
+        }
+
+        th {
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #1d4ed8
+            );
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 800;
+            text-align: center;
+            border: 1px solid #1e40af;
+        }
+
+        td {
+            border: 1px solid #dbeafe;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #eff6ff;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: white;
+        }
+
+        tbody tr:hover {
+            background: #dbeafe;
+        }
+
+        /* =========================
+        BADGES
+        ========================= */
+
+        .badge {
+            padding: 7px 14px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .info-pago {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            border: 2px solid #2f80ed;
+            border-radius: 12px;
+            background: linear-gradient(
+                135deg,
+                #f8fbff,
+                #eef6ff
+            );
+            box-shadow: 0 3px 8px rgba(47,128,237,0.10);
+        }
+
+        .info-pago h3 {
+            margin-top: 0;
+        }
+
+        .pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .entregado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alerta-naranja {
+            background: #ffe8cc;
+            color: #b45309;
+        }
+
+
+        /* =========================
+        TOTALES
+        ========================= */
+
+        .total {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #166534;
+            background: linear-gradient(
+                135deg,
+                #dcfce7,
+                #bbf7d0
+            );
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #16a34a;
+        }
+
+        /* =========================
+        BOTÓN
+        ========================= */
+
+        .btn-print {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .btn-print:hover {
+            background: #219150;
+        }
+
+        /* =========================
+        IMPRESIÓN
+        ========================= */
+
+        @media print {
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .btn-print,
+            .btn-back {
+                display: none;
+            }
+
+            .media-carta {
+                width: 100%;
+                border: none;
+                box-shadow: none;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .linea-corte {
+                border-top: 2px dashed black;
+            }
+
+        }
+        .btn-back {
+            background: #2f80ed;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            margin-right: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #1c5ed6;
+        }
+        .valor-dinero{
+            color:#15803d;
+            font-weight:800;
+            font-size:16px;
+        }
+        .pago-box{
+            border:3px solid #2563eb;
+            border-radius:12px;
+            padding:18px;
+            margin:15px 0;
+            background:#f8fbff;
+            box-shadow:0 3px 10px rgba(37,99,235,.12);
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<a href="/dashboard" class="btn-back">
+    ⬅ Volver
+</a>
+
+<button onclick="window.print()" class="btn-print">
+    🖨 Imprimir
+</button>
+
+<div class="hoja-carta">
+
+    <!-- ========================= COPIA CLIENTE ========================= -->
+    <div class="media-carta">
+
+        <h2>🧾 FACTURA No FS {{ factura.id }}</h2>
+
+        {% if factura.cliente == "FACTURA EMPRESA" %}
+            <p style="color:purple;"><b>🏢 Facturación por empresa</b></p>
+        {% else %}
+            <p><b>Cliente:</b> {{ factura.cliente|upper }}</p>
+        {% endif %}
+
+        <p><b>Dirección:</b> {{ factura.direccion }}</p>
+         <!--<p><b>Ciudad:</b> {{ factura.ciudad }}</p>-->
+       <!-- <p><b>Teléfono:</b> {{ factura.telefono }}</p>-->
+        <p><b>Fecha:</b> {{ factura.fecha.strftime('%Y-%m-%d %H:%M') if factura.fecha else '-' }}</p>
+
+        <hr>
+        <div class="pago-box">
+        <h3>💳 Información de Pago</h3>
+        <p><b>Tipo de venta:</b>
+            {% if factura.tipo_venta == "credito" %}
+                <span class="badge alerta-naranja">💳 Crédito</span>
+            {% else %}
+                <span class="badge entregado">💵 Contado</span>
+            {% endif %}
+        </p>
+        <p>
+            <b>Forma de pago:</b>
+            {{ (factura.forma_pago or "-")|capitalize }}
+        </p>
+
+        <p><b>Estado:</b>
+            {% if factura.estado == "pendiente" %}
+                <span class="badge pendiente">⏳ Pendiente</span>
+            {% elif factura.estado == "parcial" %}
+                <span class="badge alerta-naranja">⚠ Parcial</span>
+            {% else %}
+                <span class="badge entregado">✅ Pagado</span>
+            {% endif %}
+        </p>
+
+        <p><b>🚚 Domiciliario:</b> {{ factura.domiciliario }}</p>
+
+        <!-- <p><b>💰 Tarifa aplicada:</b>
+            {% if factura.tipo_precio == "mayorista" %}
+                Mayorista
+            {% elif factura.tipo_precio == "individual" %}
+                Individual
+            {% elif factura.tipo_precio == "mostrador" %}
+                Mostrador
+            {% else %}
+                -
+            {% endif %}
+        </p>-->
+
+        <p><b>Total factura:</b> ${{ "{:,.0f}".format(factura.total or 0) }}</p>
+        <p><b>Abonado:</b> ${{ "{:,.0f}".format(factura.abono or 0) }}</p>
+        <p><b>Saldo pendiente:</b> ${{ "{:,.0f}".format((factura.total or 0) - (factura.abono or 0)) }}</p>
+        {% if factura.tipo_venta == "credito" %}
+        <p><b>📅 Fecha límite:</b> {{ factura.plazo_pago or "-" }}</p>
+        {% endif %}</div>
+        <h3>📦 Detalle</h3>
+
+        <table>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Peso</th>
+                <th>Subtotal</th>
+            </tr>
+
+            {% for d in detalles %}
+            <tr>
+                <td style="
+                    font-weight:700;
+                    color:#1e3a8a;
+                ">
+                    {{ d.producto }}
+                </td>
+                <td style="
+                    font-weight:700;
+                    color:#1e3a8a;
+                ">
+                    {{ d.cantidad }}
+                </td>
+                <td style="
+                    font-weight:700;
+                    color:#1e3a8a;
+                ">
+                    {{ d.peso }}
+                </td>
+                
+
+                <td style="
+                    font-weight:bold;
+                    color:#16a34a;
+                    background:#f0fdf4;
+                ">
+                    ${{ "{:,.0f}".format(d.subtotal) }}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3 class="total">Total: ${{ "{:,.0f}".format(factura.total) }}</h3>
+
+    </div>
+
+    <div class="linea-corte"></div>
+
+    <!-- ========================= COPIA ARCHIVO ========================= -->
+    <div class="media-carta">
+
+        <h2>🧾 FACTURA No FS {{ factura.id }}</h2>
+
+        <p><b>Cliente:</b> {{ factura.cliente|upper }}</p>
+        <p><b>Fecha:</b> {{ factura.fecha.strftime('%Y-%m-%d %H:%M') if factura.fecha else '-' }}</p>
+
+        <hr>
+        <div class="pago-box">
+        <h3>💳 Información de Pago</h3>
+        <p><b>Tipo de venta:</b>
+            {% if factura.tipo_venta == "credito" %}
+                <span class="badge alerta-naranja">💳 Crédito</span>
+            {% else %}
+                <span class="badge entregado">💵 Contado</span>
+            {% endif %}
+        </p>
+        <p>
+            <b>Forma de pago:</b>
+            {{ (factura.forma_pago or "-")|capitalize }}
+        </p>
+
+        <p><b>Estado:</b>
+            {% if factura.estado == "pendiente" %}
+                <span class="badge pendiente">⏳ Pendiente</span>
+            {% elif factura.estado == "parcial" %}
+                <span class="badge alerta-naranja">⚠ Parcial</span>
+            {% else %}
+                <span class="badge entregado">✅ Pagado</span>
+            {% endif %}
+        </p>
+
+        <p><b>Total factura:</b> ${{ "{:,.0f}".format(factura.total or 0) }}</p>
+        <p><b>Abonado:</b> ${{ "{:,.0f}".format(factura.abono or 0) }}</p>
+        <p><b>Saldo pendiente:</b> ${{ "{:,.0f}".format((factura.total or 0) - (factura.abono or 0)) }}</p>
+        {% if factura.tipo_venta == "credito" %}
+        <p><b>📅 Fecha límite:</b> {{ factura.plazo_pago or "-" }}</p>
+        {% endif %}</div>
+        <table>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Peso</th>
+                <th>Subtotal</th>
+            </tr>
+
+            {% for d in detalles %}
+            <tr>
+                <td style="
+                    font-weight:700;
+                    color:#1e3a8a;
+                ">
+                    {{ d.producto }}
+                </td>
+                <td style="
+                    font-weight:700;
+                    color:#1e3a8a;
+                ">
+                    {{ d.cantidad }}
+                </td>
+                <td style="
+                    font-weight:700;
+                    color:#1e3a8a;
+                ">
+                    {{ d.peso }}
+                </td>
+                
+
+                <td style="
+                    font-weight:bold;
+                    color:#16a34a;
+                    background:#f0fdf4;
+                ">
+                    ${{ "{:,.0f}".format(d.subtotal) }}
+                </td>
+
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3 class="total">Total: ${{ "{:,.0f}".format(factura.total) }}</h3>
+
+    </div>
+
+</div>
+
+</body>
+</html>

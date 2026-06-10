@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>📊 Historial de Ventas</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            margin: 0;
+            padding: 25px;
+            color: #1f2937;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .volver-btn {
+            background: linear-gradient(135deg,#2f80ed,#56ccf2);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .volver-btn:hover {
+            transform: scale(1.03);
+        }
+
+        /* CARD */
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        /* BOTONES */
+        .toggle-btn {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.01);
+            opacity: 0.95;
+        }
+
+        .blue {
+            background: linear-gradient(135deg,#2f80ed,#56ccf2);
+        }
+
+        .green {
+            background: linear-gradient(135deg,#27ae60,#55efc4);
+        }
+
+        .purple {
+            background: linear-gradient(135deg,#6c5ce7,#a29bfe);
+        }
+
+        /* CONTENIDO */
+        .hidden-box {
+            display: none;
+            margin-top: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* GRID */
+        .total-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap: 15px;
+        }
+
+        /* BOXES */
+        .total-box {
+            padding: 18px;
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .blue-box {
+            background: linear-gradient(135deg,#2f80ed,#56ccf2);
+        }
+
+        .green-box {
+            background: linear-gradient(135deg,#27ae60,#55efc4);
+        }
+
+        .total-box h3 {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .total-box p {
+            margin: 8px 0 0 0;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        /* TABLAS */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: #2f80ed;
+            color: white;
+        }
+
+        th {
+            padding: 14px;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:nth-child(even) {
+            background: #f6f8fc;
+        }
+
+        tr:hover {
+            background: #e8f1ff;
+        }
+
+        /* FILTROS */
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        input[type="date"] {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: white;
+        }
+
+        .filter-btn {
+            background: #111827;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #000;
+        }
+
+        .section-title {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #374151;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <h2>📊 Historial de Ventas</h2>
+
+    <a href="/dashboard" class="volver-btn">
+        ⬅ Volver
+    </a>
+</div>
+
+<!-- ================= RESUMEN DIARIO ================= -->
+<div class="card">
+
+    <button class="toggle-btn blue" onclick="toggleBox('resumenDia')">
+        📅 Resumen Diario
+    </button>
+
+    <div id="resumenDia" class="hidden-box">
+
+        <div class="total-grid">
+
+            <div class="total-box blue-box">
+                <h3>Total Facturado Hoy</h3>
+                <p>${{ "{:,.0f}".format(dia.facturado | float) }}</p>
+            </div>
+
+            <div class="total-box blue-box">
+                <h3>Total Abonado Hoy</h3>
+                <p>${{ "{:,.0f}".format(dia.abonado | float) }}</p>
+            </div>
+
+            <div class="total-box blue-box">
+                <h3>Total Deuda Hoy</h3>
+                <p>${{ "{:,.0f}".format(dia.deben | float) }}</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="card">
+
+    <h3>💵 Ingresos por forma de pago (Hoy)</h3>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Forma de pago</th>
+                <th>Total recibido</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for f in formas_pago_dia %}
+            <tr>
+                <td>{{ f.forma_pago }}</td>
+                <td>
+                    ${{ "{:,.0f}".format(f.total) }}
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- ================= RESUMEN MENSUAL ================= -->
+<!-- =================<div class="card">
+
+    <button class="toggle-btn green" onclick="toggleBox('resumenMes')">
+        📆 Resumen Mensual
+    </button>
+
+    <div id="resumenMes" class="hidden-box">
+
+        <div class="total-grid">
+
+            <div class="total-box green-box">
+                <h3>Total Facturado Mes</h3>
+                <p>${{ "{:,.0f}".format(mes.facturado | float) }}</p>
+            </div>
+
+            <div class="total-box green-box">
+                <h3>Total Abonado Mes</h3>
+                <p>${{ "{:,.0f}".format(mes.abonado | float) }}</p>
+            </div>
+
+            <div class="total-box green-box">
+                <h3>Total Deuda Mes</h3>
+                <p>${{ "{:,.0f}".format(mes.deben | float) }}</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="card">
+
+    <h3>📆 Ingresos por forma de pago (Mes)</h3>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Forma de pago</th>
+                <th>Total recibido</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for f in formas_pago_mes %}
+            <tr>
+                <td>{{ f.forma_pago }}</td>
+                <td>
+                    ${{ "{:,.0f}".format(f.total) }}
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>================= -->
+
+<!-- ================= HISTÓRICO DIARIO ================= -->
+<div class="card">
+
+    <h3 class="section-title">📅 Histórico Diario</h3>
+
+    <div>
+
+        <form method="GET" class="filter-form">
+
+            <label>Desde:</label>
+            <input type="date" name="desde"
+                   value="{{ request.args.get('desde','') }}">
+
+            <label>Hasta:</label>
+            <input type="date" name="hasta"
+                   value="{{ request.args.get('hasta','') }}">
+
+            <button class="filter-btn">
+                🔎 Filtrar
+            </button>
+
+        </form>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Facturado</th>
+                        <th>Abonado</th>
+                        <th>Debe</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for d in diario %}
+                    <tr>
+                        <td>{{ d.dia }}</td>
+
+                        <td>
+                            ${{ "{:,.0f}".format(d.facturado | float) }}
+                        </td>
+
+                        <td>
+                            ${{ "{:,.0f}".format(d.abonado | float) }}
+                        </td>
+
+                        <td>
+                            ${{ "{:,.0f}".format(d.deben | float) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= HISTÓRICO MENSUAL ================= -->
+<div class="card">
+
+    <h3 class="section-title">📆 Histórico Mensual</h3>
+
+    <div>
+
+        <form method="GET" class="filter-form">
+
+            <label>Desde:</label>
+            <input type="date" name="desde_mes"
+                   value="{{ request.args.get('desde_mes','') }}">
+
+            <label>Hasta:</label>
+            <input type="date" name="hasta_mes"
+                   value="{{ request.args.get('hasta_mes','') }}">
+
+            <button class="filter-btn">
+                🔎 Filtrar
+            </button>
+
+        </form>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Facturado</th>
+                        <th>Abonado</th>
+                        <th>Debe</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for m in mensual %}
+                    <tr>
+
+                        <td>{{ m.mes }}</td>
+
+                        <td>
+                            ${{ "{:,.0f}".format(m.facturado | float) }}
+                        </td>
+
+                        <td>
+                            ${{ "{:,.0f}".format(m.abonado | float) }}
+                        </td>
+
+                        <td>
+                            ${{ "{:,.0f}".format(m.deben | float) }}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= JS ================= -->
+<script>
+
+function toggleBox(id) {
+
+    const el = document.getElementById(id);
+
+    if (el.style.display === "block") {
+        el.style.display = "none";
+    } else {
+        el.style.display = "block";
+    }
+}
+
+</script>
+
+</body>
+</html>

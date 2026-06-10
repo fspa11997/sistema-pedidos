@@ -1,0 +1,650 @@
+
+/* =======================
+   BASE GENERAL
+======================= */
+        body {
+            background: #f4f6f9;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        /* =======================
+        HEADER
+        ======================= */
+        .header-title {
+            position: relative;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .logout-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: #ff4d4d;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+        
+
+        /* =======================
+        TOPBAR (MENU FIJO)
+        ======================= */
+        /* =======================
+   TOPBAR (MENU FIJO)
+======================= */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            background: #2f80ed;   /* 🔵 MISMO AZUL */
+            color: white;
+
+            padding: 10px;
+            border-radius: 10px;
+
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        /* botones dentro del topbar */
+        .topbar button {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .topbar button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* =======================
+        MÉTRICAS
+        ======================= */
+        .metricas-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .metrica-card {
+            flex: 1;
+            min-width: 180px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .metrica-card h4 {
+            margin: 0;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .metrica-card p {
+            font-size: 20px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        /* =======================
+        FILTROS
+        ======================= */
+        .filters-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 9px;
+            align-items: center;
+        }
+
+        .filters-form input {
+            padding: 5px;
+            font-size: 13px;
+        }
+
+        .filters-form input[name="buscar"] {
+            width: 200px;
+        }
+
+        .filters-form input[name="domiciliario"] {
+            width: 180px;
+        }
+
+        .filters-buttons {
+            display: flex;
+            gap: 9px;
+        }
+
+        .filters-buttons button {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: none;
+            background: #eee;
+            cursor: pointer;
+        }
+
+        .filters-buttons button:hover {
+            background: #ddd;
+        }
+
+        /* =======================
+        CONTENIDO PRINCIPAL
+        ======================= */
+        .contenedor {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* =======================
+        NUEVA VENTA (FORM)
+        👉 AHORA CON EL MISMO AZUL
+        ======================= */
+        .formulario {
+            width: 100%;
+            padding: 420;
+            border-radius: 10px;
+            box-shadow: 0 2px 9px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0px;
+
+            background: #2f80ed;   /* 🔵 MISMO AZUL */
+            color: white;
+        }
+
+        .formulario h3 {
+            color: white;
+        }
+
+        /* inputs dentro del formulario */
+        .formulario input,
+        .formulario select {
+            width: 100%;
+            padding: 6px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        /* =======================
+        TABLA
+        ======================= */
+        .tabla {
+            width: 80%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Encabezado */
+        th {
+            background: #2f80ed;
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 6px;
+            font-size: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Filas alternadas */
+        tr:nth-child(even) {
+            background: #f9fafc;
+        }
+
+        /* Hover */
+        tr:hover {
+            background: #eaf2ff;
+            transition: 0.2s;
+        }
+
+        /* =======================
+        BOTONES
+        ======================= */
+        button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        /* =======================
+        ESTADOS
+        ======================= */
+        .activo-todos { background: blue; color: white; }
+        .activo-pendientes { background: orange; color: white; }
+        .activo-entregados { background: green; color: white; }
+        .activo-eliminados { background: red; color: white; }
+
+        /* =======================
+        BOTONES HEADER
+        ======================= */
+        .acciones-izq button,
+        .acciones-der button {
+            margin-right: 5px;
+        }
+
+        th:nth-child(8),
+        td:nth-child(8) {
+            text-align: center;
+        }
+        .venta-form {
+            display: flex;
+            flex-direction: column;   /* clave para orden limpio */
+            gap: 8px;
+        }
+
+        .venta-form input,
+        .venta-form select {
+            width: 100%;    
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .venta-form button {
+            padding: 10px 15px;
+            background: green;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #productos .item {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        #productos select,
+        #productos input {
+            flex: 1;
+        }
+        .venta-grid {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .venta-grid .col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* opcional: mejor estética */
+        .venta-grid input,
+        .venta-grid select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .modal-pedidos {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            overflow: auto;
+        }
+
+        .modal-pedidos .tabla {
+            background: white;
+            width: 95%;
+            margin: 2% auto;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        /* =========================
+        PEDIDOS MODERNO UI
+        ========================= */
+
+        .filters-card {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+        .filters-form-modern {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .filters-form-modern input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .filters-form-modern button {
+            background: #2f80ed;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .filters-buttons-modern {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filters-buttons-modern button {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #f2f2f2;
+        }
+
+        .table-card {
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+        /* BADGES */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .entregado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        /* BOTONES ACCIONES */
+        .btn-green {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-red {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-blue {
+            background: #007bff;
+            color: white;
+        }
+
+        .acciones form {
+            display: inline;
+        }.alerta-roja {
+            background: #ffebee;
+            color: #c62828;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .alerta-naranja {
+            background: #fff3e0;
+            color: #ef6c00;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        /* =========================
+        CLIENTES
+        ========================= */
+
+        .clientes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            margin-bottom: 20px;
+        }
+
+        .clientes-header h2 {
+            margin: 0;
+            color: #222;
+        }
+
+        .clientes-header p {
+            margin-top: 5px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .clientes-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-back,
+        .btn-refresh,
+        .btn-new-client,
+        .btn-save-client {
+
+            border: none;
+            border-radius: 10px;
+            padding: 10px 16px;
+
+            cursor: pointer;
+            font-weight: bold;
+
+            transition: 0.2s;
+        }
+
+        /* VOLVER */
+        .btn-back {
+            background: #2f80ed;
+            color: white;
+        }
+
+        /* ACTUALIZAR */
+        .btn-refresh {
+            background: #27ae60;
+            color: white;
+        }
+
+        /* NUEVO CLIENTE */
+        .btn-new-client {
+            background: #222;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        /* GUARDAR */
+        .btn-save-client {
+            background: #27ae60;
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-back:hover,
+        .btn-refresh:hover,
+        .btn-new-client:hover,
+        .btn-save-client:hover {
+            transform: translateY(-2px);
+            opacity: 0.92;
+        }
+
+        /* CARD FORM */
+        .cliente-form-card {
+
+            background: white;
+
+            padding: 20px;
+
+            border-radius: 14px;
+
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+
+            margin-bottom: 25px;
+        }
+
+        /* GRID FORM */
+        .form-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(2, 1fr);
+
+            gap: 15px;
+        }
+
+        .form-grid input,
+        .form-grid select {
+
+            padding: 10px;
+
+            border-radius: 8px;
+
+            border: 1px solid #ddd;
+        }
+
+        /* TABLA */
+        .tabla-clientes table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            background: white;
+
+            border-radius: 14px;
+
+            overflow: hidden;
+
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .tabla-clientes th {
+
+            background: #2f80ed;
+
+            color: white;
+
+            padding: 12px;
+        }
+
+        .tabla-clientes td {
+
+            padding: 12px;
+
+            border-bottom: 1px solid #eee;
+        }
+
+        .tabla-clientes tr:hover {
+
+            background: #f5f9ff;
+        }
+        /* =========================
+        MODAL ABONOS
+        ========================= */
+
+        .modal-abono {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+
+            justify-content: center;
+            align-items: center;
+
+            z-index: 999;
+        }
+
+        .modal-content-abono {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 400px;
+        }
+
+        .modal-content-abono input,
+        .modal-content-abono textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .alert.error {
+            background: #ffe5e5;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert.success {
+            background: #e7fbe9;
+            color: #166534;
+            border: 1px solid #86efac;
+        }

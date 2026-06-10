@@ -1,0 +1,6 @@
+flask
+gunicorn
+bcrypt
+pytz
+psycopg2-binary
+python-dotenv==1.2.2

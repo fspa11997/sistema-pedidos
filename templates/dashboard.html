@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ST Gestión • Facturación y Pedidos</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="header-title">
+    <h2>ST GESTIÓN</h2>
+
+    <p style="margin:0; font-size:13px; color:#666;">
+        Usuario: <b>{{ session['usuario'] }}</b> <!--| Rol: <b>{{ session['rol'] }}</b> MUESTRA EL ROL -->
+    </p>
+
+    <a href="/logout" class="logout-btn">Cerrar sesión</a>
+    <button onclick="location.reload()" style="
+        background:#28a745;
+        color:white;
+        border:none;
+        padding:8px 12px;
+        border-radius:6px;
+        cursor:pointer;
+    ">
+        🔄 Actualizar
+    </button>
+</div>
+
+<br><br>
+<div class="topbar">
+
+    <!-- IZQUIERDA -->
+    <div class="acciones-izq">
+        
+        <!-- OWNER GLOBAL -->
+        {% if session['rol'] == 'owner_global' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+            <button onclick="toggleForm()">➕ Usuario</button>
+
+            <button onclick="toggleEmpresa()">🏢 Empresa</button>
+
+        <!-- ADMIN -->
+        {% elif session['rol'] == 'admin' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        <!-- VENDEDOR -->
+        {% elif session['rol'] == 'vendedor' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        {% endif %}
+    </div>
+
+    <!-- DERECHA -->
+    <div class="acciones-der">
+
+        {% if session['rol'] in ['owner_global', 'admin'] %}
+
+            <button onclick="toggleMetricas()">📊 Métricas</button>
+
+            <a href="/ventas">
+                <button>📊 Ventas</button>
+            </a>
+
+        {% endif %}
+
+        <a href="/cartera">
+            <button>💳 Cartera</button>
+        </a>
+
+        <a href="/facturas">
+            <button>📄 Facturas</button>
+        </a>
+        <a href="/pedidos">
+            <button>📦 Pedidos</button>
+        </a>
+
+        <button onclick="toggleProductos()">📦 Productos</button>
+
+        <button onclick="toggleInventario()">📦 Inventario</button>
+
+        <!--
+        <a href="/facturar_empresa">
+            <button style="background:purple; color:white;">
+                🏢 Facturar Empresa
+            </button>
+        </a>
+        -->
+
+    </div>
+
+</div>
+<br>
+{% if session['rol'] in ['owner_global', 'admin'] %}
+
+<div id="metricas" style="display:none;">
+    
+    <div class="metricas-container">
+
+        <!--<div class="metrica-card">
+            <h4>💰 Ventas Hoy</h4>
+            <p>${{ "{:,.0f}".format(total_dia) }}</p>
+        </div>-->
+
+        <div class="metrica-card">
+            <h4>🏆 Top Producto</h4>
+            <p>
+                {% if top_producto %}
+                     {{ top_producto['producto'] }} ({{ top_producto['total'] }})
+                {% else %}
+                    Sin ventas
+                {% endif %}
+            </p>
+        </div>
+
+    </div>
+{% endif %}    
+
+</div>
+
+<br>
+
+<!-- 🔐 SOLO SUPERAADMIN -->
+{% if session['rol'] == 'owner_global' %}
+<div id="formUsuario" style="display:none; border:1px solid #ccc; padding:10px;">
+
+    <h3>Crear Usuario</h3>
+    <!-- 👥 TABLA USUARIOS -->
+    <div class="table-card">
+
+        <h3>👤 Usuarios creados</h3>
+        <form method="GET" action="/dashboard" style="margin-bottom:15px;">
+
+            <input type="text" name="usuario" placeholder="🔎 Buscar usuario">
+
+            <select name="rol">
+                <option value="">Todos los roles</option>
+                <option value="owner_global">Owner</option>
+                <option value="admin">Admin</option>
+                <option value="vendedor">Vendedor</option>
+            </select>
+
+            <button type="submit">Filtrar</button>
+
+        </form>
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Empresa</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for u in usuarios %}
+
+            <tr>
+
+                <td>#{{ u["id"] }}</td>
+
+                <td>{{ u["usuario"] }}</td>
+
+                <td>{{ u["rol"] }}</td>
+
+                <td>{{ u["empresa"] }}</td>
+
+                <td>
+
+                    <form
+                        action="/eliminar_usuario/{{ u['id'] }}"
+                        method="POST"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');"
+                    >
+
+                        <button class="btn-red">
+                            🗑 Eliminar
+                        </button>
+
+                    </form>
+                    <form action="/cambiar_password/{{ u['id'] }}" method="POST">
+                        <input type="password" name="password" placeholder="Nueva contraseña" required>
+                        <button class="btn-blue">🔐 Cambiar</button>
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <form method="POST" action="/crear_usuario">
+
+        <input type="text" name="usuario" placeholder="Usuario" required><br><br>
+
+        <input type="password" name="password" placeholder="Contraseña" required><br><br>
+
+        <select name="rol">
+            <option value="admin">Admin</option>
+            <option value="vendedor">Vendedor</option>
+        </select><br><br>
+
+        <select name="empresa_id" required>
+            {% for emp in empresas %}
+                <option value="{{ emp.id }}">{{ emp.nombre }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <button type="submit">Guardar Usuario</button>
+
+    </form>
+
+</div>
+<!-- 🔵 CREAR EMPRESA -->
+<div id="formEmpresa" style="display:none; border:1px solid #ccc; padding:10px;">
+
+    <h3>Crear Empresa</h3>
+
+    <form method="POST" action="/crear_empresa">
+
+        <input type="text" name="nombre" placeholder="Nombre de la empresa" required><br><br>
+
+        <button type="submit">Guardar Empresa</button>
+
+    </form>
+
+    <hr>
+
+    <h3>Empresas</h3>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Acción</th>
+        </tr>
+
+        {% for emp in empresas %}
+        <tr>
+            <td>{{ emp.id }}</td>
+            <td>{{ emp.nombre }}</td>
+            <td>
+                <a href="/eliminar_empresa/{{ emp.id }}" 
+                   onclick="return confirm('¿Seguro que quieres eliminar esta empresa?')">
+                    <button style="background:red;color:white;">Eliminar</button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+{% endif %}
+
+
+
+<br>
+
+<div class="contenedor">
+
+    <!-- 📦 FORMULARIO PEDIDOS -->
+    <div class="formulario">
+
+        <h3>📦 Nueva Venta ✅</h3>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div style="margin-bottom:15px;">
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">
+                    {{ message }}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form id="formFactura" method="POST" action="/crear_factura" class="venta-form">
+
+            <div class="venta-grid">
+
+                <!-- 🟦 COLUMNA IZQUIERDA: CLIENTE -->
+                <div class="col izquierda">
+                  <label for="fechaLimite">
+                        🧍 Listado de clientes
+                    </label>
+                    <select id="clienteSelect" required>
+                        <option value="">Seleccionar cliente</option>
+
+                        {% for c in clientes %}
+                        <option
+                            value="{{ c.nombre }}"
+                            data-direccion="{{ c.direccion }}"
+                            data-ciudad="{{ c.ciudad }}"
+                            data-telefono="{{ c.telefono }}"
+                            data-tipo="{{ c.tipo_id }}"
+                            data-identificacion="{{ c.identificacion }}"
+                            data-tipo_precio="{{ c.tipo_precio }}"
+                        >
+                            {{ c.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="text" id="cliente" name="cliente" placeholder="Cliente" required readonly>
+
+                    <select name="tipo_id" required>
+                        <option value="cc">CC</option>
+                        <option value="nit">NIT</option>
+                    </select>
+
+                    <input type="text" id="identificacion" name="identificacion" placeholder="Identificación" required>
+
+                    <!-- 💰 TIPO DE PRECIO -->
+                     <label for="fechaLimite">
+                        💰 Tarifa
+                    </label>
+
+                    <select name="tipo_precio" id="tipoPrecio" required>
+                        <option value="mayorista">Mayorista</option>
+                        <option value="individual">Individual</option>
+                        <option value="mostrador">Mostrador</option>
+                    </select>
+
+                    <!-- 💳 TIPO DE PAGO -->
+                    <select name="tipo_venta" id="tipoVenta" required>
+
+                        <option value="contado">💵 Contado</option>
+
+                        <option value="credito">🧾 Crédito</option>
+
+                    </select>
+                    <label>Forma de pago</label>
+
+                    <select name="forma_pago">
+
+                        <option value="efectivo">
+                            💵 Efectivo
+                        </option>
+
+                        <option value="transferencia">
+                            🏦 Transferencia
+                        </option>
+
+                        <option value="nequi">
+                            📱 Nequi
+                        </option>
+
+                        <option value="daviplata">
+                            📲 Daviplata
+                        </option>
+
+                        <option value="tarjeta">
+                            💳 Tarjeta
+                        </option>
+
+                    </select>
+
+                    <input type="text" id="direccion" name="direccion" placeholder="Dirección">
+                    <input type="text" id="ciudad" name="ciudad" placeholder="Ciudad">
+                    <input type="text" id="telefono" name="telefono" placeholder="Teléfono">
+
+                    
+                    
+
+                    <!-- 💰 ABONO INICIAL -->
+                     <label for="fechaLimite">
+                        Abono ✅💰
+                    </label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="abono"
+                        id="abono"
+                        placeholder="Abono inicial"
+                        value="0"
+                    >
+
+                    <!-- 📅 FECHA LIMITE -->
+                    <label for="fechaLimite">
+                        📅 Fecha límite de pago
+                    </label>
+
+                    <input
+                        type="date"
+                        name="plazo_pago"
+                        id="plazo_pago"
+                    >
+
+                </div>
+
+                <!-- 🟩 COLUMNA DERECHA -->
+                <div class="col derecha">
+                    <label for="fechaLimite">
+                        🚚 Domiciliario
+                    </label>
+                    <!-- 🚚 DOMICILIARIO -->
+                    <input type="text" name="domiciliario" id="domiciliario" placeholder="Domiciliario">
+
+                    <hr>
+
+                    <!-- 📦 PRODUCTOS -->
+                    <div id="productos">
+
+                        <div class="item">
+                            <select name="producto[]" required>
+                                {% for prod in productos %}
+                                    <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
+                                {% endfor %}
+                            </select>
+
+                            <input type="number" name="cantidad[]" class="cantidad" placeholder="Unid">
+                            <input type="number" step="0.01" name="peso[]" class="peso" placeholder="Kg">
+
+                            <button type="button" onclick="this.parentElement.remove()">❌</button>
+                        </div>
+
+                    </div>
+
+                    <button type="button" onclick="agregarProducto()">➕ Producto</button>
+
+                    <hr>
+
+                    <!-- 🧾 BOTÓN FINAL -->
+                    <button type="submit" style="background:green; color:white; padding:10px; border:none; border-radius:6px;">
+                        🧾 Crear Factura
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+        
+        <hr>
+    </div>
+</div>
+
+    <script>
+    document.getElementById("clienteSelect").addEventListener("change", function(){
+
+        let option = this.options[this.selectedIndex];
+
+        document.querySelector("[name='cliente']").value = option.value;
+        document.querySelector("[name='direccion']").value = option.dataset.direccion;
+        document.querySelector("[name='ciudad']").value = option.dataset.ciudad;
+        document.querySelector("[name='telefono']").value = option.dataset.telefono;
+        document.querySelector("[name='tipo_id']").value = option.dataset.tipo;
+        document.querySelector("[name='identificacion']").value = option.dataset.identificacion;
+        document.getElementById("tipoPrecio").value =option.dataset.tipo_precio;
+
+    });
+    </script>
+
+    <!-- 📊 TABLA -->
+    <div id="pedidosModal" class="modal-pedidos">
+
+        <!-- 🔥 FILTROS -->
+        <h3 style="text-align:left;">📋 Lista de Pedidos 📦</h3>
+        <!-- 🔥 FILTROS NUEVOS -->
+        <div class="filters-bar">
+
+            <form method="GET" action="/dashboard" class="filters-form">
+
+                <input type="text" name="buscar" placeholder="Buscar cliente o producto">
+
+                <input type="date" name="fecha">
+
+                <input type="text" name="domiciliario" placeholder="Domiciliario">
+
+                <button type="submit">🔍 Filtrar</button>
+
+            </form>
+
+            <div class="filters-buttons">
+
+                <a href="/dashboard?filtro=todos"><button>📋 Todos</button></a>
+                <a href="/dashboard?filtro=pendientes"><button>⏳ Pendientes</button></a>
+                <a href="/dashboard?filtro=entregados"><button>✅ Entregados</button></a>
+                <a href="/dashboard?filtro=eliminados"><button>🗑 Eliminados</button></a>
+
+            </div>
+
+        </div>
+        <hr>
+
+<br>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Dirección</th>
+                <th>Ciudad</th>
+                <th>Teléfono</th>
+                <th>Domiciliario</th>
+                <th>Cantidad</th>
+                <th>Peso (kg)</th>
+                <th>Precio</th>
+                <th>Fecha</th>
+                <th>Fecha Entrega</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+
+            {% for p in pedidos %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.cliente }}</td>
+                <td>{{ p.producto }}</td>
+                <td>{{ p.direccion }}</td>
+                <td>{{ p.ciudad }}</td>
+                <td>{{ p.telefono }}</td>
+                <td>{{ p.domiciliario }}</td>
+                <td>{{ p.cantidad }}</td>
+                <td>{{ "%.2f"|format(p.peso or 0) }}</td>
+                <td>{{ "{:,.0f}".format(p.precio) }}</td>
+                <td>
+                    {{ p.fecha.strftime('%Y-%m-%d %H:%M') if p.fecha else '-' }}
+                </td>
+                <td>
+                    {{ p.fecha_entrega.strftime('%Y-%m-%d %H:%M') if p.fecha_entrega else '-' }}
+                </td>
+                <td>
+                    {% if p.estado == 'pendiente' %}
+                        <span style="color:orange;">⏳ Pendiente</span>
+                    {% elif p.estado == 'entregado' %}
+                        <span style="color:green;">✅ Entregado</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if p.eliminado == 0 %}
+                        <form action="/entregar/{{ p.id }}" style="display:inline;">
+                            <button type="submit">✅</button>
+                        </form>
+
+                        <form action="/eliminar/{{ p.id }}" style="display:inline;">
+                            <button type="submit">🗑</button>
+                        </form>
+                    {% else %}
+                        <form action="/recuperar/{{ p.id }}" style="display:inline;">
+                            <button type="submit">♻</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+// =========================
+// TOGGLES (los tuyos)
+// =========================
+function toggleForm() {
+    const form = document.getElementById("formUsuario");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+
+function toggleEmpresa() {
+    const form = document.getElementById("formEmpresa");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+
+function toggleInventario() {
+    const modal = document.getElementById("modalInventario");
+    modal.style.display = (modal.style.display === "block") ? "none" : "block";
+}
+
+function toggleProductos() {
+    const modal = document.getElementById("modalProductos");
+    modal.style.display = (modal.style.display === "block") ? "none" : "block";
+}
+
+function toggleMetricas() {
+    const div = document.getElementById("metricas");
+    div.style.display = (div.style.display === "none") ? "flex" : "none";
+}
+
+function togglePedidos() {
+    const modal = document.getElementById("pedidosModal");
+    modal.style.display = (modal.style.display === "block") ? "none" : "block";
+}
+
+// =========================
+// AGREGAR PRODUCTO (CORREGIDO)
+// =========================
+function agregarProducto() {
+    const container = document.getElementById("productos");
+
+    const div = document.createElement("div");
+    div.classList.add("item");
+
+    div.innerHTML = `
+        <select name="producto[]" required>
+            {% for prod in productos %}
+                <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="number" name="cantidad[]" placeholder="Unidades" value="0">
+        <input type="number" step="0.01" name="peso[]" placeholder="Kilos" value="0">
+
+        <button type="button" onclick="this.parentElement.remove()">❌</button>
+    `;
+
+    container.appendChild(div);
+}
+
+</script>
+<div id="modalInventario" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    z-index:2000;
+">
+
+    <div style="
+        background:white;
+        width:70%;
+        margin:3% auto;
+        padding:20px;
+        border-radius:10px;
+        max-height:85%;
+        overflow:auto;
+    ">
+
+        <h2>📦 Gestionar Inventario</h2>
+
+        <button onclick="toggleInventario()" style="float:right;">❌ Cerrar</button>
+
+        <hr>
+
+        <!-- 🔥 FORMULARIO (SUMAR INVENTARIO) -->
+        <form method="POST" action="/registrar_compra">
+            <select name="producto">
+                {% for prod in productos %}
+                    <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="number" name="cantidad" placeholder="Unidades" value="0">
+            <input type="number" step="0.01" name="peso" placeholder="Kilos" value="0">
+
+            <button type="submit">➕ Agregar Stock</button>
+        </form>
+
+        <hr>
+
+        <!-- 🔥 TABLA INVENTARIO -->
+        <table border="1" width="100%">
+            <tr>
+                <th>Producto</th>
+                <th>Unidades</th>
+                <th>Kilos</th>
+            </tr>
+
+            {% for item in inventario %}
+
+            <tr>
+
+                <td>
+                    {{ item.producto }}
+
+                    <!-- 🔥 ALERTA POR PRODUCTO -->
+                    {% if item.stock_unidades <= 5 %}
+                        <span class="alerta-roja">⚠ CRÍTICO</span>
+                    {% elif item.stock_unidades <= 10 %}
+                        <span class="alerta-naranja">⚠ BAJO</span>
+                    {% endif %}
+                </td>
+
+                <td>{{ item.stock_unidades }}</td>
+                <td>{{ "%.2f"|format(item.stock_kilos or 0) }}</td>
+
+            </tr>
+
+            {% endfor %}    
+        </table>
+
+    </div>
+</div>
+<div id="modalProductos" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    z-index:2000;
+">
+
+    <div style="
+        background:white;
+        width:60%;
+        margin:5% auto;
+        padding:20px;
+        border-radius:10px;
+        max-height:80%;
+        overflow:auto;
+    ">
+
+        <h2>📦 Gestionar Productos</h2>
+
+        <button onclick="toggleProductos()" style="float:right;">❌ Cerrar</button>
+
+        <hr>
+
+        <!-- FORMULARIO CREAR -->
+        <form id="formProducto">
+            <input type="text" name="nombre" placeholder="Producto" required>
+            <input type="number"
+                name="precio_mayorista"
+                placeholder="Precio Mayorista"
+                required>
+
+            <input type="number"
+                name="precio_individual"
+                placeholder="Precio Individual"
+                required>
+
+            <input type="number"
+                name="precio_mostrador"
+                placeholder="Precio Mostrador"
+                required>
+            <input type="number" step="0.01" name="costo" placeholder="Costo por kilo">
+            <button type="submit">Crear</button>
+        </form>
+
+        <hr>
+
+        <!-- TABLA -->
+        <!-- TABLA -->
+        <table border="1" width="100%">
+
+            <tr>
+                <th>Producto</th>
+                <th>Mayorista</th>
+                <th>Individual</th>
+                <th>Mostrador</th>
+                <th>Costo/kg</th>
+                <th>Acción</th>
+            </tr>
+
+            {% for p in productos %}
+            <tr>
+                <td>{{ p.nombre }}</td>
+
+                <td>{{ "{:,.0f}".format(p.precio_mayorista or 0) }}</td>
+                <td>{{ "{:,.0f}".format(p.precio_individual or 0) }}</td>
+                <td>{{ "{:,.0f}".format(p.precio_mostrador or 0) }}</td>
+
+                <td>{{ "{:,.0f}".format(p.costo or 0) }}</td>
+
+                <td>
+                    <a href="/eliminar_producto/{{ p.id }}">
+                        🗑
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
+<script>
+document.getElementById("formProducto").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch("/crear_producto", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => {
+        if (res.ok) {
+            this.reset();
+            location.reload();
+        }
+    });
+});
+
+</script>
+
+</body>
+</html>
