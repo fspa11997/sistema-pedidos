@@ -83,10 +83,12 @@
             <button>📄 Facturas</button>
         </a>
 
-        <a href="/factura_manual">
-            <button>🧾 Factura Rápida</button>
+        {% if session['rol'] == 'vendedor' %}
+        <a href="/factura_simple">
+            <button>🧾 Factura Simple</button>
         </a>
-        
+        {% endif %}
+
         <a href="/pedidos">
             <button>📦 Pedidos</button>
         </a>

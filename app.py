@@ -1648,13 +1648,68 @@ def historial_abonos(factura_id):
         pagos=pagos,
         factura_id=factura_id
     )
-@app.route("/factura_manual")
-def factura_manual():
+@app.route("/factura_simple")
+def factura_simple():
 
     if "usuario" not in session:
         return redirect("/")
 
-    return render_template("factura_manual.html")
+    empresa_id = session["empresa_id"]
+
+    conn = conectar()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cursor.execute("""
+        SELECT *
+        FROM facturas_simples
+        WHERE empresa_id = %s
+        ORDER BY id DESC
+    """, (empresa_id,))
+
+    facturas = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "factura_simple.html",
+        facturas=facturas
+    )
+
+@app.route("/guardar_factura_simple", methods=["POST"])
+def guardar_factura_simple():
+
+    if "usuario" not in session:
+        return redirect("/")
+
+    nombre = request.form["nombre"]
+    numero = request.form["numero"]
+
+    empresa_id = session["empresa_id"]
+    usuario_id = session["user_id"]
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO facturas_simples
+        (
+            nombre,
+            numero,
+            usuario_id,
+            empresa_id
+        )
+        VALUES (%s,%s,%s,%s)
+    """, (
+        nombre,
+        numero,
+        usuario_id,
+        empresa_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/factura_simple")
 # =========================
 # RUN
 # =========================

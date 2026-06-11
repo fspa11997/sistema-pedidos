@@ -1,23 +1,49 @@
-<h2>🧾 Factura Manual</h2>
+<h2>Factura Simple</h2>
 
-<form method="POST" action="/guardar_factura_manual">
+<form method="POST" action="/guardar_factura_simple">
 
     <input
         type="text"
-        name="cliente"
-        placeholder="Nombre cliente"
+        name="nombre"
+        placeholder="Nombre"
         required
     >
 
     <input
         type="text"
         name="numero"
-        placeholder="Número / Referencia"
+        placeholder="Número"
         required
     >
 
     <button type="submit">
-        Crear Factura
+        Guardar
     </button>
 
 </form>
+
+<hr>
+
+<h3>Facturas registradas</h3>
+
+<table>
+
+<tr>
+    <th>ID</th>
+    <th>Nombre</th>
+    <th>Número</th>
+    <th>Fecha</th>
+</tr>
+
+{% for f in facturas %}
+
+<tr>
+    <td>{{ f.id }}</td>
+    <td>{{ f.nombre }}</td>
+    <td>{{ f.numero }}</td>
+    <td>{{ f.fecha }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
