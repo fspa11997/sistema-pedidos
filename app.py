@@ -1696,12 +1696,14 @@ def guardar_factura_simple():
         (
             nombre,
             numero,
+            fecha,
             empresa_id
         )
-        VALUES (%s,%s,%s)
+        VALUES (%s,%s,%s,%s)
     """, (
         nombre,
         numero,
+        ahora_utc(),   # 👈 misma hora que usa todo el sistema
         empresa_id
     ))
 

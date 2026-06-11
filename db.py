@@ -170,7 +170,7 @@ def inicializar_db():
             id SERIAL PRIMARY KEY,
             nombre TEXT NOT NULL,
             numero TEXT NOT NULL,
-            fecha TIMESTAMPTZ DEFAULT NOW(),
+            fecha TIMESTAMPTZ,
             usuario_id INTEGER,
             empresa_id INTEGER
         )
