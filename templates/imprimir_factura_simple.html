@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Factura #{{ factura.id }}</title>
+</head>
+<body>
+
+    <h2>FACTURA SIMPLE</h2>
+
+    <hr>
+
+    <p><b>ID:</b> {{ factura.id }}</p>
+
+    <p><b>Nombre:</b> {{ factura.nombre }}</p>
+
+    <p><b>Número:</b> {{ factura.numero }}</p>
+
+    <p><b>Fecha:</b> {{ factura.fecha }}</p>
+
+    <br>
+
+    <button onclick="window.print()">
+        🖨️ Imprimir
+    </button>
+
+</body>
+</html>

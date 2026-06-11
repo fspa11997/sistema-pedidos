@@ -1711,7 +1711,26 @@ def guardar_factura_simple():
     conn.close()
 
     return redirect("/factura_simple")
+@app.route("/imprimir_factura_simple/<int:id>")
+def imprimir_factura_simple(id):
 
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM facturas_simples
+        WHERE id = %s
+    """, (id,))
+
+    factura = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "imprimir_factura_simple.html",
+        factura=factura
+    )
 # =========================
 # RUN
 # =========================
