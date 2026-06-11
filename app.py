@@ -1685,7 +1685,6 @@ def guardar_factura_simple():
     numero = request.form["numero"]
 
     empresa_id = session["empresa_id"]
-    usuario_id = session["user_id"]
 
     conn = conectar()
     cursor = conn.cursor()
@@ -1695,14 +1694,12 @@ def guardar_factura_simple():
         (
             nombre,
             numero,
-            usuario_id,
             empresa_id
         )
-        VALUES (%s,%s,%s,%s)
+        VALUES (%s,%s,%s)
     """, (
         nombre,
         numero,
-        usuario_id,
         empresa_id
     ))
 
