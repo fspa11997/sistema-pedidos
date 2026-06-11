@@ -1648,6 +1648,13 @@ def historial_abonos(factura_id):
         pagos=pagos,
         factura_id=factura_id
     )
+@app.route("/factura_manual")
+def factura_manual():
+
+    if "usuario" not in session:
+        return redirect("/")
+
+    return render_template("factura_manual.html")
 # =========================
 # RUN
 # =========================
