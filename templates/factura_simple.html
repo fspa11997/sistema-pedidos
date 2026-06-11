@@ -1,7 +1,93 @@
 <div class="factura-simple-container">
 
-    <h2>🧾 Factura Simple</h2>
+    <a href="/dashboard" class="btn-volver">
+        ⬅ Volver al Dashboard
+    </a>
 
+    <h2>🧾 Factura Simple</h2>
+    <style>
+    .factura-simple-container{
+        max-width:1000px;
+        margin:30px auto;
+        background:white;
+        padding:25px;
+        border-radius:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,.1);
+    }
+
+    .factura-simple-container h2{
+        text-align:center;
+        margin-bottom:20px;
+        color:#333;
+    }
+
+    .factura-form{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-bottom:20px;
+    }
+
+    .factura-form input{
+        flex:1;
+        min-width:220px;
+        padding:12px;
+        border:1px solid #ddd;
+        border-radius:8px;
+    }
+
+    .factura-form button{
+        background:#28a745;
+        color:white;
+        border:none;
+        padding:12px 20px;
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    .factura-form button:hover{
+        background:#218838;
+    }
+
+    .tabla-container{
+        overflow-x:auto;
+    }
+
+    .tabla-facturas{
+        width:100%;
+        border-collapse:collapse;
+    }
+
+    .tabla-facturas th{
+        background:#007bff;
+        color:white;
+        padding:12px;
+    }
+
+    .tabla-facturas td{
+        padding:10px;
+        border-bottom:1px solid #ddd;
+    }
+
+    .tabla-facturas tr:hover{
+        background:#f5f5f5;
+    }
+
+    .tabla-facturas td:first-child{
+        font-weight:bold;
+    }
+    .btn-volver{
+        display:inline-block;
+        margin-bottom:15px;
+        text-decoration:none;
+        background:#6c757d;
+        color:white;
+        padding:10px 15px;
+        border-radius:8px;
+    }
+    </style>
+    
     <form method="POST" action="/guardar_factura_simple" class="factura-form">
 
         <input
