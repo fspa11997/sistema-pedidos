@@ -1711,6 +1711,12 @@ def guardar_factura_simple():
     conn.close()
 
     return redirect("/factura_simple")
+@app.route("/test_hora")
+def test_hora():
+
+    return {
+        "utc": str(ahora_utc())
+    }
 # =========================
 # RUN
 # =========================

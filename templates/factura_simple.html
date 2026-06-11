@@ -1,49 +1,61 @@
-<h2>Factura Simple</h2>
+<div class="factura-simple-container">
 
-<form method="POST" action="/guardar_factura_simple">
+    <h2>🧾 Factura Simple</h2>
 
-    <input
-        type="text"
-        name="nombre"
-        placeholder="Nombre"
-        required
-    >
+    <form method="POST" action="/guardar_factura_simple" class="factura-form">
 
-    <input
-        type="text"
-        name="numero"
-        placeholder="Número"
-        required
-    >
+        <input
+            type="text"
+            name="nombre"
+            placeholder="👤 Nombre"
+            required
+        >
 
-    <button type="submit">
-        Guardar
-    </button>
+        <input
+            type="text"
+            name="numero"
+            placeholder="🔢 Número"
+            required
+        >
 
-</form>
+        <button type="submit">
+            💾 Guardar
+        </button>
 
-<hr>
+    </form>
 
-<h3>Facturas registradas</h3>
+    <hr>
 
-<table>
+    <h3>📋 Registros</h3>
 
-<tr>
-    <th>ID</th>
-    <th>Nombre</th>
-    <th>Número</th>
-    <th>Fecha</th>
-</tr>
+    <div class="tabla-container">
 
-{% for f in facturas %}
+        <table class="tabla-facturas">
 
-<tr>
-    <td>{{ f.id }}</td>
-    <td>{{ f.nombre }}</td>
-    <td>{{ f.numero }}</td>
-    <td>{{ f.fecha }}</td>
-</tr>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
 
-{% endfor %}
+            <tbody>
 
-</table>
+                {% for f in facturas %}
+                <tr>
+                    <td>#{{ f.id }}</td>
+                    <td>{{ f.nombre }}</td>
+                    <td>{{ f.numero }}</td>
+                    <td>{{ f.fecha }}</td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
