@@ -1,3 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Factura Simple</title>
+
+</head>
+
+<body>
+
 <div class="factura-simple-container">
 
     <a href="/dashboard" class="btn-volver">
@@ -5,7 +18,16 @@
     </a>
 
     <h2>🧾 Factura Simple</h2>
+
     <style>
+
+    body{
+        background:#f4f6f9;
+        font-family:Arial, sans-serif;
+        margin:0;
+        padding:20px;
+    }
+
     .factura-simple-container{
         max-width:1000px;
         margin:30px auto;
@@ -34,6 +56,7 @@
         padding:12px;
         border:1px solid #ddd;
         border-radius:8px;
+        font-size:14px;
     }
 
     .factura-form button{
@@ -50,6 +73,21 @@
         background:#218838;
     }
 
+    .btn-volver{
+        display:inline-block;
+        margin-bottom:20px;
+        text-decoration:none;
+        background:#6c757d;
+        color:white;
+        padding:10px 15px;
+        border-radius:8px;
+        font-weight:bold;
+    }
+
+    .btn-volver:hover{
+        background:#545b62;
+    }
+
     .tabla-container{
         overflow-x:auto;
     }
@@ -57,12 +95,14 @@
     .tabla-facturas{
         width:100%;
         border-collapse:collapse;
+        margin-top:15px;
     }
 
     .tabla-facturas th{
         background:#007bff;
         color:white;
         padding:12px;
+        text-align:left;
     }
 
     .tabla-facturas td{
@@ -77,17 +117,13 @@
     .tabla-facturas td:first-child{
         font-weight:bold;
     }
-    .btn-volver{
-        display:inline-block;
-        margin-bottom:15px;
-        text-decoration:none;
-        background:#6c757d;
-        color:white;
-        padding:10px 15px;
-        border-radius:8px;
+
+    h3{
+        color:#333;
     }
+
     </style>
-    
+
     <form method="POST" action="/guardar_factura_simple" class="factura-form">
 
         <input
@@ -112,30 +148,41 @@
 
     <hr>
 
-    <h3>📋 Registros</h3>
+    <h3>📋 Facturas Registradas</h3>
 
     <div class="tabla-container">
 
         <table class="tabla-facturas">
 
             <thead>
+
                 <tr>
                     <th>ID</th>
                     <th>Nombre</th>
                     <th>Número</th>
                     <th>Fecha</th>
                 </tr>
+
             </thead>
 
             <tbody>
 
                 {% for f in facturas %}
+
                 <tr>
+
                     <td>#{{ f.id }}</td>
+
                     <td>{{ f.nombre }}</td>
+
                     <td>{{ f.numero }}</td>
-                    <td>{{ f.fecha }}</td>
+
+                    <td>
+                        {{ f.fecha.strftime('%Y-%m-%d %H:%M') if f.fecha else '-' }}
+                    </td>
+
                 </tr>
+
                 {% endfor %}
 
             </tbody>
@@ -145,3 +192,7 @@
     </div>
 
 </div>
+
+</body>
+
+</html>
