@@ -41,6 +41,7 @@ app = Flask(__name__)
 app.secret_key = "secreto"
 
 zona_colombia = pytz.timezone("America/Bogota")
+
 @app.route("/", methods=["GET", "POST"])
 def login():
     empresas = obtener_empresas()
@@ -56,6 +57,7 @@ def login():
         usuario = validar_usuario(user, pwd, empresa_id)
 
         if usuario:
+            session["user_id"] = user["id"]
             session["usuario"] = usuario["usuario"]
             session["rol"] = usuario["rol"]
             session["empresa_id"] = usuario["empresa_id"]
@@ -1685,6 +1687,7 @@ def guardar_factura_simple():
     numero = request.form["numero"]
 
     empresa_id = session["empresa_id"]
+    usuario_id = session["user_id"]
 
     conn = conectar()
     cursor = conn.cursor()
@@ -1694,12 +1697,14 @@ def guardar_factura_simple():
         (
             nombre,
             numero,
+            usuario_id,
             empresa_id
         )
-        VALUES (%s,%s,%s)
+        VALUES (%s,%s,%s,%s)
     """, (
         nombre,
         numero,
+        usuario_id,
         empresa_id
     ))
 
