@@ -1703,16 +1703,12 @@ def guardar_factura_simple():
     nombre = request.form["nombre"]
     numero = request.form["numero"]
 
-    tipo_vehiculo = request.form.get("tipo_vehiculo")
-    horas = request.form.get("horas")
-
-    print("TIPO:", tipo_vehiculo)
-    print("HORAS:", horas)
+    tipo_vehiculo = request.form["tipo_vehiculo"]
+    horas = int(request.form["horas"])
 
     empresa_id = session["empresa_id"]
     usuario_id = session.get("user_id")
 
-    print(request.form)
     # Calcular valor automáticamente
     if tipo_vehiculo == "Moto":
         valor = horas * 2000
