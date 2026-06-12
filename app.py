@@ -1687,12 +1687,16 @@ def factura_simple():
 
     facturas = cursor.fetchall()
 
+    for f in facturas:
+        if f["fecha"]:
+            f["fecha"] = a_colombia(f["fecha"])
+
     conn.close()
 
     return render_template(
         "factura_simple.html",
         facturas=facturas
-    )
+)
 
 @app.route("/guardar_factura_simple", methods=["POST"])
 def guardar_factura_simple():
