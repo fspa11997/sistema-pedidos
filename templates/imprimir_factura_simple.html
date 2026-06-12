@@ -123,9 +123,7 @@
                 <strong>RECIBO N°{{ factura.id }}</strong>
             </div>
 
-            <div class="numero-factura">
-                
-            </div>
+            
 
         </div>
 
@@ -145,6 +143,17 @@
                 <span class="etiqueta">📅 Fecha:</span>
                 <span class="valor">
                     {{ factura.fecha.strftime('%d/%m/%Y %H:%M') if factura.fecha else '' }}
+                </span>
+            </div>
+            <div class="fila">
+                <span class="etiqueta">📝 Concepto:</span>
+                <span class="valor">{{ factura.concepto }}</span>
+            </div>
+
+            <div class="fila">
+                <span class="etiqueta">💰 Valor:</span>
+                <span class="valor">
+                    ${{ "{:,.0f}".format(factura.valor or 0) }}
                 </span>
             </div>
 

@@ -176,6 +176,19 @@ def inicializar_db():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS facturas_simples (
+            id SERIAL PRIMARY KEY,
+            nombre TEXT NOT NULL,
+            numero TEXT NOT NULL,
+            concepto TEXT,
+            valor DOUBLE PRECISION NOT NULL,
+            fecha TIMESTAMPTZ DEFAULT NOW(),
+            usuario_id INTEGER,
+            empresa_id INTEGER
+        );
+    """)
+
     # =========================
     # INVENTARIO
     # =========================
