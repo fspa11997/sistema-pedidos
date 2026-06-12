@@ -1742,7 +1742,7 @@ def guardar_factura_simple():
     conn.commit()
     conn.close()
 
-    return redirect("/factura_simple")
+    return redirect("/factura_simple")      
 
 @app.route("/imprimir_factura_simple/<int:id>")
 def imprimir_factura_simple(id):
