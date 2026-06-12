@@ -1702,8 +1702,11 @@ def guardar_factura_simple():
 
     nombre = request.form["nombre"]
     numero = request.form["numero"]
+    concepto = request.form["concepto"]
+    valor = float(request.form["valor"])
 
     empresa_id = session["empresa_id"]
+    usuario_id = session.get("user_id")
 
     conn = conectar()
     cursor = conn.cursor()
@@ -1713,14 +1716,18 @@ def guardar_factura_simple():
         (
             nombre,
             numero,
-            fecha,
+            concepto,
+            valor,
+            usuario_id,
             empresa_id
         )
-        VALUES (%s,%s,%s,%s)
+        VALUES (%s,%s,%s,%s,%s,%s)
     """, (
         nombre,
         numero,
-        ahora_utc(),   # 👈 misma hora que usa todo el sistema
+        concepto,
+        valor,
+        usuario_id,
         empresa_id
     ))
 
@@ -1728,6 +1735,7 @@ def guardar_factura_simple():
     conn.close()
 
     return redirect("/factura_simple")
+
 @app.route("/imprimir_factura_simple/<int:id>")
 def imprimir_factura_simple(id):
 
