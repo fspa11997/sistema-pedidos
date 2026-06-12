@@ -181,8 +181,11 @@ def inicializar_db():
             id SERIAL PRIMARY KEY,
             nombre TEXT NOT NULL,
             numero TEXT NOT NULL,
-            concepto TEXT,
-            valor DOUBLE PRECISION NOT NULL,
+            tipo_vehiculo TEXT,
+            valor DOUBLE PRECISION DEFAULT 0,
+            fecha_ingreso TIMESTAMPTZ DEFAULT NOW(),
+            fecha_salida TIMESTAMPTZ,
+            horas DOUBLE PRECISION DEFAULT 0,
             fecha TIMESTAMPTZ DEFAULT NOW(),
             usuario_id INTEGER,
             empresa_id INTEGER
