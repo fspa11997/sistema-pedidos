@@ -1,27 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
+
 <head>
+
+    <meta charset="UTF-8">
+
     <title>Factura #{{ factura.id }}</title>
+
+    <style>
+
+        body{
+            font-family:Arial, Helvetica, sans-serif;
+            background:#f4f6f9;
+            padding:30px;
+        }
+
+        .factura{
+            max-width:700px;
+            margin:auto;
+            background:white;
+            padding:30px;
+            border-radius:12px;
+            box-shadow:0 4px 15px rgba(0,0,0,.15);
+        }
+
+        .header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            border-bottom:2px solid #007bff;
+            padding-bottom:15px;
+            margin-bottom:25px;
+        }
+
+        .empresa{
+            font-size:28px;
+            font-weight:bold;
+            color:#007bff;
+        }
+
+        .numero-factura{
+            text-align:right;
+        }
+
+        .numero-factura h2{
+            margin:0;
+            color:#333;
+        }
+
+        .datos{
+            margin-top:20px;
+        }
+
+        .fila{
+            margin-bottom:15px;
+            font-size:18px;
+        }
+
+        .etiqueta{
+            font-weight:bold;
+            color:#555;
+        }
+
+        .valor{
+            color:#111;
+        }
+
+        .footer{
+            margin-top:40px;
+            text-align:center;
+            color:#777;
+            font-size:13px;
+        }
+
+        .btn-imprimir{
+            display:block;
+            margin:30px auto 0;
+            background:#28a745;
+            color:white;
+            border:none;
+            padding:12px 25px;
+            border-radius:10px;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+        }
+
+        .btn-imprimir:hover{
+            background:#218838;
+        }
+
+        @media print{
+
+            .btn-imprimir{
+                display:none;
+            }
+
+            body{
+                background:white;
+                padding:0;
+            }
+
+            .factura{
+                box-shadow:none;
+                border:none;
+            }
+
+        }
+
+    </style>
+
 </head>
+
 <body>
 
-    <h2>FACTURA SIMPLE</h2>
+    <div class="factura">
 
-    <hr>
+        <div class="header">
 
-    <p><b>ID:</b> {{ factura.id }}</p>
+            <div class="empresa">
+                ST GESTIÓN
+            </div>
 
-    <p><b>Nombre:</b> {{ factura.nombre }}</p>
+            <div class="numero-factura">
+                <h2>FACTURA SIMPLE</h2>
+                <strong>#{{ factura.id }}</strong>
+            </div>
 
-    <p><b>Número:</b> {{ factura.numero }}</p>
+        </div>
 
-    <p><b>Fecha:</b> {{ factura.fecha }}</p>
+        <div class="datos">
 
-    <br>
+            <div class="fila">
+                <span class="etiqueta">👤 Nombre:</span>
+                <span class="valor">{{ factura.nombre }}</span>
+            </div>
 
-    <button onclick="window.print()">
-        🖨️ Imprimir
-    </button>
+            <div class="fila">
+                <span class="etiqueta">🔢 Número:</span>
+                <span class="valor">{{ factura.numero }}</span>
+            </div>
+
+            <div class="fila">
+                <span class="etiqueta">📅 Fecha:</span>
+                <span class="valor">
+                    {{ factura.fecha.strftime('%d/%m/%Y %H:%M') if factura.fecha else '' }}
+                </span>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            Documento generado por ST Gestión
+        </div>
+
+        <button
+            onclick="window.print()"
+            class="btn-imprimir"
+        >
+            🖨️ Imprimir Factura
+        </button>
+
+    </div>
 
 </body>
 </html>
