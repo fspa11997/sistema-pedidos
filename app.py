@@ -1702,15 +1702,14 @@ def guardar_factura_simple():
 
     nombre = request.form["nombre"]
     numero = request.form["numero"]
-    concepto = request.form["concepto"]
-    valor = float(request.form["valor"])
+
+    tipo_vehiculo = request.form["tipo_vehiculo"]
+    horas = float(request.form["horas"])
 
     empresa_id = session["empresa_id"]
     usuario_id = session.get("user_id")
-    tipo_vehiculo = request.form["tipo_vehiculo"]
-    horas = float(request.form["horas"])
-    conn = conectar()
-    cursor = conn.cursor()
+
+    # Calcular valor automáticamente
     if tipo_vehiculo == "Moto":
         valor = horas * 2000
 
@@ -1719,6 +1718,9 @@ def guardar_factura_simple():
 
     else:
         valor = 0
+
+    conn = conectar()
+    cursor = conn.cursor()
 
     cursor.execute("""
         INSERT INTO facturas_simples
@@ -1732,15 +1734,15 @@ def guardar_factura_simple():
             empresa_id
         )
         VALUES (%s,%s,%s,%s,%s,%s,%s)
-        """, (
-            nombre,
-            numero,
-            tipo_vehiculo,
-            horas,
-            valor,
-            usuario_id,
-            empresa_id
-        ))
+    """, (
+        nombre,
+        numero,
+        tipo_vehiculo,
+        horas,
+        valor,
+        usuario_id,
+        empresa_id
+    ))
 
     conn.commit()
     conn.close()
