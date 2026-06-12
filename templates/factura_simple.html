@@ -262,8 +262,6 @@
                     <th>Número</th>
                     <th>Fecha</th>
                     <th>Vehículo</th>
-                    <th>Horas</th>
-                    <th>Valor</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -285,12 +283,6 @@
                 </td>
 
                 <td>{{ f.tipo_vehiculo }}</td>
-
-                <td>{{ f.horas }}</td>
-
-                <td>
-                    ${{ "{:,.0f}".format(f.valor or 0) }}
-                </td>
 
                 <td>
                     <a
