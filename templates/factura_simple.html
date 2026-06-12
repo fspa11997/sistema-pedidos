@@ -165,6 +165,22 @@
 
     <hr>
 
+    <form method="GET" action="/factura_simple" class="factura-form">
+
+        <input
+            type="text"
+            name="buscar_numero"
+            placeholder="🔍 Buscar por número"
+            value="{{ request.args.get('buscar_numero','') }}"
+        >
+
+        <button type="submit">
+            Buscar
+        </button>
+        
+
+    </form>
+
     <h3>📋 Facturas Registradas</h3>
 
     <div class="tabla-container">

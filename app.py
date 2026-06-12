@@ -1656,17 +1656,34 @@ def factura_simple():
     if "usuario" not in session:
         return redirect("/")
 
-    empresa_id = session["empresa_id"]
+    buscar_numero = request.args.get("buscar_numero", "")
 
     conn = conectar()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT *
-        FROM facturas_simples
-        WHERE empresa_id = %s
-        ORDER BY id DESC
-    """, (empresa_id,))
+    if buscar_numero:
+
+        cursor.execute("""
+            SELECT *
+            FROM facturas_simples
+            WHERE numero ILIKE %s
+            AND empresa_id = %s
+            ORDER BY id DESC
+        """, (
+            f"%{buscar_numero}%",
+            session["empresa_id"]
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT *
+            FROM facturas_simples
+            WHERE empresa_id = %s
+            ORDER BY id DESC
+        """, (
+            session["empresa_id"],
+        ))
 
     facturas = cursor.fetchall()
 
