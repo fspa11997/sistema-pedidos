@@ -121,6 +121,51 @@
     h3{
         color:#333;
     }
+    .filtro-container{
+        margin:20px 0;
+    }
+
+    .filtro-form{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:wrap;
+    }
+
+    .input-busqueda{
+        width:280px;
+        padding:10px 14px;
+        border:1px solid #dcdcdc;
+        border-radius:8px;
+        font-size:14px;
+    }
+
+    .btn-buscar{
+        background:#007bff;
+        color:white;
+        border:none;
+        padding:10px 18px;
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    .btn-buscar:hover{
+        background:#0069d9;
+    }
+
+    .btn-limpiar{
+        background:#6c757d;
+        color:white;
+        padding:10px 18px;
+        border-radius:8px;
+        text-decoration:none;
+        font-weight:bold;
+    }
+
+    .btn-limpiar:hover{
+        background:#5a6268;
+    }
     .btn-imprimir{
         display:inline-block;
         background:#28a745;
@@ -165,25 +210,29 @@
 
     <hr>
 
-    <!-- 🔍 FILTRO -->
-    <form method="GET" action="/factura_simple" class="factura-form">
+    <div class="filtro-container">
 
-        <input
-            type="text"
-            name="buscar_numero"
-            placeholder="🔍 Buscar por número"
-            value="{{ request.args.get('buscar_numero','') }}"
-        >
+        <form method="GET" action="/factura_simple" class="filtro-form">
 
-        <button type="submit">
-            Buscar
-        </button>
+            <input
+                type="text"
+                name="buscar_numero"
+                placeholder="🔍 Buscar por número"
+                value="{{ request.args.get('buscar_numero','') }}"
+                class="input-busqueda"
+            >
 
-        <a href="/factura_simple" class="btn-volver">
-            🧹 Limpiar
-        </a>
+            <button type="submit" class="btn-buscar">
+                Buscar
+            </button>
 
-    </form>
+            <a href="/factura_simple" class="btn-limpiar">
+                Limpiar
+            </a>
+
+        </form>
+
+    </div>
 
     <h3>📋 Facturas Registradas</h3>
 
