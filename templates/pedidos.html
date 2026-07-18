@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pedidos • ST Gestión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- 🔵 HEADER -->
+<div class="header-title">
+
+    <h2>📦 PEDIDOS</h2>
+
+    <p style="margin:0; font-size:13px; color:#666;">
+        Usuario: <b>{{ session['usuario'] }}</b>
+    </p>
+
+    <a href="/dashboard" class="logout-btn" style="background:#2f80ed;">
+        ⬅ Volver
+    </a>
+
+</div>
+
+<br>
+
+<!-- 🔥 FILTROS -->
+<div class="filters-card">
+
+    <form method="GET" action="/pedidos" class="filters-form-modern">
+
+        <input type="hidden" name="filtro" value="{{ filtro }}">
+
+        <input
+            type="text"
+            name="buscar"
+            placeholder="🔎 Buscar cliente o producto"
+            value="{{ request.args.get('buscar', '') }}"
+        >
+
+        <input
+            type="date"
+            name="fecha"
+            value="{{ request.args.get('fecha', '') }}"
+        >
+
+        <input
+            type="text"
+            name="domiciliario"
+            placeholder="🚚 Domiciliario"
+            value="{{ request.args.get('domiciliario', '') }}"
+        >
+
+        <button type="submit">Filtrar</button>
+
+    </form>
+
+    <div class="filters-buttons-modern">
+
+        <a href="/pedidos?filtro=todos">
+            <button type="button">📋 Todos</button>
+        </a>
+
+        <a href="/pedidos?filtro=pendientes">
+            <button type="button">⏳ Pendientes</button>
+        </a>
+
+        <a href="/pedidos?filtro=entregados">
+            <button type="button">✅ Entregados</button>
+        </a>
+
+        <a href="/pedidos?filtro=eliminados">
+            <button type="button">🗑 Eliminados</button>
+        </a>
+
+    </div>
+
+</div>
+
+<br>
+
+<!-- 📊 TABLA -->
+<div class="table-card">
+
+<table>
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Producto</th>
+            <th>Dirección</th>
+            <th>Ciudad</th>
+            <th>Teléfono</th>
+            <th>Domiciliario</th>
+            <th>Cant</th>
+            <th>Peso</th>
+            <th>Precio</th>
+            <th>Fecha</th>
+            <th>Entrega</th>
+            <th>Estado</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    {% if pedidos %}
+
+        {% for p in pedidos %}
+        <tr>
+
+            <td>#{{ p["id"] }}</td>
+
+            <td>
+                <b>{{ p["cliente"] }}</b>
+            </td>
+
+            <td>{{ p["producto"] }}</td>
+
+            <td>{{ p["direccion"] }}</td>
+
+            <td>{{ p["ciudad"] }}</td>
+
+            <td>{{ p["telefono"] }}</td>
+
+            <td>{{ p["domiciliario"] or "-" }}</td>
+
+            <td>{{ p["cantidad"] }}</td>
+
+            <td>
+                {{ "%.2f"|format((p["peso"] or 0) | float) }}
+            </td>
+
+            <td>
+                <b>
+                    ${{ "{:,.0f}".format((p["precio"] or 0) | float) }} 
+                </b>
+            </td>
+
+            <td>{{ p["fecha"].strftime('%Y-%m-%d %H:%M') if p["fecha"] else '-' }}</td>
+
+            <td>{{ p["fecha_entrega"].strftime('%Y-%m-%d %H:%M') if p["fecha_entrega"] else '-' }}</td>
+
+            <td>
+
+                {% if p["estado"] == 'pendiente' %}
+
+                    <span class="badge pendiente">
+                        ⏳ Pendiente
+                    </span>
+
+                {% else %}
+
+                    <span class="badge entregado">
+                        ✅ Entregado
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <td class="acciones">
+
+                {% if p["eliminado"] == 0 %}
+
+                    <form action="/entregar/{{ p['id'] }}">
+                        <button class="btn-green">
+                            ✔
+                        </button>
+                    </form>
+
+                    <form action="/eliminar/{{ p['id'] }}">
+                        <button class="btn-red">
+                            🗑
+                        </button>
+                    </form>
+
+                {% else %}
+
+                    <form action="/recuperar/{{ p['id'] }}">
+                        <button class="btn-blue">
+                            ♻
+                        </button>
+                    </form>
+
+                {% endif %}
+
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    {% else %}
+
+        <tr>
+            <td colspan="14" style="text-align:center; padding:30px;">
+                No hay pedidos para mostrar
+            </td>
+        </tr>
+
+    {% endif %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cartera • ST Gestión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- 🔵 HEADER -->
+<div class="header-title">
+
+    <h2>💰 CARTERA</h2>
+
+    <p style="margin:0; font-size:13px; color:#666;">
+        Usuario: <b>{{ session['usuario'] }}</b>
+    </p>
+
+    <a href="/dashboard" class="logout-btn" style="background:#2f80ed;">
+        ⬅ Volver
+    </a>
+
+</div>
+
+<br>
+
+<!-- 🔥 FILTROS (MISMO ESTILO PEDIDOS) -->
+<div class="filters-card">
+
+    <form method="GET" action="/cartera" class="filters-form-modern">
+
+        <input type="number"name="id"placeholder="🆔 ID Factura"value="{{ request.args.get('id', '') }}">
+        <input type="text" name="cliente" placeholder="🔎 Cliente">
+
+        <select name="estado">
+            <option value="">Todos</option>
+            <option value="pendiente">⏳ Pendiente</option>
+            <option value="parcial">⚠ Parcial</option>
+            <option value="pagado">✅ Pagado</option>
+        </select>
+
+        <input type="date" name="fecha">
+
+        <button type="submit">Filtrar</button>
+
+    </form>
+
+    <div class="filters-buttons-modern">
+
+        <a href="/cartera?estado=pendiente"><button>⏳ Pendientes</button></a>
+        <a href="/cartera?estado=parcial"><button>⚠ Parcial</button></a>
+        <a href="/cartera?estado=pagado"><button>✅ Pagados</button></a>
+        <a href="/cartera"><button>📋 Todos</button></a>
+
+    </div>
+
+</div>
+
+<br>
+
+<br>
+
+<!-- 📊 TABLA -->
+<div class="table-card">
+
+<table>
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Plazo pago</th>
+            <th>Total</th>
+            <th>Abono</th>
+            <th>Saldo</th>
+            <th>Estado</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for f in facturas %}
+        <tr>
+
+            <td>#{{ f.id }}</td>
+
+            <td><b>{{ f.cliente }}</b></td>
+
+            <td>{{ f.fecha }}</td>
+
+            <!-- 📅 PLAZO DE PAGO -->
+            <td>
+                {{ f.plazo_pago or "-" }}
+            </td>
+
+            <!-- 💰 TOTAL -->
+            <td>
+                <b>${{ "{:,.0f}".format(f.total) }}</b>
+            </td>       
+
+            <!-- 💵 ABONO -->
+            <td>
+                 <span style="color:green; font-weight:bold;">
+                    ${{ "{:,.0f}".format(f.abono) }}
+                </span>
+            </td>
+
+            <!-- 📉 SALDO -->
+            <td>
+                {% set saldo = (f.total or 0) - (f.abono or 0) %}
+                <b>${{ "{:,.0f}".format(saldo) }}</b>
+            </td>
+
+            <!-- 🔵 ESTADO -->
+            <td>
+                {% if saldo <= 0 %}
+                    <span class="badge entregado">✅ Pagado</span>
+
+                {% elif (f.abono or 0) > 0 %}
+                    <span class="badge alerta-naranja">⚠ Parcial</span>
+
+                {% else %}
+                    <span class="badge pendiente">⏳ Pendiente</span>
+                {% endif %}
+            </td>
+
+            <!-- ⚙️ ACCIONES -->
+            <td class="acciones">
+
+                <a href="/factura/{{ f.id }}">
+                    <button class="btn-view">Ver</button>
+                </a>
+                <a href="/historial_abonos/{{ f.id }}">
+                    <button class="btn-blue">
+                        📜 Historial
+                    </button>
+                </a>
+
+                <button type="button" onclick="abrirAbono('{{ f.id }}')" class="btn-green">
+                    💰 Abonar
+                </button>
+
+            </td>
+
+        </tr>
+        {% endfor %}
+
+    </tbody>
+
+</table>
+<!-- 💰 MODAL ABONO -->
+<div id="modalAbono" style="display:none;">
+
+    <form id="formAbono" method="POST" action="/abonar_credito">
+
+        <input type="hidden" name="factura_id" id="facturaIdInput">
+
+        <input
+            type="number"
+            step="0.01"
+            name="abono"
+            placeholder="Valor abono"
+            required
+        >
+
+        <select name="forma_pago" required>
+            <option value="">💳 Forma de pago</option>
+            <option value="efectivo">💵 Efectivo</option>
+            <option value="transferencia">🏦 Transferencia</option>
+            <option value="nequi">📱 Nequi</option>
+            <option value="daviplata">📲 Daviplata</option>
+            <option value="tarjeta">💳 Tarjeta</option>
+        </select>
+
+        <input
+            type="text"
+            name="observacion"
+            placeholder="Observación"
+        >
+
+        <button type="submit">
+            Guardar Abono
+        </button>
+
+    </form>
+
+</div>
+<script>
+function abrirAbono(facturaId) {
+
+    // abrir modal
+    document.getElementById("modalAbono").style.display = "block";
+
+    // asignar ID al input hidden
+    document.getElementById("facturaIdInput").value = facturaId;
+}
+
+function cerrarAbono() {
+    document.getElementById("modalAbono").style.display = "none";
+}
+</script>
+</body>
+</html>
