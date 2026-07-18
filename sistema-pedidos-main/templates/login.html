@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login • ST Gestión</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+
+        body{
+            margin:0;
+            padding:0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #2f80ed, #56ccf2);
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .login-card{
+            background:rgba(255,255,255,0.95);
+            width:380px;
+            padding:40px;
+            border-radius:20px;
+            box-shadow:0 10px 35px rgba(0,0,0,0.2);
+            text-align:center;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-logo{
+            margin-bottom:15px;
+        }
+
+        .login-logo img{
+            width:220px;
+            height:auto;
+        }
+
+        .login-title{
+            margin:0;
+            color:#222;
+            font-size:28px;
+            font-weight:bold;
+        }
+
+        .login-subtitle{
+            color:#777;
+            font-size:14px;
+            margin-top:8px;
+            margin-bottom:30px;
+        }
+
+        .login-card input,
+        .login-card select{
+            width:100%;
+            padding:14px;
+            margin-bottom:15px;
+            border-radius:10px;
+            border:1px solid #ddd;
+            font-size:15px;
+            box-sizing:border-box;
+            transition:0.2s;
+            background:white;
+        }
+
+        .login-card input:focus,
+        .login-card select:focus{
+            outline:none;
+            border-color:#2f80ed;
+            box-shadow:0 0 0 3px rgba(47,128,237,0.15);
+        }
+
+        .login-btn{
+            width:100%;
+            padding:14px;
+            border:none;
+            border-radius:10px;
+            background:#2f80ed;
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+            transition:0.2s;
+            font-weight:bold;
+        }
+
+        .login-btn:hover{
+            background:#1366d6;
+            transform:translateY(-1px);
+        }
+
+        .error-box{
+            background:#ffe5e5;
+            color:#c62828;
+            padding:12px;
+            border-radius:10px;
+            margin-bottom:20px;
+            font-size:14px;
+        }
+
+        .footer-text{
+            margin-top:25px;
+            font-size:12px;
+            color:#888;
+        }
+
+        @media(max-width:500px){
+
+            .login-card{
+                width:90%;
+                padding:30px;
+            }
+
+            .login-title{
+                font-size:24px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <div class="login-logo">
+
+        <img
+            src="{{ url_for('static', filename='logo.png') }}"
+            alt="Logo"
+        >
+
+    </div>
+
+    <h2 class="login-title">
+        ST Gestión
+    </h2>
+
+    <p class="login-subtitle">
+        Sistema de pedidos y control empresarial
+    </p>
+
+    {% if error %}
+    <div class="error-box">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST">
+
+        <input
+            type="text"
+            name="usuario"
+            placeholder="👤 Usuario"
+            required
+        >
+
+        <input
+            type="password"
+            name="password"
+            placeholder="🔒 Contraseña"
+            required
+        >
+
+        <select name="empresa" required>
+
+            <option value="">
+                🏢 Seleccione empresa
+            </option>
+
+            {% for e in empresas %}
+                <option value="{{ e.id }}">
+                    {{ e.nombre }}
+                </option>
+            {% endfor %}
+
+        </select>
+
+        <button type="submit" class="login-btn">
+            Entrar al sistema
+        </button>
+
+    </form>
+
+    <div class="footer-text">
+        © ST Gestión
+    </div>
+
+</div>
+
+</body>
+</html>

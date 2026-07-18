@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recibo de Abono</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            padding:20px;
+        }
+
+        .recibo{
+            width:400px;
+            margin:auto;
+            border:1px solid #ccc;
+            padding:20px;
+        }
+
+        h2{
+            text-align:center;
+        }
+
+        .linea{
+            margin-bottom:10px;
+        }
+
+        button{
+            padding:10px;
+            background:green;
+            color:white;
+            border:none;
+            cursor:pointer;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div class="recibo">
+
+    <h2>🧾 RECIBO DE ABONO</h2>
+
+    <div class="linea">
+        <b>Recibo:</b>
+        #{{ recibo.id }}
+    </div>
+
+    <div class="linea">
+        <b>Factura:</b>
+        #{{ recibo.factura_id }}
+    </div>
+
+    <div class="linea">
+        <b>Cliente:</b>
+        {{ recibo.cliente }}
+    </div>
+
+    <div class="linea">
+        <b>Fecha:</b>
+        {{ recibo.fecha }}
+    </div>
+
+    <hr>
+
+    <div class="linea">
+        <b>Saldo anterior:</b>
+        ${{ "{:,.0f}".format(recibo.saldo_anterior) }}
+    </div>
+
+    <div class="linea">
+        <b>Abono:</b>
+        <span style="color:green;">
+            ${{ "{:,.0f}".format(recibo.valor_abono) }}
+        </span>
+    </div>
+
+    <div class="linea">
+        <b>Saldo restante:</b>
+        ${{ "{:,.0f}".format(recibo.saldo_nuevo) }}
+    </div>
+
+    <br>
+
+    <button onclick="window.print()">
+        🖨 Imprimir
+    </button>
+
+</div>
+
+</body>
+</html>

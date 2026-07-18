@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturas</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #1f2937;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            background: #374151;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+        }
+
+        .btn-back:hover {
+            background: #111827;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filters input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        .btn-filter {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #2563eb;
+            color: white;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .btn-view {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+        }
+
+        .total {
+            font-weight: bold;
+        }
+
+        .estado-pendiente { color:#d97706; font-weight:bold; }
+        .estado-parcial { color:#f59e0b; font-weight:bold; }
+        .estado-pagado { color:#10b981; font-weight:bold; }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <h2>📄 Historial de Facturas</h2>
+
+        <a href="/dashboard" class="btn-back">
+            ⬅ Volver
+        </a>
+    </div>
+
+    <!-- FILTROS -->
+    <form method="GET" action="/facturas" class="filters">
+
+        <input type="text" name="cliente" placeholder="Cliente">
+        <input type="text" name="factura" placeholder="Número factura">
+        <input type="date" name="fecha">
+
+        <button type="submit" class="btn-filter">🔍 Filtrar</button>
+
+    </form>
+
+    <!-- TABLA -->
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Ciudad</th>
+                    <th>Total</th>
+                    <th>Forma Pago</th>
+                    <th>Abono</th>
+                    <th>Saldo</th>
+                    <th>Estado</th>
+
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for f in facturas %}
+                <tr>
+
+                    <td>#{{ f.id }}</td>
+                    <td>{{ f.cliente }}</td>
+                    <td>{{ f.ciudad }}</td>
+
+                    <td class="total">
+                        ${{ "{:,.0f}".format(f.total or 0) }}
+                    </td>
+                    <!-- FORMA DE PAGO -->
+                    <td>
+                        {{ f.forma_pago or "-" }}
+                    </td>
+
+                    <!-- ABONO -->
+                    <td>
+                        ${{ "{:,.0f}".format(f.abono or 0) }}
+                    </td>
+
+                    <!-- SALDO -->
+                    <td>
+                        ${{ "{:,.0f}".format((f.total or 0) - (f.abono or 0)) }}
+                    </td>
+
+                    <!-- ESTADO -->
+                    <td>
+                        {% if f.estado == "pendiente" %}
+                            <span class="estado-pendiente">⏳ Pendiente</span>
+
+                        {% elif f.estado == "parcial" %}
+                            <span class="estado-parcial">⚠ Parcial</span>
+
+                        {% else %}
+                            <span class="estado-pagado">✅ Pagado</span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ f.fecha.strftime('%Y-%m-%d %H:%M') if f.fecha else '-' }}</td>
+
+                    <td>
+                        <a href="/factura/{{ f.id }}">
+                            <button class="btn-view">Ver</button>
+                        </a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>
