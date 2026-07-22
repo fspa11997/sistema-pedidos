@@ -3,7 +3,7 @@ import pytz
 import os
 from datetime import datetime
 from flask import Flask, flash, render_template, session, redirect, request
-
+#yo"
 from db import (
     validar_usuario,
     obtener_empresas,
