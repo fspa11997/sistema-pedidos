@@ -860,7 +860,7 @@ button,input,select{font-family:inherit}
                 <td>{{ "{:,.0f}".format(p.precio) }}</td>
                 <td>
                     {% if p.fecha %}
-                        {{ p.fecha[8:10] }}/{{ p.fecha[5:7] }}/{{ p.fecha[0:4] }}
+                        {{ p.fecha.strftime('%d/%m/%Y') }}
                     {% else %}
                         Sin fecha
                     {% endif %}
