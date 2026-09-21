@@ -1,0 +1,238 @@
+
+/* =========================================================
+   ST GESTIÓN — TEMA VISUAL UNIFICADO
+   Solo presentación: no modifica rutas, formularios ni lógica.
+========================================================= */
+:root{
+  --st-navy:#102f50;
+  --st-navy2:#0b2744;
+  --st-blue:#117be8;
+  --st-green:#08ad60;
+  --st-red:#ef4760;
+  --st-bg:#f3f8fd;
+  --st-line:#dce8f3;
+  --st-text:#173b63;
+  --st-muted:#7d95ad;
+}
+*{box-sizing:border-box}
+html,body{font-family:Inter,"Segoe UI",Arial,sans-serif!important}
+body{
+  background:var(--st-bg)!important;
+  color:var(--st-text)!important;
+}
+button,input,select,textarea{font-family:inherit!important}
+
+/* Header used by secondary pages */
+body > .header-title{
+  background:#fff!important;
+  border-bottom:1px solid #e5edf5!important;
+  box-shadow:0 2px 12px rgba(20,55,90,.06)!important;
+}
+.header-title h2{color:var(--st-text)!important;font-weight:800!important}
+.header-title p{color:#617b96!important}
+.logout-btn,.logout{
+  background:var(--st-red)!important;
+  color:#fff!important;
+  border:0!important;
+  border-radius:6px!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  text-decoration:none!important;
+}
+.logout-btn:hover,.logout:hover{background:#d9364f!important}
+
+/* Secondary page cards */
+.filters-card,.table-card,.card,.filters,.table-container,.content > .card{
+  background:#fff!important;
+  border:1px solid var(--st-line)!important;
+  border-radius:9px!important;
+  box-shadow:0 6px 20px rgba(30,70,105,.06)!important;
+}
+.filters-card,.filters{padding:18px!important}
+.table-card{overflow:hidden!important}
+.table-card h3,.card h2,.card h3{
+  color:var(--st-text)!important;
+}
+
+/* Forms */
+.filters-form-modern,.filters-form,.filter-form,.form-grid{
+  gap:10px!important;
+}
+.filters-form-modern input,.filters-form-modern select,
+.filters-form input,.filters-form select,
+.filter-form input,.filter-form select,
+.field input,.field select,
+.form-grid input,.form-grid select{
+  border:1px solid #d8e6f2!important;
+  border-radius:5px!important;
+  background:#fff!important;
+  color:#365572!important;
+  outline:none!important;
+}
+.filters-form-modern input:focus,.filters-form-modern select:focus,
+.filters-form input:focus,.filters-form select:focus,
+.filter-form input:focus,.filter-form select:focus,
+.field input:focus,.field select:focus{
+  border-color:#79b7f4!important;
+  box-shadow:0 0 0 2px rgba(17,123,232,.08)!important;
+}
+
+/* Unified buttons */
+.btn-blue,.btn-primary,.btn-view,.btn-filter,.btn-save,
+.btn-green,.btn-red,.filter-btn,.toggle-btn{
+  border:0!important;
+  border-radius:5px!important;
+  font-weight:700!important;
+  cursor:pointer!important;
+  transition:.15s ease!important;
+}
+.btn-blue,.btn-primary,.btn-view,.btn-filter,.btn-save{
+  background:var(--st-blue)!important;color:#fff!important;
+}
+.btn-green{background:var(--st-green)!important;color:#fff!important}
+.btn-red{background:var(--st-red)!important;color:#fff!important}
+.btn-blue:hover,.btn-primary:hover,.btn-view:hover,.btn-filter:hover,.btn-save:hover,
+.btn-green:hover,.btn-red:hover{filter:brightness(.94)!important}
+
+/* Tables */
+table,.data-table{
+  border-collapse:collapse!important;
+  background:#fff!important;
+}
+table th,.data-table th{
+  background:#f5f9fd!important;
+  color:#234d79!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  text-transform:uppercase;
+  letter-spacing:.35px;
+  border-bottom:1px solid var(--st-line)!important;
+}
+table td,.data-table td{
+  color:#536f8b!important;
+  border-bottom:1px solid #edf2f7!important;
+}
+table tbody tr:hover,.data-table tbody tr:hover{
+  background:#f7fbff!important;
+}
+
+/* Status badges */
+.badge{border-radius:999px!important;font-weight:700!important}
+.badge.pendiente,.estado-pendiente{background:#fff4df!important;color:#b96b00!important}
+.badge.entregado,.estado-pagado{background:#e8f8ef!important;color:#07834b!important}
+.estado-parcial{background:#fff4df!important;color:#b96b00!important}
+
+/* Products / Inventory pages */
+body:has(.sidebar) .sidebar{
+  background:linear-gradient(180deg,var(--st-navy) 0%,var(--st-navy2) 100%)!important;
+  box-shadow:3px 0 16px rgba(7,33,58,.14)!important;
+}
+body:has(.sidebar) .brand{
+  border-bottom:1px solid rgba(255,255,255,.08)!important;
+}
+body:has(.sidebar) .brand strong{color:#fff!important}
+body:has(.sidebar) .brand small{color:#4fc3ff!important}
+body:has(.sidebar) .nav-title{color:#87a8c6!important}
+body:has(.sidebar) .nav a,
+body:has(.sidebar) .nav button{
+  color:#dcecff!important;
+  border-radius:5px!important;
+}
+body:has(.sidebar) .nav a:hover,
+body:has(.sidebar) .nav button:hover,
+body:has(.sidebar) .nav .active{
+  background:rgba(17,123,232,.23)!important;
+  color:#fff!important;
+}
+body:has(.sidebar) .main{background:var(--st-bg)!important}
+body:has(.sidebar) .page-head h1{color:var(--st-text)!important}
+body:has(.sidebar) .card-head{border-bottom:1px solid #e5edf5!important}
+body:has(.sidebar) .card-head h2,
+body:has(.sidebar) .card-head h3{color:var(--st-text)!important}
+body:has(.sidebar) .stat{
+  background:#fff!important;border:1px solid var(--st-line)!important;
+  box-shadow:0 5px 18px rgba(25,68,105,.06)!important;
+}
+
+/* Simple pages: invoice / receipt / history */
+.hoja-carta,.media-carta,.recibo{
+  background:#fff!important;
+  border:1px solid var(--st-line)!important;
+  border-radius:10px!important;
+  box-shadow:0 8px 24px rgba(30,70,105,.07)!important;
+}
+.hoja-carta h2,.media-carta h2,.recibo h2{color:var(--st-text)!important}
+.hoja-carta h3,.media-carta h3{
+  color:var(--st-text)!important;
+  border-left-color:var(--st-blue)!important;
+}
+.total{color:var(--st-text)!important}
+.btn-print{
+  background:var(--st-blue)!important;
+  color:#fff!important;
+  border:0!important;
+  border-radius:5px!important;
+}
+
+/* Dashboard: reserve visible, comfortable space for payment deadline */
+.dashboard-date-fix{}
+.venta-grid .col.izquierda{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  column-gap:12px!important;
+  row-gap:7px!important;
+  align-content:start!important;
+}
+.venta-grid .col.izquierda label[for="fechaLimite"]{
+  grid-column:1/-1!important;
+  margin:7px 0 0!important;
+}
+.venta-grid .col.izquierda #fechaLimite{
+  grid-column:1/-1!important;
+  min-height:36px!important;
+  margin-bottom:4px!important;
+}
+.venta-grid .col.izquierda #abonoInput{
+  min-width:0!important;
+}
+.venta-grid .col.izquierda input,
+.venta-grid .col.izquierda select{
+  min-width:0!important;
+}
+.venta-grid .col.izquierda #tipoVenta,
+.venta-grid .col.izquierda #tipoPrecio{
+  width:100%!important;
+}
+
+
+/* Botones VOLVER: estilo único en todo el sistema */
+.btn-back-uniform,
+a.btn-back-uniform,
+button.btn-back-uniform {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  box-sizing:border-box !important;
+  width:130px !important;
+  min-width:130px !important;
+  height:40px !important;
+  padding:0 16px !important;
+  margin:0 !important;
+  border:1px solid #2f80ed !important;
+  border-radius:6px !important;
+  background:#2f80ed !important;
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  line-height:1 !important;
+  text-decoration:none !important;
+  cursor:pointer !important;
+  transition:background .2s ease, transform .2s ease !important;
+}
+.btn-back-uniform:hover,
+a.btn-back-uniform:hover,
+button.btn-back-uniform:hover {
+  background:#1769c2 !important;
+  color:#fff !important;
+  transform:translateY(-1px);
+}

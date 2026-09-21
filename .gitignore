@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.*
+
+# Local SQLite database (the project now uses PostgreSQL)
+*.db
+pedidos.db
+
+# Build files
+build/
+dist/
+*.spec
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

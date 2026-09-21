@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>{{ producto.nombre }} • Código de barras</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef3f8;font-family:Arial,"Segoe UI",sans-serif;color:#111;display:flex;justify-content:center;align-items:flex-start;padding:30px}
+.label{width:520px;background:#fff;border:2px solid #111;border-radius:10px;padding:28px 30px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.nombre{font-size:25px;font-weight:800;margin:0 0 14px;text-transform:uppercase;line-height:1.2}
+.codigo{font-size:19px;letter-spacing:1px;margin:0 0 18px}
+.titulo{font-size:14px;font-weight:700;margin:10px 0 5px}
+.barcode{width:100%;height:auto;max-height:150px;object-fit:contain;display:block;margin:0 auto}
+.acciones{margin-top:22px;display:flex;justify-content:center;gap:10px}
+button{border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13px}
+.imprimir{background:#117be8;color:#fff}.cerrar{background:#e7edf3;color:#173b63}
+@media print{body{background:#fff;padding:0;display:block}.label{width:100%;max-width:90mm;border:2px solid #111;border-radius:0;box-shadow:none;margin:0 auto;padding:8mm 6mm}.nombre{font-size:18px}.codigo{font-size:13px;margin-bottom:6mm}.titulo{font-size:11px}.barcode{max-height:35mm}.acciones{display:none}@page{size:auto;margin:8mm}}
+</style>
+</head>
+<body>
+<div class="label">
+  <div class="nombre">{{ producto.nombre }}</div>
+  <div class="codigo">{{ producto.codigo_barras }}</div>
+  <div class="titulo">Código de barras</div>
+  <img class="barcode" src="/codigo_barras/{{ producto.codigo_barras }}" alt="Código de barras de {{ producto.nombre }}">
+  <div class="acciones">
+    <button class="imprimir" onclick="window.print()">🖨 Imprimir</button>
+    <button class="cerrar" onclick="window.close()">Cerrar</button>
+  </div>
+</div>
+<script>window.addEventListener('load', function(){ setTimeout(function(){ window.print(); }, 300); });</script>
+</body>
+</html>

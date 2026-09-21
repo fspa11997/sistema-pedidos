@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ST Gestión • Facturación y Pedidos</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+<style id="st-pro-theme">
+:root{
+  --navy:#102f50;--navy2:#0b2744;--blue:#117be8;--green:#08ad60;
+  --orange:#f59e0b;--purple:#5b27e8;--cyan:#13b9c7;--bg:#f3f8fd;
+  --line:#dce8f3;--text:#173b63;--muted:#7d95ad;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:Inter,"Segoe UI",Arial,sans-serif!important;
+  background:#f3f8fd!important;color:var(--text)!important;
+  padding-left:248px!important;min-height:100vh;
+}
+.factura-exito{
+    background:#fff!important;
+    border:1px solid #dfebf5!important;
+    border-radius:9px!important;
+    box-shadow:0 6px 20px rgba(30,70,105,.06)!important;
+    min-height:474px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    align-items:center!important;
+    text-align:center!important;
+    padding:30px!important;
+}
+
+.factura-exito-icono{
+    width:64px!important;
+    height:64px!important;
+    border-radius:50%!important;
+    background:#08ad60!important;
+    color:#fff!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:36px!important;
+    font-weight:800!important;
+    margin-bottom:18px!important;
+}
+
+.factura-exito h3{
+    margin:0!important;
+    color:#173b63!important;
+    font-size:18px!important;
+}
+
+.factura-exito p{
+    margin:8px 0 0!important;
+    color:#7890a8!important;
+    font-size:12px!important;
+}
+a{text-decoration:none;color:inherit}
+button,input,select{font-family:inherit}
+
+.header-title{
+  position:fixed!important;z-index:3000;top:0;left:248px;right:0;height:62px;
+  margin:0!important;padding:0 24px!important;
+  display:flex!important;align-items:center!important;gap:16px!important;
+  background:#fff!important;border-bottom:1px solid #e5edf5!important;
+  box-shadow:0 2px 12px rgba(20,55,90,.06)!important;
+}
+.header-title:before{content:"☰";font-size:24px;font-weight:700;color:#123f6e;margin-right:2px}
+.header-title h2{margin:0!important;font-size:16px!important;color:#173b63!important}
+.header-title p{margin-left:auto!important;font-size:12px!important;color:#617b96!important}
+.header-title>button{
+  background:#ffffff!important;color:#646363!important;border:0!important;
+  padding:9px 12px!important;border-radius:6px!important;cursor:pointer;
+}
+.logout-btn{
+  background:#ef4760!important;color:#fff!important;padding:9px 14px!important;
+  border-radius:6px!important;font-size:12px!important;font-weight:700!important;
+}
+
+.topbar{
+  position:fixed!important;z-index:3500;left:0;top:0;bottom:0;width:248px!important;
+  margin:0!important;padding:0!important;display:block!important;
+  background:linear-gradient(180deg,#102f50 0%,#0c2744 100%)!important;
+  border:0!important;box-shadow:3px 0 16px rgba(7,33,58,.14)!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+}
+.sidebar-brand{
+  height:76px;display:flex;align-items:center;padding:0 22px;gap:12px;
+  color:#fff;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sidebar-brand .brand-icon{font-size:26px}
+.sidebar-brand strong{display:block;font-size:17px;letter-spacing:.2px}
+.sidebar-brand small{display:block;color:#4fc3ff;font-size:10px;margin-top:3px}
+
+.acciones-izq,.acciones-der{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:2px!important;padding:13px 10px 0!important;
+}
+.acciones-izq:before{
+  content:"MENÚ";display:block;color:#87a8c6;font-size:9px;font-weight:700;
+  letter-spacing:1.2px;padding:5px 16px 7px;
+}
+
+.topbar button,.topbar a button{
+  width:100%!important;height:42px!important;padding:0 14px!important;
+  border:0!important;border-radius:5px!important;background:transparent!important;
+  color:#dcecff!important;text-align:left!important;font-size:13px!important;
+  font-weight:600!important;cursor:pointer!important;
+}
+.topbar button:hover,.topbar a button:hover{
+  background:rgba(17,123,232,.23)!important;color:#fff!important;
+}
+.logout-sidebar{
+  position:absolute;
+  left:25px;
+  bottom:25px;
+  color:#dcecff;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:600;
+}
+
+.logout-sidebar:hover{
+  color:white;
+  text-decoration:underline;
+}
+
+
+#flash-container{
+    margin:0 28px!important;
+    padding:0!important;
+}
+#metricas{
+  margin:78px 28px 0!important;display:flex;gap:14px!important;
+}
+.metricas-container{display:flex!important;gap:14px!important;width:100%}
+.metrica-card{
+  flex:1;background:#fff!important;border:1px solid var(--line)!important;
+  border-radius:9px!important;padding:15px 18px!important;
+  box-shadow:0 5px 18px rgba(25,68,105,.06)!important;min-height:92px;
+}
+.metrica-card h4{margin:0 0 7px!important;font-size:12px!important;color:#31597f!important}
+.metrica-card p{margin:0!important;font-size:22px!important;font-weight:800!important;color:#173b63!important}
+
+.contenedor{
+  margin:16px 28px 28px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(420px,.82fr)!important;
+  gap:18px!important;align-items:start!important;
+}
+.kpi-strip{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:14px!important;
+  width:100%!important;
+  margin:0 0 2px!important;
+}
+.kpi-strip .metrica-card{min-width:0;height:108px}
+
+.formulario,.sale-detail,.modal-pedidos,.table-card{
+  background:#fff!important;border:1px solid #dfebf5!important;
+  border-radius:9px!important;box-shadow:0 6px 20px rgba(30,70,105,.06)!important;
+}
+.formulario{padding:0!important;overflow:hidden!important}
+.formulario>h3{
+  margin:0!important;padding:16px 20px!important;
+  border-bottom:1px solid #e5edf5!important;font-size:16px!important;color:#173b63!important;
+}
+.venta-form{padding:16px 20px!important}
+.venta-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important}
+.col{min-width:0!important}
+.col label{
+  display:block!important;margin:10px 0 5px!important;
+  font-size:10px!important;font-weight:700!important;color:#234d79!important;
+}
+.col input,.col select{
+  width:100%!important;height:36px!important;border:1px solid #d8e6f2!important;
+  border-radius:5px!important;padding:0 10px!important;background:#fff!important;
+  color:#365572!important;outline:none!important;
+}
+.col input:focus,.col select:focus{border-color:#79b7f4!important;box-shadow:0 0 0 2px rgba(17,123,232,.08)!important}
+.col.derecha hr{border:0;border-top:1px solid #e7eef5;margin:14px 0!important}
+
+#productos{display:flex;flex-direction:column;gap:7px!important}
+#productos .item{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 95px 36px!important;
+  gap:7px!important;align-items:center!important;
+}
+#productos .item select,#productos .item input{height:36px!important}
+#productos .item button{
+  height:36px!important;width:36px!important;padding:0!important;
+  border:0!important;border-radius:5px!important;background:#fff0f2!important;
+  color:#e34c61!important;cursor:pointer!important;
+}
+.col.derecha>button[type=button]{
+  background:#08ad60!important;color:#fff!important;border:0!important;
+  border-radius:5px!important;padding:9px 13px!important;font-size:12px!important;
+  font-weight:700!important;cursor:pointer!important;
+}
+.venta-form button[type=submit]{
+  background:#117be8!important;color:#fff!important;border:0!important;
+  border-radius:5px!important;padding:10px 16px!important;font-weight:700!important;
+  cursor:pointer!important;
+}
+
+.sale-detail{min-height:474px!important;overflow:hidden!important}
+.sale-detail-head{
+  height:62px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;border-bottom:1px solid #e5edf5;
+}
+.sale-detail-head h3{margin:0!important;font-size:15px!important;color:#173b63!important}
+.detail-actions{display:flex!important;gap:7px!important}
+.detail-actions button{
+  border:0!important;border-radius:5px!important;padding:8px 11px!important;
+  font-size:11px!important;font-weight:700!important;cursor:pointer!important;
+}
+.detail-actions .clear{background:#eaf4ff!important;color:#117be8!important}
+.detail-actions .create{background:#08ad60!important;color:#fff!important}
+.sale-detail-body{padding:0 12px 12px!important}
+.sale-table{width:100%!important;border-collapse:collapse!important}
+.sale-table th{
+  background:#f5f9fd!important;color:#234d79!important;font-size:10px!important;
+  text-align:left!important;padding:10px 8px!important;border-bottom:1px solid #dce8f3!important;
+}
+.sale-table td{
+  padding:9px 8px!important;border-bottom:1px solid #edf2f7!important;
+  font-size:11px!important;color:#536f8b!important;
+}
+.empty-sale{
+  height:350px!important;display:flex!important;flex-direction:column!important;
+  justify-content:center!important;align-items:center!important;text-align:center!important;
+}
+.empty-sale .cube{font-size:58px!important;color:#8db0d0!important;opacity:.25}
+.empty-sale strong{margin-top:10px!important;color:#31577f!important;font-size:12px!important}
+.empty-sale span{margin-top:5px!important;color:#8ba1b5!important;font-size:10px!important}
+
+.modal-pedidos{
+  grid-column:1/-1!important;overflow:hidden!important;
+}
+.modal-pedidos h3{
+  margin:0!important;padding:15px 18px!important;
+  border-bottom:1px solid #e5edf5!important;font-size:14px!important;
+}
+.filters-bar{padding:12px 18px!important}
+.filters-form{
+  display:grid!important;grid-template-columns:minmax(180px,1fr) 150px 150px 78px!important;
+  gap:7px!important;
+}
+.filters-form input,.filters-form select{
+  height:35px!important;border:1px solid #d8e6f2!important;border-radius:5px!important;
+  padding:0 9px!important;color:#49677f!important;
+}
+.filters-form button{
+  border:0!important;background:#117be8!important;color:#fff!important;
+  border-radius:5px!important;font-weight:700!important;cursor:pointer!important;
+}
+.filters-buttons{display:flex!important;gap:6px!important;margin-top:8px!important;flex-wrap:wrap!important}
+.filters-buttons button{
+  border:1px solid #d7e5f1!important;background:#fff!important;color:#42637f!important;
+  padding:7px 10px!important;border-radius:5px!important;cursor:pointer!important;
+}
+.modal-pedidos>table{width:100%!important;border-collapse:collapse!important;font-size:11px!important}
+.modal-pedidos>table th{
+  background:#f5f9fd!important;color:#244d78!important;padding:9px!important;
+  text-align:left!important;border-bottom:1px solid #dce8f3!important;
+}
+.modal-pedidos>table td{
+  padding:8px 9px!important;border-bottom:1px solid #edf2f7!important;color:#4e6982!important;
+}
+
+#formUsuario,#formEmpresa{
+  margin:78px 28px 18px!important;background:#fff!important;
+  border:1px solid var(--line)!important;border-radius:9px!important;
+  box-shadow:0 6px 20px rgba(30,70,105,.06)!important;padding:20px!important;
+}
+
+#modalInventario,#modalProductos{
+  background:rgba(8,29,50,.58)!important;backdrop-filter:blur(4px)!important;
+}
+#modalInventario>div,#modalProductos>div{
+  width:min(960px,92%)!important;margin:5vh auto!important;padding:0!important;
+  border-radius:10px!important;box-shadow:0 20px 60px rgba(0,0,0,.22)!important;
+  overflow:hidden!important;
+}
+#modalInventario h2,#modalProductos h2{
+  margin:0!important;padding:17px 20px!important;background:#fff!important;
+  color:#173b63!important;font-size:17px!important;
+}
+
+@media(max-width:1200px){
+  .contenedor{grid-template-columns:minmax(0,1fr) minmax(360px,.72fr)!important}
+  .kpi-strip{grid-template-columns:repeat(3,1fr)!important}
+}
+@media(max-width:950px){
+  body{padding-left:210px!important}.topbar{width:210px!important}
+  .header-title{left:210px!important}
+  .contenedor{grid-template-columns:1fr!important}
+  .kpi-strip{grid-template-columns:repeat(2,1fr)!important}
+}
+@media(max-width:700px){
+  body{padding-left:0!important}
+  .topbar{position:relative!important;width:100%!important;height:auto!important;bottom:auto!important}
+  .header-title{position:relative!important;left:0!important}
+  .header-title:before{display:none}
+  .acciones-izq,.acciones-der{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .acciones-izq:before,.acciones-der:before{grid-column:1/-1}
+  .contenedor,#metricas{margin:14px 10px!important}
+  .kpi-strip{grid-template-columns:1fr!important}
+  .venta-grid{grid-template-columns:1fr!important}
+  .filters-form{grid-template-columns:1fr!important}
+  .header-title p{display:none}
+}
+</style>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+
+<body>
+
+<div class="header-title">
+    <h2>ST GESTIÓN</h2>
+
+    <p style="margin:0; font-size:13px; color:#666;">
+        Usuario: <b>{{ session['usuario'] }}</b> <!--| Rol: <b>{{ session['rol'] }}</b> MUESTRA EL ROL -->
+    </p>
+
+    <button onclick="location.reload()" class="reload-sidebar">
+    🔄 Actualizar 
+    </button>
+</div>
+
+<div id="flash-container" style="margin: 15px 20px;">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+</div>
+
+<br>
+<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión y Ventas</small></div></div>
+
+    <!-- IZQUIERDA -->
+    <div class="acciones-izq">
+        
+        <!-- OWNER GLOBAL -->
+        {% if session['rol'] == 'owner_global' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+            <button onclick="toggleForm()">➕ Usuario</button>
+
+            <button onclick="toggleEmpresa()">🏢 Empresa</button>
+
+        <!-- ADMIN -->
+        {% elif session['rol'] == 'admin' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        <!-- VENDEDOR -->
+        {% elif session['rol'] == 'vendedor' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        {% endif %}
+    </div>
+
+    <a href="/logout" class="logout-sidebar">⚙ Cerrar sesión</a>
+
+    <!-- DERECHA -->
+    <div class="acciones-der">
+
+        {% if session['rol'] in ['owner_global', 'admin'] %}
+
+            <button onclick="toggleMetricas()">📊 Métricas</button>
+
+            <a href="/ventas">
+                <button>💵 Ventas</button>
+            </a>
+
+        {% endif %}
+
+        <a href="/cartera">
+            <button>💰 Cartera</button>
+        </a>
+
+        <a href="/facturas">
+            <button>📄 Facturas</button>
+        </a>
+        <a href="/pedidos">
+            <button>🚚 Pedidos</button>
+        </a>
+
+        <a href="/productos"><button>🏷️ Productos</button></a>
+
+        <a href="/inventario"><button>📦 Inventario</button></a>
+
+        
+
+        <!--
+        <a href="/facturar_empresa">
+            <button style="background:purple; color:white;">
+                🏢 Facturar Empresa
+            </button>
+        </a>
+        -->
+
+    </div>
+
+</div>
+<br>
+{% if session['rol'] in ['owner_global', 'admin'] %}
+
+<div id="metricas" style="display:none;">
+    
+    <div class="metricas-container">
+
+        <!--<div class="metrica-card">
+            <h4>💰 Ventas Hoy</h4>
+            <p>${{ "{:,.0f}".format(total_dia) }}</p>
+        </div>-->
+
+        <div class="metrica-card top5-card">
+            <h4>🏆 Top 5 productos más vendidos</h4>
+
+            {% if top_5_productos %}
+                <div class="top5-list">
+                    {% for producto in top_5_productos %}
+                        <div class="top5-row">
+                            <span class="top5-pos">
+                                {% if loop.index == 1 %}🥇
+                                {% elif loop.index == 2 %}🥈
+                                {% elif loop.index == 3 %}🥉
+                                {% else %}{{ loop.index }}
+                                {% endif %}
+                            </span>
+
+                            <span class="top5-name">{{ producto['producto'] }}</span>
+                            <strong class="top5-total">{{ producto['total'] }} uds.</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="top5-empty">Sin ventas este mes</div>
+            {% endif %}
+        </div>
+
+    </div>
+{% endif %}    
+
+</div>
+
+<br>
+
+<!-- 🔐 SOLO SUPERAADMIN -->
+{% if session['rol'] == 'owner_global' %}
+<div id="formUsuario" style="display:none; border:1px solid #ccc; padding:10px;">
+
+    <h3>Crear Usuario</h3>
+    <!-- 👥 TABLA USUARIOS -->
+    <div class="table-card">
+
+        <h3>👤 Usuarios creados</h3>
+        <form method="GET" action="/dashboard" style="margin-bottom:15px;">
+
+            <input type="text" name="usuario" placeholder="🔎 Buscar usuario">
+
+            <select name="rol">
+                <option value="">Todos los roles</option>
+                <option value="owner_global">Owner</option>
+                <option value="admin">Admin</option>
+                <option value="vendedor">Vendedor</option>
+            </select>
+
+            <button type="submit">Filtrar</button>
+
+        </form>
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Empresa</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+            {% for u in usuarios %}
+
+            <tr>
+
+                <td>#{{ u["id"] }}</td>
+
+                <td>{{ u["usuario"] }}</td>
+
+                <td>{{ u["rol"] }}</td>
+
+                <td>{{ u["empresa"] }}</td>
+
+                <td>
+
+                    <form
+                        action="/eliminar_usuario/{{ u['id'] }}"
+                        method="POST"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');"
+                    >
+
+                        <button class="btn-red">
+                            🗑 Eliminar
+                        </button>
+
+                    </form>
+                    <form action="/cambiar_password/{{ u['id'] }}" method="POST">
+                        <input type="password" name="password" placeholder="Nueva contraseña" required>
+                        <button class="btn-blue">🔐 Cambiar</button>
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <form method="POST" action="/crear_usuario">
+
+        <input type="text" name="usuario" placeholder="Usuario" required><br><br>
+
+        <input type="password" name="password" placeholder="Contraseña" required><br><br>
+
+        <select name="rol">
+            <option value="admin">Admin</option>
+            <option value="vendedor">Vendedor</option>
+        </select><br><br>
+
+        <select name="empresa_id" required>
+            {% for emp in empresas %}
+                <option value="{{ emp.id }}">{{ emp.nombre }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <button type="submit">Guardar Usuario</button>
+
+    </form>
+
+</div>
+<!-- 🔵 CREAR EMPRESA -->
+<div id="formEmpresa" style="display:none; border:1px solid #ccc; padding:10px;">
+
+    <h3>Crear Empresa</h3>
+
+    <form method="POST" action="/crear_empresa">
+
+        <input type="text" name="nombre" placeholder="Nombre de la empresa" required><br><br>
+
+        <button type="submit">Guardar Empresa</button>
+
+    </form>
+
+    <hr>
+
+    <h3>Empresas</h3>
+
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Acción</th>
+        </tr>
+
+        {% for emp in empresas %}
+        <tr>
+            <td>{{ emp.id }}</td>
+            <td>{{ emp.nombre }}</td>
+            <td>
+                <a href="/eliminar_empresa/{{ emp.id }}" 
+                   onclick="return confirm('¿Seguro que quieres eliminar esta empresa?')">
+                    <button style="background:red;color:white;">Eliminar</button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+{% endif %}
+
+
+
+<br>
+
+<div class="contenedor">
+
+<div class="kpi-strip" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;grid-column:1/-1;margin-bottom:0">
+<div class="metrica-card"><h4>🛒 Ventas del día</h4><p>${{ "{:,.0f}".format(total_dia or 0) }}</p><small>Facturación de hoy</small></div>
+<div class="metrica-card"><h4>👥 Clientes</h4><p>{{ clientes|length }}</p><small>Registrados</small></div>
+<div class="metrica-card"><h4>📄 Facturas</h4><p>{{ facturas_hoy }}</p><small>Emitidas hoy</small></div>
+<div class="metrica-card"><h4>📦 Productos</h4><p>{{ productos|length }}</p><small>Registrados</small></div>
+<div class="metrica-card"><h4>💳 Cartera</h4><p>${{ "{:,.0f}".format(cartera_pendiente or 0) }}</p><small>Saldo pendiente</small></div>
+</div>
+
+    <!-- 📦 FORMULARIO PEDIDOS -->
+    <div class="formulario">
+
+        <h3>🛒 Nueva Venta <span style="color:#08ad60;font-size:11px">●</span><br><small style="font-size:10px;color:#7890a8;font-weight:500">Registra una nueva venta de forma rápida y sencilla</small></h3>
+
+        <form method="POST" action="/crear_factura" class="venta-form">
+
+            <div class="venta-grid">
+
+                <!-- 🟦 COLUMNA IZQUIERDA: CLIENTE -->
+                <div class="col izquierda">
+                  <label for="fechaLimite">
+                        🧍 Listado de clientes
+                    </label>
+                    <select id="clienteSelect" required>
+                        <option value="">Seleccionar cliente</option>
+
+                        {% for c in clientes %}
+                        <option
+                            value="{{ c.nombre }}"
+                            data-direccion="{{ c.direccion }}"
+                            data-ciudad="{{ c.ciudad }}"
+                            data-telefono="{{ c.telefono }}"
+                            data-tipo="{{ c.tipo_id }}"
+                            data-identificacion="{{ c.identificacion }}"
+                            data-tipo_precio="{{ c.tipo_precio }}"
+                        >
+                            {{ c.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="text" name="cliente" placeholder="Cliente" required readonly>
+
+                    <select name="tipo_id" required>
+                        <option value="cc">CC</option>
+                        <option value="nit">NIT</option>
+                    </select>
+
+                    <input type="text" name="identificacion" placeholder="Identificación" required>
+
+                    <!-- 💰 TIPO DE PRECIO -->
+                     <label for="fechaLimite">
+                        💰 Tarifa
+                    </label>
+
+                    <select name="tipo_precio" id="tipoPrecio" required>
+                        <option value="mayorista">Mayorista</option>
+                        <option value="individual">Individual</option>
+                        <option value="mostrador">Mostrador</option>
+                    </select>
+
+                    <!-- 💳 TIPO DE PAGO -->
+                    <select name="tipo_venta" id="tipoVenta" required>
+
+                        <option value="contado">💵 Contado</option>
+
+                        <option value="credito">🧾 Crédito</option>
+
+                    </select>
+
+                    <input type="text" name="direccion" placeholder="Dirección">
+                    <input type="text" name="ciudad" placeholder="Ciudad">
+                    <input type="text" name="telefono" placeholder="Teléfono">
+
+                    
+                    
+
+                    <!-- 💰 ABONO INICIAL -->
+                     <label for="fechaLimite">
+                        Abono ✅💰
+                    </label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="abono"
+                        id="abonoInput"
+                        placeholder="Abono inicial"
+                        value="0"
+                    >
+
+                    <!-- 📅 FECHA LIMITE -->
+                    <label for="fechaLimite">
+                        📅 Fecha límite de pago
+                    </label>
+
+                    <input
+                        type="date"
+                        name="plazo_pago"
+                        id="fechaLimite"
+                    >
+
+                </div>
+
+                <!-- 🟩 COLUMNA DERECHA -->
+                <div class="col derecha">
+                    <label for="fechaLimite">
+                        🚚 Domiciliario
+                    </label>
+                    <!-- 🚚 DOMICILIARIO -->
+                    <input type="text" name="domiciliario" placeholder="Domiciliario">
+
+                    <hr>
+
+                    <!-- 📦 PRODUCTOS -->
+                    <div id="productos">
+
+                        <div class="item">
+                            <select name="producto[]" required>
+                                {% for prod in productos %}
+                                    <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
+                                {% endfor %}
+                            </select>
+
+                            <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
+
+                            <button type="button" onclick="this.parentElement.remove()">❌</button>
+                        </div>
+
+                    </div>
+
+                    <button type="button" onclick="agregarProducto()">➕ Producto</button>
+
+                    <hr>
+
+                    🧾 BOTÓN FINAL
+                    <button type="submit" style="background:#117be8; color:white; padding:10px 16px; border:none; border-radius:6px;">
+                        🧾 Crear Factura
+                    </button> 
+
+                </div>
+
+            </div>
+
+            </form>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'success' %}
+                        <div class="factura-exito">
+                            <div class="factura-exito-icono">✓</div>
+                            <h3>{{ message }}</h3>
+                            <p>La factura fue registrada correctamente.</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        </div>
+
+    <script>
+    document.getElementById("clienteSelect").addEventListener("change", function(){
+
+        let option = this.options[this.selectedIndex];
+
+        document.querySelector("[name='cliente']").value = option.value;
+        document.querySelector("[name='direccion']").value = option.dataset.direccion;
+        document.querySelector("[name='ciudad']").value = option.dataset.ciudad;
+        document.querySelector("[name='telefono']").value = option.dataset.telefono;
+        document.querySelector("[name='tipo_id']").value = option.dataset.tipo;
+        document.querySelector("[name='identificacion']").value = option.dataset.identificacion;
+        document.getElementById("tipoPrecio").value =option.dataset.tipo_precio;
+
+    });
+    </script>
+
+    <!-- 📊 TABLA -->
+    <div id="pedidosModal" class="modal-pedidos">
+
+        <!-- 🔥 FILTROS -->
+        <h3 style="text-align:left;">📋 Lista de Pedidos 📦</h3>
+        <!-- 🔥 FILTROS NUEVOS -->
+        <div class="filters-bar">
+
+            <form method="GET" action="/dashboard" class="filters-form">
+
+                <input type="text" name="buscar" placeholder="Buscar cliente o producto">
+
+                <input type="date" name="fecha">
+
+                <input type="text" name="domiciliario" placeholder="Domiciliario">
+
+                <button type="submit">🔍 Filtrar</button>
+
+            </form>
+
+            <div class="filters-buttons">
+
+                <a href="/dashboard?filtro=todos"><button>📋 Todos</button></a>
+                <a href="/dashboard?filtro=pendientes"><button>⏳ Pendientes</button></a>
+                <a href="/dashboard?filtro=entregados"><button>✅ Entregados</button></a>
+                <a href="/dashboard?filtro=eliminados"><button>🗑 Eliminados</button></a>
+
+            </div>
+
+        </div>
+        <hr>
+
+<br>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Dirección</th>
+                <th>Ciudad</th>
+                <th>Teléfono</th>
+                <th>Domiciliario</th>
+                <th>Unidades</th>
+                <th>Precio</th>
+                <th>Fecha</th>
+                <th>Fecha Entrega</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+
+            {% for p in pedidos %}
+            <tr>
+                <td>{{ p.id }}</td>
+                <td>{{ p.cliente }}</td>
+                <td>{{ p.producto }}</td>
+                <td>{{ p.direccion }}</td>
+                <td>{{ p.ciudad }}</td>
+                <td>{{ p.telefono }}</td>
+                <td>{{ p.domiciliario }}</td>
+                <td>{{ p.cantidad }}</td>
+                <td>{{ "{:,.0f}".format(p.precio) }}</td>
+                <td>
+                    {% if p.fecha %}
+                        {{ p.fecha[8:10] }}/{{ p.fecha[5:7] }}/{{ p.fecha[0:4] }}
+                    {% else %}
+                        Sin fecha
+                    {% endif %}
+                    {{ (p.fecha or '')[11:16] }}
+                </td>
+                <td>
+                    {% if p.fecha_entrega %}
+                        {{ p.fecha_entrega[8:10] }}/{{ p.fecha_entrega[5:7] }}/{{ p.fecha_entrega[0:4] }}
+                        {{ p.fecha_entrega[11:16] }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if p.estado == 'pendiente' %}
+                        <span style="color:orange;">⏳ Pendiente</span>
+                    {% elif p.estado == 'entregado' %}
+                        <span style="color:green;">✅ Entregado</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if p.eliminado == 0 %}
+                        <form action="/entregar/{{ p.id }}" style="display:inline;">
+                            <button type="submit">✅</button>
+                        </form>
+
+                        <form action="/eliminar/{{ p.id }}" style="display:inline;">
+                            <button type="submit">🗑</button>
+                        </form>
+                    {% else %}
+                        <form action="/recuperar/{{ p.id }}" style="display:inline;">
+                            <button type="submit">♻</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+window.onload = function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("reload") === "1") {
+        setTimeout(() => {
+            window.location.href = "/dashboard";
+        }, 1500);
+    }
+}
+
+function toggleForm() {
+    const form = document.getElementById("formUsuario");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+function toggleEmpresa() {
+    const form = document.getElementById("formEmpresa");
+    form.style.display = form.style.display === "none" ? "block" : "none";
+}
+function agregarProducto() {
+    const container = document.getElementById("productos");
+
+    const div = document.createElement("div");
+    div.classList.add("item");
+
+    div.innerHTML = `
+        <select name="producto[]" required>
+            {% for prod in productos %}
+                <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
+
+        <button type="button" onclick="this.parentElement.remove()">❌</button>
+    `;
+
+    container.appendChild(div);
+}
+function toggleMetricas() {
+    const div = document.getElementById("metricas");
+
+    if (div.style.display === "none") {
+        div.style.display = "flex";
+    } else {
+        div.style.display = "none";
+    }
+}
+
+function togglePedidos() {
+    const modal = document.getElementById("pedidosModal");
+
+    if (modal.style.display === "none" || modal.style.display === "") {
+        modal.style.display = "block";
+    } else {
+        modal.style.display = "none";
+    }
+}
+const tipoPago = document.getElementById("tipoVenta");
+const fechaLimite = document.getElementById("fechaLimite");
+const abonadoInput = document.getElementById("abonoInput");
+
+function actualizarPago() {
+    if (tipoPago.value === "credito") {
+        fechaLimite.style.display = "block";
+        fechaLimite.required = true;
+        abonadoInput.disabled = false;
+    } else {
+        fechaLimite.style.display = "block";
+        fechaLimite.required = false;
+        abonadoInput.disabled = false;
+    }
+}
+
+tipoPago.addEventListener("change", actualizarPago);
+
+actualizarPago();
+
+</script>
+<script>
+function actualizarDetalleVenta(){
+  const tabla=document.querySelector(".sale-table"); if(!tabla)return;
+  const items=[...document.querySelectorAll("#productos .item")];
+  const old=tabla.querySelector("tbody"); if(old)old.remove();
+  const tb=document.createElement("tbody");
+  items.forEach((item,i)=>{
+    const prod=item.querySelector("select")?.value||"";
+    const qty=item.querySelector("input")?.value||"1";
+    const tr=document.createElement("tr");
+    tr.innerHTML="<td>"+(i+1)+"</td><td>"+prod+"</td><td>Unidad</td><td>"+qty+"</td><td>—</td><td>—</td><td>✓</td>";
+    tb.appendChild(tr);
+  });
+  tabla.appendChild(tb);
+  const empty=document.querySelector(".empty-sale"); if(empty)empty.style.display=items.length?"none":"flex";
+}
+document.addEventListener("input",e=>{if(e.target.closest("#productos"))actualizarDetalleVenta()});
+document.addEventListener("change",e=>{if(e.target.closest("#productos"))actualizarDetalleVenta()});
+document.addEventListener("DOMContentLoaded",actualizarDetalleVenta);
+</script>
+</body>
+</html>
+<style>
+/* TOP 5 PRODUCTOS MÁS VENDIDOS */
+.top5-card{
+    flex:1 1 100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:108px!important;
+}
+
+.top5-card h4{
+    margin-bottom:10px!important;
+}
+
+.top5-list{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.top5-row{
+    display:grid;
+    grid-template-columns:30px minmax(0,1fr) auto;
+    align-items:center;
+    gap:8px;
+    padding:7px 9px;
+    border:1px solid #e7eef5;
+    border-radius:6px;
+    background:#f9fbfd;
+    box-sizing:border-box;
+}
+
+.top5-pos{
+    font-size:14px;
+    text-align:center;
+}
+
+.top5-name{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color:#31597f;
+    font-size:12px;
+    font-weight:700;
+}
+
+.top5-total{
+    color:#173b63;
+    font-size:12px;
+    white-space:nowrap;
+}
+
+.top5-empty{
+    color:#7890a8;
+    font-size:12px;
+    padding-top:8px;
+}
+</style>

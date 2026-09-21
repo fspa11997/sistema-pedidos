@@ -1,0 +1,6 @@
+flask
+gunicorn
+bcrypt
+pytz
+python-barcode
+psycopg2-binary

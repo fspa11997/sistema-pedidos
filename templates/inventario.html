@@ -1,0 +1,82 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Inventario • ST Gestión</title>
+<style>
+:root{--navy:#102f50;--blue:#117be8;--green:#08ad60;--line:#dce8f3;--text:#173b63;--muted:#7d95ad}
+*{box-sizing:border-box}body{margin:0;padding-left:248px;background:#f3f8fd;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--text)}
+.header-title{position:fixed;z-index:3000;top:0;left:248px;right:0;height:62px;background:#fff;border-bottom:1px solid #e5edf5;display:flex;align-items:center;gap:16px;padding:0 24px;box-shadow:0 2px 12px rgba(20,55,90,.06)}
+.header-title:before{content:"☰";font-size:24px;color:#123f6e}.header-title h2{margin:0;font-size:16px}.header-title p{margin-left:auto;font-size:12px;color:#617b96}.logout{background:#ef4760;color:#fff;padding:9px 14px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none}
+.sidebar{position:fixed;z-index:3500;left:0;top:0;bottom:0;width:248px;background:linear-gradient(180deg,#102f50,#0c2744);color:#dcecff;overflow:auto}.brand{height:76px;display:flex;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid rgba(255,255,255,.08)}.brand strong{display:block;color:#fff;font-size:17px}.brand small{color:#4fc3ff;font-size:10px}.nav{padding:14px 10px}.nav-title{color:#87a8c6;font-size:9px;font-weight:700;letter-spacing:1.2px;padding:6px 16px}.nav a{display:block;text-decoration:none}.nav a.btn{height:42px;padding:0 14px;line-height:42px;border-radius:5px;color:#dcecff;font-size:13px;font-weight:600}.nav a.btn:hover,.nav a.active{background:rgba(17,123,232,.24);color:#fff}.main{padding:84px 28px 30px}.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.page-head h1{margin:0;font-size:22px}.page-head p{margin:5px 0 0;color:var(--muted);font-size:12px}.card{background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 20px rgba(30,70,105,.06);overflow:hidden}.card-head{padding:17px 20px;border-bottom:1px solid #e5edf5;display:flex;align-items:center;justify-content:space-between}.card-head h3{margin:0;font-size:15px}.content{padding:18px 20px}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field label{display:block;font-size:10px;font-weight:700;margin-bottom:5px;color:#234d79}.field input,.field select{width:100%;height:38px;border:1px solid #d8e6f2;border-radius:5px;padding:0 10px;background:#fff;color:#365572}.btn-primary{border:0;background:var(--green);color:#fff;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer}.btn-danger{color:#e34c61;text-decoration:none;font-weight:700}.table-wrap{overflow:auto}.data-table{width:100%;border-collapse:collapse}.data-table th{background:#f5f9fd;color:#244d78;font-size:11px;padding:11px;text-align:left;border-bottom:1px solid #dce8f3;white-space:nowrap}.data-table td{padding:10px 11px;border-bottom:1px solid #edf2f7;font-size:12px;color:#4e6982;white-space:nowrap}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700}.critical{background:#ffe9ed;color:#d83f57}.low{background:#fff3dc;color:#c17b00}.ok{background:#e6f8ef;color:#087f49}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}.stat{padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:9px}.stat small{color:var(--muted);font-size:10px}.stat strong{display:block;font-size:24px;margin-top:5px}
+@media(max-width:950px){body{padding-left:210px}.header-title{left:210px}.sidebar{width:210px}.form-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){body{padding-left:0}.sidebar{position:relative;width:100%;height:auto}.header-title{position:relative;left:0}.main{padding:20px 12px}.form-grid,.stats{grid-template-columns:1fr}}
+</style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head><body>
+<div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
+<aside class="sidebar"><div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión y Ventas</small></div></div><nav class="nav"><div class="nav-title">MENÚ</div><a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><a class="btn" href="/clientes">♟ &nbsp; Clientes</a><a class="btn" href="/ventas">▥ &nbsp; Ventas</a><a class="btn" href="/cartera">▣ &nbsp; Cartera</a><a class="btn" href="/facturas">▤ &nbsp; Facturas</a><a class="btn" href="/pedidos">☷ &nbsp; Pedidos</a><a class="btn " href="/productos">▣ &nbsp; Productos</a><a class="btn active" href="/inventario">▤ &nbsp; Inventario</a></nav></aside>
+<main class="main"><div class="page-head"><div><h1>📦 Inventario</h1><p>Consulta las existencias escribiendo o escaneando el código de barras.</p></div></div>{% if error %}<div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ error }}</div>{% endif %}<div class="stats"><div class="stat"><small>Productos con inventario</small><strong>{{ inventario|length }}</strong></div><div class="stat"><small>Unidades en inventario</small><strong>{{ inventario|sum(attribute='stock_unidades') }}</strong></div><div class="stat"><small>Alertas</small><strong>{{ inventario|selectattr('stock_unidades','le',10)|list|length }}</strong></div></div><div class="card"><div class="card-head"><h3>Buscar y filtrar inventario</h3><span style="font-size:11px;color:var(--muted)">Código, nombre y estado</span></div><div class="content"><div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));align-items:end"><div class="field"><label>Código de barras</label><input id="buscar_inventario_codigo" type="text" inputmode="numeric" autocomplete="off" placeholder="Escribe o escanea el código" autofocus></div><div class="field"><label>Nombre del producto</label><input id="buscar_inventario_nombre" type="text" autocomplete="off" placeholder="Escribe el nombre del producto"></div><div class="field"><label>Estado</label><select id="filtro_estado"><option value="">Todos los estados</option><option value="normal">NORMAL</option><option value="bajo">BAJO</option><option value="critico">CRÍTICO</option></select></div></div><div style="display:flex;gap:10px;margin-top:12px"><button type="button" class="btn-primary" id="btn_buscar_inventario">🔎 Buscar</button><button type="button" id="btn_limpiar_filtros" style="border:1px solid #d8e6f2;background:#fff;color:#365572;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer">Limpiar filtros</button></div><div id="busqueda_msg" style="margin-top:8px;font-size:11px;color:var(--muted)">Puedes buscar por código de barras, nombre del producto o filtrar por estado.</div></div></div><br><div class="card"><div class="card-head"><h3>Existencias actuales</h3><span id="resultado_busqueda" style="font-size:11px;color:var(--muted)">{{ inventario|length }} productos</span></div><div class="table-wrap"><table class="data-table" id="tabla_inventario"><thead><tr><th>Producto</th><th>Código de barras</th><th>Unidades</th><th>Estado</th></tr></thead><tbody>{% for item in inventario %}<tr data-codigo="{{ item.codigo_barras or '' }}" data-producto="{{ item.producto or '' }}" data-estado="{% if item.stock_unidades <= 5 %}critico{% elif item.stock_unidades <= 10 %}bajo{% else %}normal{% endif %}"><td><b>{{ item.producto }}</b></td><td>{{ item.codigo_barras or "Sin código" }}</td><td>{{ item.stock_unidades }}</td><td>{% if item.stock_unidades <= 5 %}<span class="badge critical">⚠ CRÍTICO</span>{% elif item.stock_unidades <= 10 %}<span class="badge low">⚠ BAJO</span>{% else %}<span class="badge ok">✓ NORMAL</span>{% endif %}</td></tr>{% else %}<tr><td colspan="4" style="text-align:center;padding:30px">No hay registros de inventario.</td></tr>{% endfor %}</tbody></table></div></div><script>
+const buscarInventarioCodigo = document.getElementById("buscar_inventario_codigo");
+const buscarInventarioNombre = document.getElementById("buscar_inventario_nombre");
+const filtroEstado = document.getElementById("filtro_estado");
+const btnBuscarInventario = document.getElementById("btn_buscar_inventario");
+const btnLimpiarFiltros = document.getElementById("btn_limpiar_filtros");
+const busquedaMsg = document.getElementById("busqueda_msg");
+const resultadoBusqueda = document.getElementById("resultado_busqueda");
+const totalInventario = {{ inventario|length }};
+
+function aplicarFiltrosInventario() {
+  const codigo = buscarInventarioCodigo.value.trim().toLowerCase();
+  const nombre = buscarInventarioNombre.value.trim().toLowerCase();
+  const estado = filtroEstado.value;
+  const filas = Array.from(document.querySelectorAll("#tabla_inventario tbody tr[data-codigo]"));
+  let encontrados = 0;
+
+  filas.forEach(fila => {
+    const codigoFila = (fila.dataset.codigo || "").toLowerCase();
+    const nombreFila = (fila.dataset.producto || "").toLowerCase();
+    const estadoFila = fila.dataset.estado || "";
+    const coincideCodigo = !codigo || codigoFila === codigo;
+    const coincideNombre = !nombre || nombreFila.includes(nombre);
+    const coincideEstado = !estado || estadoFila === estado;
+    const coincide = coincideCodigo && coincideNombre && coincideEstado;
+
+    fila.style.display = coincide ? "" : "none";
+    if (coincide) encontrados++;
+  });
+
+  const hayFiltros = codigo || nombre || estado;
+  resultadoBusqueda.textContent = hayFiltros
+    ? `${encontrados} producto${encontrados === 1 ? "" : "s"} encontrado${encontrados === 1 ? "" : "s"}`
+    : `${totalInventario} productos`;
+
+  if (!hayFiltros) {
+    busquedaMsg.textContent = "Puedes buscar por código de barras, nombre del producto o filtrar por estado.";
+    busquedaMsg.style.color = "var(--muted)";
+  } else if (encontrados) {
+    busquedaMsg.textContent = `✓ ${encontrados} producto${encontrados === 1 ? " encontrado" : "s encontrados"}.`;
+    busquedaMsg.style.color = "#087f49";
+  } else {
+    busquedaMsg.textContent = "⚠ No se encontraron productos con los filtros seleccionados.";
+    busquedaMsg.style.color = "#d83f57";
+  }
+}
+
+btnBuscarInventario.addEventListener("click", aplicarFiltrosInventario);
+filtroEstado.addEventListener("change", aplicarFiltrosInventario);
+buscarInventarioCodigo.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    aplicarFiltrosInventario();
+  }
+});
+buscarInventarioNombre.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    aplicarFiltrosInventario();
+  }
+});
+
+btnLimpiarFiltros.addEventListener("click", function() {
+  buscarInventarioCodigo.value = "";
+  buscarInventarioNombre.value = "";
+  filtroEstado.value = "";
+  aplicarFiltrosInventario();
+  buscarInventarioCodigo.focus();
+});
+</script></main></body></html>
