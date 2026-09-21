@@ -354,7 +354,7 @@ def obtener_productos(empresa_id):
         SELECT *
         FROM productos
         WHERE empresa_id = %s
-        AND activo=1           
+        AND activo = TRUE           
     """, (empresa_id,))
 
     productos = cursor.fetchall()
