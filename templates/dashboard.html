@@ -338,6 +338,89 @@ button,input,select{font-family:inherit}
   .filters-form{grid-template-columns:1fr!important}
   .header-title p{display:none}
 }
+
+/* ===== ST GESTIÓN SIDEBAR — DISEÑO FINAL ===== */
+body{padding-left:248px!important;}
+.topbar{
+  position:fixed!important;left:0!important;top:0!important;bottom:0!important;width:248px!important;
+  height:100vh!important;z-index:4000!important;margin:0!important;padding:0!important;
+  display:flex!important;flex-direction:column!important;overflow-y:auto!important;overflow-x:hidden!important;
+  background:#102f50!important;box-shadow:3px 0 18px rgba(4,25,48,.18)!important;border:0!important;
+}
+.sidebar-brand{
+  flex:0 0 76px!important;height:76px!important;min-height:76px!important;
+  display:flex!important;align-items:center!important;gap:12px!important;
+  padding:0 24px!important;margin:0!important;color:#fff!important;
+  border-bottom:1px solid rgba(255,255,255,.08)!important;
+}
+.sidebar-brand .brand-icon{font-size:25px!important;line-height:1!important;width:22px!important;text-align:center!important;}
+.sidebar-brand strong{font-size:17px!important;line-height:1.1!important;letter-spacing:.2px!important;color:#fff!important;}
+.sidebar-brand small{display:block!important;margin-top:5px!important;font-size:9px!important;line-height:1!important;color:#45bdf7!important;}
+.acciones-izq,.acciones-der{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:1px!important;padding:10px 10px 0!important;margin:0!important;
+}
+.acciones-izq:before{
+  content:"MENÚ"!important;display:block!important;margin:0!important;padding:10px 16px 9px!important;
+  color:#86a5c2!important;font-size:9px!important;font-weight:800!important;letter-spacing:1.3px!important;
+}
+.topbar a{display:block!important;width:100%!important;}
+.topbar button,.topbar a button{
+  position:relative!important;display:flex!important;align-items:center!important;width:100%!important;
+  min-height:42px!important;height:42px!important;margin:0!important;padding:0 14px!important;
+  border:0!important;border-radius:6px!important;background:transparent!important;
+  color:#dbe9f7!important;text-align:left!important;font-size:13px!important;font-weight:650!important;
+  cursor:pointer!important;transition:background .18s ease,color .18s ease,transform .18s ease!important;
+}
+.topbar button:hover,.topbar a button:hover{
+  background:rgba(30,123,224,.18)!important;color:#fff!important;
+}
+.topbar button:active,.topbar a button:active{transform:scale(.99)!important;}
+/* Convertimos el emoji/icono inicial en un espacio visual consistente */
+.topbar button::first-letter{font-size:14px!important;}
+/* Página activa */
+.topbar a.active button,.topbar button.active{
+  background:#14518a!important;color:#fff!important;box-shadow:inset 0 0 0 1px rgba(72,160,241,.06)!important;
+}
+.sidebar-footer{
+  margin-top:auto!important;padding:14px 10px 16px!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+}
+.sidebar-footer::before{content:"";display:block;height:1px;background:rgba(255,255,255,.05);margin:0 6px 12px;}
+.logout-sidebar{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;
+  width:100%!important;min-height:42px!important;height:42px!important;padding:0 14px!important;
+  border:1px solid rgba(72,160,241,.28)!important;border-radius:6px!important;
+  background:rgba(8,46,79,.38)!important;color:#eef6ff!important;text-decoration:none!important;
+  font-size:13px!important;font-weight:700!important;transition:.18s ease!important;
+}
+.logout-sidebar::before{content:"↪";font-size:22px;color:#ff5366;font-weight:900;line-height:1;transform:rotate(180deg);}
+.logout-sidebar::after{content:"›";margin-left:auto;font-size:25px;line-height:1;color:#6f9ac1;}
+.logout-sidebar:hover{background:rgba(239,71,96,.10)!important;border-color:rgba(239,71,96,.32)!important;color:#fff!important;}
+/* El texto del enlace ya lleva emoji; lo ocultamos para usar el icono elegante del diseño */
+.logout-sidebar{font-size:0!important;}
+.logout-sidebar::before,.logout-sidebar::after{font-size:22px!important;}
+.logout-sidebar{color:#fff!important;}
+.logout-sidebar span{font-size:13px!important;color:#fff!important;}
+.logout-sidebar::after{font-size:27px!important;}
+/* Cabecera de contenido */
+.header-title{left:248px!important;}
+/* En móvil/tablet el panel conserva la apariencia vertical, pero se hace compacto */
+@media (max-width:950px){
+  body{padding-left:220px!important;}
+  .topbar{width:220px!important;}
+  .header-title{left:220px!important;}
+}
+@media (max-width:700px){
+  body{padding-left:0!important;}
+  .topbar{position:relative!important;left:auto!important;top:auto!important;bottom:auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;}
+  .sidebar-brand{flex-basis:72px!important;height:72px!important;min-height:72px!important;padding:0 20px!important;}
+  .acciones-izq,.acciones-der{padding-left:10px!important;padding-right:10px!important;}
+  .acciones-izq:before{padding-left:14px!important;}
+  .sidebar-footer{margin-top:12px!important;padding-bottom:14px!important;}
+  .header-title{position:relative!important;left:0!important;}
+}
+
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
@@ -375,34 +458,37 @@ button,input,select{font-family:inherit}
 </div>
 
 <br>
-<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión y Ventas</small></div></div>
+<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión y Ventas</small></div></div>
 
     <!-- IZQUIERDA -->
     <div class="acciones-izq">
+        <a href="/" class="{% if request.path == '/' or request.path == '/dashboard' %}active{% endif %}">
+            <button class="{% if request.path == '/' or request.path == '/dashboard' %}active{% endif %}">⌂&nbsp;&nbsp; Inicio</button>
+        </a>
         
         <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
 
-            <a href="/clientes">
-                <button>👥 Clientes</button>
+            <a href="/clientes" class="{% if request.path == '/clientes' %}active{% endif %}">
+                <button class="{% if request.path == '/clientes' %}active{% endif %}">♟&nbsp;&nbsp; Clientes</button>
             </a>
 
-            <button onclick="toggleForm()">➕ Usuario</button>
+            <button onclick="toggleForm()">＋&nbsp;&nbsp; Usuario</button>
 
-            <button onclick="toggleEmpresa()">🏢 Empresa</button>
+            <button onclick="toggleEmpresa()">▣&nbsp;&nbsp; Empresa</button>
 
         <!-- ADMIN -->
         {% elif session['rol'] == 'admin' %}
 
-            <a href="/clientes">
-                <button>👥 Clientes</button>
+            <a href="/clientes" class="{% if request.path == '/clientes' %}active{% endif %}">
+                <button class="{% if request.path == '/clientes' %}active{% endif %}">♟&nbsp;&nbsp; Clientes</button>
             </a>
 
         <!-- VENDEDOR -->
         {% elif session['rol'] == 'vendedor' %}
 
-            <a href="/clientes">
-                <button>👥 Clientes</button>
+            <a href="/clientes" class="{% if request.path == '/clientes' %}active{% endif %}">
+                <button class="{% if request.path == '/clientes' %}active{% endif %}">♟&nbsp;&nbsp; Clientes</button>
             </a>
 
         {% endif %}
@@ -413,28 +499,28 @@ button,input,select{font-family:inherit}
 
         {% if session['rol'] in ['owner_global', 'admin'] %}
 
-            <button onclick="toggleMetricas()">📊 Métricas</button>
+            <button onclick="toggleMetricas()">▥&nbsp;&nbsp; Métricas</button>
 
-            <a href="/ventas">
-                <button>💵 Ventas</button>
+            <a href="/ventas" class="{% if request.path == '/ventas' %}active{% endif %}">
+                <button class="{% if request.path == '/ventas' %}active{% endif %}">▥&nbsp;&nbsp; Ventas</button>
             </a>
 
         {% endif %}
 
         <a href="/cartera">
-            <button>💰 Cartera</button>
+            <button>▣&nbsp;&nbsp; Cartera</button>
         </a>
 
         <a href="/facturas">
-            <button>📄 Facturas</button>
+            <button>▤&nbsp;&nbsp; Facturas</button>
         </a>
         <a href="/pedidos">
-            <button>🚚 Pedidos</button>
+            <button>☷&nbsp;&nbsp; Pedidos</button>
         </a>
 
-        <a href="/productos"><button>🏷️ Productos</button></a>
+        <a href="/productos" class="{% if request.path == '/productos' %}active{% endif %}"><button class="{% if request.path == '/productos' %}active{% endif %}">◆&nbsp;&nbsp; Productos</button></a>
 
-        <a href="/inventario"><button>📦 Inventario</button></a>
+        <a href="/inventario" class="{% if request.path == '/inventario' %}active{% endif %}"><button class="{% if request.path == '/inventario' %}active{% endif %}">▤&nbsp;&nbsp; Inventario</button></a>
 
         
 
@@ -450,7 +536,7 @@ button,input,select{font-family:inherit}
 
     <!-- 🔐 CERRAR SESIÓN: SECCIÓN SEPARADA DEL MENÚ -->
     <div class="sidebar-footer">
-        <a href="/logout" class="logout-sidebar">🚪 Cerrar sesión</a>
+        <a href="/logout" class="logout-sidebar"><span>Cerrar sesión</span></a>
     </div>
 
 </div>
