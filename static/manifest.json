@@ -1,0 +1,12 @@
+{
+  "name": "ST Gestión",
+  "short_name": "ST Gestión",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f3f8fd",
+  "theme_color": "#102f50",
+  "icons": [
+    {"src":"/static/icons/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"/static/icons/icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}
