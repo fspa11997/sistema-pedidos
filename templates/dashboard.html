@@ -421,6 +421,153 @@ body{padding-left:248px!important;}
   .header-title{position:relative!important;left:0!important;}
 }
 
+
+/* ===== DASHBOARD MOBILE - VISTA IGUAL A LA REFERENCIA ===== */
+@media (max-width:700px){
+  html,body{width:100%;min-width:0;overflow-x:hidden!important;}
+  body{
+    padding-left:0!important;
+    padding-top:0!important;
+    background:#f3f8fd!important;
+  }
+
+  /* Cabecera móvil: ocupa todo el ancho */
+  .header-title{
+    position:relative!important;
+    left:0!important;right:auto!important;top:auto!important;
+    width:100%!important;height:66px!important;
+    padding:0 20px!important;
+    display:flex!important;align-items:center!important;
+    gap:12px!important;
+    background:#fff!important;
+    box-shadow:0 2px 12px rgba(20,55,90,.07)!important;
+  }
+  .header-title:before{
+    display:block!important;
+    content:"☰"!important;
+    font-size:25px!important;
+    color:#173b63!important;
+    margin:0!important;
+  }
+  .header-title h2{
+    font-size:20px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+  }
+  .header-title p{
+    display:block!important;
+    margin-left:auto!important;
+    font-size:11px!important;
+    white-space:nowrap!important;
+    color:#617b96!important;
+  }
+  .header-title>button{display:none!important;}
+
+  /* Panel móvil: ancho completo, igual al diseño mostrado */
+  .topbar{
+    position:relative!important;
+    left:auto!important;top:auto!important;bottom:auto!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    display:flex!important;
+    flex-direction:column!important;
+    background:#102f50!important;
+    box-shadow:none!important;
+  }
+  .sidebar-brand{
+    flex:0 0 102px!important;
+    height:102px!important;
+    min-height:102px!important;
+    padding:0 50px!important;
+    gap:22px!important;
+  }
+  .sidebar-brand .brand-icon{
+    width:38px!important;
+    font-size:34px!important;
+  }
+  .sidebar-brand strong{
+    font-size:26px!important;
+  }
+  .sidebar-brand small{
+    font-size:13px!important;
+    margin-top:7px!important;
+  }
+
+  .acciones-izq,.acciones-der{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:4px!important;
+    padding:25px 22px 0!important;
+  }
+  .acciones-izq:before{
+    padding:0 35px 16px!important;
+    font-size:13px!important;
+    letter-spacing:1.5px!important;
+  }
+  .topbar button,.topbar a button{
+    min-height:62px!important;
+    height:62px!important;
+    padding:0 34px!important;
+    border-radius:8px!important;
+    font-size:19px!important;
+    font-weight:650!important;
+  }
+  .topbar button:hover,.topbar a button:hover{
+    background:transparent!important;
+  }
+  .topbar a.active button,.topbar button.active{
+    background:#14518a!important;
+  }
+
+  /* Cierre de sesión separado y elegante */
+  .sidebar-footer{
+    margin-top:24px!important;
+    padding:24px 22px 28px!important;
+    border-top:1px solid rgba(255,255,255,.10)!important;
+  }
+  .sidebar-footer::before{display:none!important;}
+  .logout-sidebar{
+    min-height:58px!important;
+    height:58px!important;
+    padding:0 28px!important;
+    border-radius:9px!important;
+    font-size:0!important;
+  }
+  .logout-sidebar span{font-size:17px!important;}
+  .logout-sidebar::before{font-size:25px!important;}
+  .logout-sidebar::after{font-size:28px!important;}
+
+  /* Contenido del dashboard debajo del panel */
+  #flash-container{margin:12px 22px!important;}
+  #metricas{margin:18px 22px!important;}
+  .contenedor{
+    margin:18px 22px 28px!important;
+    display:block!important;
+    width:auto!important;
+  }
+  .kpi-strip{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    margin-bottom:14px!important;
+  }
+  .metrica-card{
+    width:100%!important;
+    min-width:0!important;
+    padding:18px!important;
+    border-radius:12px!important;
+  }
+  .venta-grid{grid-template-columns:1fr!important;}
+  .filters-form{grid-template-columns:1fr!important;}
+  .table-card,.formulario,.card,.panel,.contenedor>div{
+    max-width:100%!important;
+  }
+  table{display:block!important;overflow-x:auto!important;max-width:100%!important;}
+}
+
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
