@@ -1,295 +1,135 @@
-
 /* =========================================================
-   ST GESTIÓN - RESPONSIVE
-   Solo afecta pantallas pequeñas. No modifica la impresión.
-   ========================================================= */
+   ST GESTIÓN — RESPONSIVE PC / TABLET / CELULAR
+   Solo presentación. No cambia rutas, formularios ni lógica.
+========================================================= */
+html { width:100%; overflow-x:hidden; }
+body { width:100%; max-width:100%; overflow-x:hidden; }
+img, svg, video, canvas { max-width:100%; height:auto; }
+input, select, textarea, button { max-width:100%; box-sizing:border-box; }
 
-@media screen and (max-width: 768px) {
+/* Contenedores y tablas: nunca obligan a ampliar la pantalla */
+.table-card, .table-container, .table-wrap, .tabla, .content, .card,
+.filters-card, .filters, .hoja-carta, .media-carta, .recibo {
+  max-width:100%;
+  box-sizing:border-box;
+}
+.table-card, .table-container, .table-wrap, .tabla { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table { min-width:0; }
 
-    html {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
+/* Formularios flexibles */
+.filters-form-modern, .filters-form, .filter-form { max-width:100%; flex-wrap:wrap; }
+.filters-form-modern input, .filters-form-modern select,
+.filters-form input, .filters-form select,
+.filter-form input, .filter-form select { min-width:0; }
 
-    body {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-    }
+/* Evita botones que se salgan de tarjetas */
+.btn-back-uniform { flex:0 0 auto; }
 
-    img, video, canvas, svg {
-        max-width: 100%;
-        height: auto;
-    }
-
-    /* Barras laterales de las vistas principales */
-    .sidebar,
-    .topbar {
-        position: relative !important;
-        left: 0 !important;
-        right: auto !important;
-        top: 0 !important;
-        bottom: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        max-height: none !important;
-        overflow-x: hidden !important;
-        overflow-y: visible !important;
-    }
-
-    /* Dashboard: conserva su barra lateral como menú superior */
-    .topbar {
-        min-height: 0 !important;
-    }
-
-    body {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    /* Cabeceras */
-    .header-title,
-    .header {
-        position: relative !important;
-        left: 0 !important;
-        right: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-height: 56px;
-        height: auto !important;
-        padding: 10px 12px !important;
-        box-sizing: border-box !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    .header-title h1,
-    .header-title h2,
-    .header h1,
-    .header h2 {
-        max-width: 100%;
-        overflow-wrap: anywhere;
-    }
-
-    .header-title p {
-        max-width: 100%;
-    }
-
-    /* Contenido principal */
-    .main,
-    .content,
-    .container,
-    .contenedor {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    .main {
-        padding: 18px 10px 24px !important;
-    }
-
-    .content {
-        padding: 12px !important;
-    }
-
-    .container,
-    .contenedor {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-    }
-
-    /* Tarjetas */
-    .card,
-    .table-card,
-    .table-container,
-    .table-wrap,
-    .filters,
-    .filters-bar,
-    .formulario,
-    .total-box,
-    .login-card,
-    .recibo,
-    .hoja-carta,
-    .media-carta {
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Formularios y rejillas */
-    .form-grid,
-    .filters-form,
-    .filter-form,
-    .total-grid,
-    .venta-grid,
-    .metricas-container,
-    .kpi-strip {
-        grid-template-columns: 1fr !important;
-    }
-
-    .field,
-    .field input,
-    .field select,
-    .field textarea,
-    input,
-    select,
-    textarea,
-    button {
-        min-width: 0 !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    input,
-    select,
-    textarea {
-        width: 100%;
-    }
-
-    /* Botones: permiten que textos largos no rompan la pantalla */
-    button,
-    .btn,
-    .btn-primary,
-    .btn-danger,
-    .btn-blue,
-    .btn-red,
-    .btn-back-uniform,
-    .btn-filter,
-    .btn-view,
-    .toggle-btn,
-    .logout,
-    a.btn {
-        max-width: 100% !important;
-        white-space: normal !important;
-        overflow-wrap: anywhere;
-    }
-
-    /* Filas de acciones */
-    .acciones-izq,
-    .acciones-der,
-    .acciones,
-    .filters-buttons {
-        width: 100% !important;
-        max-width: 100% !important;
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-    }
-
-    /* Tablas: se desplazan horizontalmente dentro de su área,
-       en lugar de deformar toda la página */
-    .table-wrap,
-    .table-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .table-wrap table,
-    .table-container table,
-    table.data-table {
-        width: max-content !important;
-        min-width: 100% !important;
-        max-width: none !important;
-    }
-
-    .table-wrap th,
-    .table-wrap td,
-    .table-container th,
-    .table-container td,
-    table.data-table th,
-    table.data-table td {
-        white-space: nowrap;
-    }
-
-    /* Tablas que no tienen contenedor */
-    .content > table,
-    .container > table,
-    .card > table {
-        display: block;
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .content > table thead,
-    .content > table tbody,
-    .container > table thead,
-    .container > table tbody,
-    .card > table thead,
-    .card > table tbody {
-        min-width: max-content;
-    }
-
-    /* Menú */
-    .nav {
-        width: 100% !important;
-        box-sizing: border-box;
-    }
-
-    .nav a.btn {
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Dashboard */
-    #metricas,
-    .metricas-container,
-    .kpi-strip,
-    .contenedor {
-        margin-left: 10px !important;
-        margin-right: 10px !important;
-        width: calc(100% - 20px) !important;
-    }
-
-    .metrica-card,
-    .stat {
-        min-width: 0 !important;
-        width: 100%;
-    }
-
-    /* Modales */
-    .modal-pedidos,
-    [class*="modal"] {
-        max-width: calc(100vw - 20px) !important;
-    }
-
-    /* Evita que textos largos creen scroll horizontal */
-    p, h1, h2, h3, h4, h5, h6, label, span, a {
-        overflow-wrap: anywhere;
-    }
-
-    /* Login */
-    .login-card {
-        width: calc(100% - 24px) !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-    }
+/* TABLET */
+@media (max-width: 1024px) {
+  body { font-size:15px; }
+  .main { max-width:100%; }
+  .content { padding-left:16px !important; padding-right:16px !important; }
+  .page-head { gap:12px; flex-wrap:wrap; }
+  .page-head h1 { font-size:20px; }
+  .stats { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .filters-form-modern, .filters-form, .filter-form { width:100%; }
 }
 
-/* Tablets en orientación horizontal */
-@media screen and (min-width: 769px) and (max-width: 1100px) {
-    .main {
-        max-width: 100%;
-        box-sizing: border-box;
-    }
+/* CELULAR */
+@media (max-width: 700px) {
+  body { padding:12px !important; margin:0 !important; }
 
-    .form-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  /* Páginas con sidebar/header fijo */
+  body:has(.sidebar) { padding:0 !important; }
+  body:has(.sidebar) .sidebar {
+    position:relative !important;
+    left:auto !important; top:auto !important; bottom:auto !important;
+    width:100% !important; height:auto !important; max-height:none !important;
+  }
+  body:has(.sidebar) .header-title {
+    position:relative !important; left:auto !important; right:auto !important;
+    width:100% !important; height:auto !important;
+    padding:12px 14px !important;
+    flex-wrap:wrap;
+  }
+  body:has(.sidebar) .main { padding:16px 10px 24px !important; }
 
-    .table-wrap,
-    .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+  /* Dashboard */
+  body:has(.topbar) { padding:0 !important; }
+  .topbar { max-width:100% !important; }
+  .header-title { max-width:100% !important; box-sizing:border-box; }
+
+  /* Encabezados secundarios */
+  body > .header-title {
+    position:relative !important;
+    left:auto !important; right:auto !important; top:auto !important;
+    width:100% !important; height:auto !important;
+    padding:12px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:8px !important;
+    flex-wrap:wrap !important;
+  }
+  body > .header-title h2 { font-size:18px !important; }
+  body > .header-title p { font-size:11px !important; }
+  .logout-btn { position:static !important; }
+
+  /* Filtros: una columna cómoda para dedo */
+  .filters-card, .filters { padding:12px !important; }
+  .filters-form-modern, .filters-form, .filter-form {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    width:100% !important;
+  }
+  .filters-form-modern > *, .filters-form > *, .filter-form > * {
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+  .filters-buttons { width:100%; flex-wrap:wrap; }
+  .filters-buttons button { flex:1 1 120px; min-height:40px; }
+
+  /* Tarjetas y formularios */
+  .card, .table-card, .filters-card, .filters, .recibo,
+  .hoja-carta, .media-carta { width:100% !important; }
+  .content { padding:14px !important; }
+  .form-grid { grid-template-columns:1fr !important; gap:10px !important; }
+  .field input, .field select, .form-grid input, .form-grid select,
+  input, select, textarea { width:100%; min-height:40px; }
+  button, .btn-primary, .btn-green, .btn-blue, .btn-red { min-height:40px; }
+
+  /* Tablas: conservan sus columnas y se deslizan horizontalmente */
+  .table-card, .table-container, .table-wrap, .tabla { overflow-x:auto !important; }
+  table { width:max-content; min-width:100%; }
+  th, td { white-space:nowrap; }
+
+  /* Elementos con ancho fijo */
+  .recibo { width:100% !important; max-width:400px !important; margin-left:auto !important; margin-right:auto !important; }
+  .label { width:100% !important; max-width:520px !important; }
+
+  /* Ventas / historial */
+  .header, .page-head { flex-direction:column !important; align-items:stretch !important; }
+  .header h2 { font-size:22px !important; }
+  .volver-btn { text-align:center; }
+
+  /* Botón volver: ocupa un tamaño cómodo sin desbordarse */
+  .btn-back-uniform { width:100% !important; min-width:0 !important; max-width:220px !important; }
+
+  /* Imágenes de códigos de barras */
+  img { max-width:100%; }
+}
+
+/* CELULARES MUY PEQUEÑOS */
+@media (max-width: 420px) {
+  body { padding:8px !important; }
+  .header-title h2 { font-size:16px !important; }
+  .page-head h1 { font-size:18px !important; }
+  .card-head { padding:12px !important; }
+  .content { padding:10px !important; }
+  th, td { font-size:11px !important; }
+  .btn-back-uniform { max-width:none !important; }
 }
