@@ -91,7 +91,7 @@ button,input,select{font-family:inherit}
 
 .topbar{
   position:fixed!important;z-index:3500;left:0;top:0;bottom:0;width:248px!important;
-  margin:0!important;padding:0!important;display:block!important;
+  margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important;
   background:linear-gradient(180deg,#102f50 0%,#0c2744 100%)!important;
   border:0!important;box-shadow:3px 0 16px rgba(7,33,58,.14)!important;
   overflow-y:auto!important;overflow-x:hidden!important;
@@ -122,19 +122,32 @@ button,input,select{font-family:inherit}
 .topbar button:hover,.topbar a button:hover{
   background:rgba(17,123,232,.23)!important;color:#fff!important;
 }
+.sidebar-footer{
+  margin-top:auto!important;
+  padding:14px 10px 18px!important;
+  border-top:1px solid rgba(255,255,255,.08)!important;
+}
+
 .logout-sidebar{
-  position:absolute;
-  left:25px;
-  bottom:25px;
-  color:#dcecff;
-  text-decoration:none;
-  font-size:13px;
-  font-weight:600;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-height:42px!important;
+  color:#dcecff!important;
+  background:rgba(255,255,255,.04)!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:6px!important;
+  text-decoration:none!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  transition:.2s ease!important;
 }
 
 .logout-sidebar:hover{
-  color:white;
-  text-decoration:underline;
+  color:#fff!important;
+  background:rgba(239,71,96,.18)!important;
+  border-color:rgba(239,71,96,.35)!important;
 }
 
 
@@ -312,11 +325,13 @@ button,input,select{font-family:inherit}
 }
 @media(max-width:700px){
   body{padding-left:0!important}
-  .topbar{position:relative!important;width:100%!important;height:auto!important;bottom:auto!important}
+  .topbar{position:relative!important;width:100%!important;height:auto!important;bottom:auto!important;display:flex!important;flex-direction:column!important}
   .header-title{position:relative!important;left:0!important}
   .header-title:before{display:none}
   .acciones-izq,.acciones-der{display:grid!important;grid-template-columns:1fr 1fr!important}
   .acciones-izq:before,.acciones-der:before{grid-column:1/-1}
+  .sidebar-footer{margin-top:8px!important;padding:10px 14px 16px!important}
+  .logout-sidebar{min-height:44px!important}
   .contenedor,#metricas{margin:14px 10px!important}
   .kpi-strip{grid-template-columns:1fr!important}
   .venta-grid{grid-template-columns:1fr!important}
@@ -393,8 +408,6 @@ button,input,select{font-family:inherit}
         {% endif %}
     </div>
 
-    <a href="/logout" class="logout-sidebar">⚙ Cerrar sesión</a>
-
     <!-- DERECHA -->
     <div class="acciones-der">
 
@@ -433,6 +446,11 @@ button,input,select{font-family:inherit}
         </a>
         -->
 
+    </div>
+
+    <!-- 🔐 CERRAR SESIÓN: SECCIÓN SEPARADA DEL MENÚ -->
+    <div class="sidebar-footer">
+        <a href="/logout" class="logout-sidebar">🚪 Cerrar sesión</a>
     </div>
 
 </div>
