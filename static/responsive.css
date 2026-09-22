@@ -1,0 +1,295 @@
+
+/* =========================================================
+   ST GESTIÓN - RESPONSIVE
+   Solo afecta pantallas pequeñas. No modifica la impresión.
+   ========================================================= */
+
+@media screen and (max-width: 768px) {
+
+    html {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    img, video, canvas, svg {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Barras laterales de las vistas principales */
+    .sidebar,
+    .topbar {
+        position: relative !important;
+        left: 0 !important;
+        right: auto !important;
+        top: 0 !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+    }
+
+    /* Dashboard: conserva su barra lateral como menú superior */
+    .topbar {
+        min-height: 0 !important;
+    }
+
+    body {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Cabeceras */
+    .header-title,
+    .header {
+        position: relative !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 56px;
+        height: auto !important;
+        padding: 10px 12px !important;
+        box-sizing: border-box !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .header-title h1,
+    .header-title h2,
+    .header h1,
+    .header h2 {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    .header-title p {
+        max-width: 100%;
+    }
+
+    /* Contenido principal */
+    .main,
+    .content,
+    .container,
+    .contenedor {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .main {
+        padding: 18px 10px 24px !important;
+    }
+
+    .content {
+        padding: 12px !important;
+    }
+
+    .container,
+    .contenedor {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    /* Tarjetas */
+    .card,
+    .table-card,
+    .table-container,
+    .table-wrap,
+    .filters,
+    .filters-bar,
+    .formulario,
+    .total-box,
+    .login-card,
+    .recibo,
+    .hoja-carta,
+    .media-carta {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Formularios y rejillas */
+    .form-grid,
+    .filters-form,
+    .filter-form,
+    .total-grid,
+    .venta-grid,
+    .metricas-container,
+    .kpi-strip {
+        grid-template-columns: 1fr !important;
+    }
+
+    .field,
+    .field input,
+    .field select,
+    .field textarea,
+    input,
+    select,
+    textarea,
+    button {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+    }
+
+    /* Botones: permiten que textos largos no rompan la pantalla */
+    button,
+    .btn,
+    .btn-primary,
+    .btn-danger,
+    .btn-blue,
+    .btn-red,
+    .btn-back-uniform,
+    .btn-filter,
+    .btn-view,
+    .toggle-btn,
+    .logout,
+    a.btn {
+        max-width: 100% !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+
+    /* Filas de acciones */
+    .acciones-izq,
+    .acciones-der,
+    .acciones,
+    .filters-buttons {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    /* Tablas: se desplazan horizontalmente dentro de su área,
+       en lugar de deformar toda la página */
+    .table-wrap,
+    .table-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-wrap table,
+    .table-container table,
+    table.data-table {
+        width: max-content !important;
+        min-width: 100% !important;
+        max-width: none !important;
+    }
+
+    .table-wrap th,
+    .table-wrap td,
+    .table-container th,
+    .table-container td,
+    table.data-table th,
+    table.data-table td {
+        white-space: nowrap;
+    }
+
+    /* Tablas que no tienen contenedor */
+    .content > table,
+    .container > table,
+    .card > table {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .content > table thead,
+    .content > table tbody,
+    .container > table thead,
+    .container > table tbody,
+    .card > table thead,
+    .card > table tbody {
+        min-width: max-content;
+    }
+
+    /* Menú */
+    .nav {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .nav a.btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Dashboard */
+    #metricas,
+    .metricas-container,
+    .kpi-strip,
+    .contenedor {
+        margin-left: 10px !important;
+        margin-right: 10px !important;
+        width: calc(100% - 20px) !important;
+    }
+
+    .metrica-card,
+    .stat {
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    /* Modales */
+    .modal-pedidos,
+    [class*="modal"] {
+        max-width: calc(100vw - 20px) !important;
+    }
+
+    /* Evita que textos largos creen scroll horizontal */
+    p, h1, h2, h3, h4, h5, h6, label, span, a {
+        overflow-wrap: anywhere;
+    }
+
+    /* Login */
+    .login-card {
+        width: calc(100% - 24px) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
+
+/* Tablets en orientación horizontal */
+@media screen and (min-width: 769px) and (max-width: 1100px) {
+    .main {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .table-wrap,
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}

@@ -16,6 +16,8 @@ button{border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:point
 .imprimir{background:#117be8;color:#fff}.cerrar{background:#e7edf3;color:#173b63}
 @media print{body{background:#fff;padding:0;display:block}.label{width:100%;max-width:90mm;border:2px solid #111;border-radius:0;box-shadow:none;margin:0 auto;padding:8mm 6mm}.nombre{font-size:18px}.codigo{font-size:13px;margin-bottom:6mm}.titulo{font-size:11px}.barcode{max-height:35mm}.acciones{display:none}@page{size:auto;margin:8mm}}
 </style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
 <body>
 <div class="label">
