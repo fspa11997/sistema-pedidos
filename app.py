@@ -680,7 +680,7 @@ def registrar_compra_route():
         cursor.execute("""
             SELECT nombre, codigo_barras
             FROM productos
-            WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
+            WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
             LIMIT 1
         """, (codigo_barras, empresa_id))
         p = cursor.fetchone()
@@ -892,7 +892,7 @@ def imprimir_codigo_barras(producto_id):
     cursor.execute("""
         SELECT id, nombre, codigo_barras
         FROM productos
-        WHERE id = %s AND empresa_id = %s AND activo = 1
+        WHERE id = %s AND empresa_id = %s AND activo = TRUE
         LIMIT 1
     """, (producto_id, empresa_id))
     producto = cursor.fetchone()
@@ -932,7 +932,7 @@ def buscar_producto_codigo():
                precio_mayorista, precio_individual,
                precio_mostrador, costo
         FROM productos
-        WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
+        WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
         LIMIT 1
     """, (codigo, empresa_id))
     producto = cursor.fetchone()
