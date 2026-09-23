@@ -818,9 +818,7 @@ button,input,select{font-family:inherit}
                     <div id="productos">
 
                         <div class="item">
-
-                            <label>📦 Producto</label>
-
+                            <label>🏷️ Producto</label>
                             <select name="producto[]" required>
                                 {% for prod in productos %}
                                     <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
@@ -830,7 +828,6 @@ button,input,select{font-family:inherit}
                             <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
 
                             <button type="button" onclick="this.parentElement.remove()">❌</button>
-
                         </div>
 
                     </div>
