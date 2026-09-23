@@ -817,8 +817,8 @@ button,input,select{font-family:inherit}
                     <!-- 📦 PRODUCTOS -->
                     <div id="productos">
 
-                        <div class="item">
-                            <label>🏷️ Producto</label>
+                        <label>🏷️ Producto</label>
+                        <div class="item"> 
                             <select name="producto[]" required>
                                 {% for prod in productos %}
                                     <option value="{{ prod.nombre }}">{{ prod.nombre }}</option>
