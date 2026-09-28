@@ -71,24 +71,32 @@ app = Flask(__name__)
 
 
 def formato_fecha_hora(valor):
-    """Presenta fechas de la aplicación como DD/MM/AAAA HH:MM."""
-    if not valor:
+    """Convierte fechas UTC a hora de Colombia y las muestra DD/MM/AAAA HH:MM.
+
+    Railway/PostgreSQL suele entregar timestamps sin zona como UTC; por eso,
+    los valores naive se interpretan como UTC antes de convertirlos a Bogotá.
+    """
+    if valor is None or valor == "":
         return "-"
-    if isinstance(valor, datetime):
-        return valor.strftime("%d/%m/%Y %H:%M")
-    texto = str(valor).strip()
     try:
-        # ISO de PostgreSQL/SQLite, con o sin segundos y zona horaria.
-        fecha = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+        if isinstance(valor, datetime):
+            fecha = valor
+        else:
+            texto = str(valor).strip()
+            fecha = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+        if fecha.tzinfo is None:
+            fecha = pytz.UTC.localize(fecha)
+        fecha = fecha.astimezone(zona_colombia)
         return fecha.strftime("%d/%m/%Y %H:%M")
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OverflowError):
         for patron in ("%Y-%m-%d", "%d/%m/%Y %H:%M", "%d/%m/%Y"):
             try:
-                fecha = datetime.strptime(texto, patron)
+                fecha = datetime.strptime(str(valor).strip(), patron)
+                fecha = pytz.UTC.localize(fecha).astimezone(zona_colombia)
                 return fecha.strftime("%d/%m/%Y %H:%M")
             except ValueError:
                 continue
-    return texto
+    return str(valor)
 
 
 app.jinja_env.filters["fecha_hora"] = formato_fecha_hora
