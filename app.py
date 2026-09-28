@@ -102,25 +102,10 @@ def formato_fecha_hora(valor):
 app.jinja_env.filters["fecha_hora"] = formato_fecha_hora
 
 
-def formato_fecha_pedido(valor):
-    """Muestra fechas de pedidos en hora de Colombia; naive se asume local."""
-    if valor is None or valor == "":
-        return "-"
-    try:
-        if isinstance(valor, datetime):
-            fecha = valor
-        else:
-            fecha = datetime.fromisoformat(str(valor).strip().replace("Z", "+00:00"))
-        if fecha.tzinfo is None:
-            fecha = zona_colombia.localize(fecha)
-        else:
-            fecha = fecha.astimezone(zona_colombia)
-        return fecha.strftime("%d/%m/%Y %H:%M")
-    except (ValueError, TypeError, OverflowError):
-        return str(valor)
+# Pedidos reutiliza exactamente la misma conversión UTC -> America/Bogota
+# que Factura, Facturas y Cartera.
+app.jinja_env.filters["fecha_pedido"] = formato_fecha_hora
 
-
-app.jinja_env.filters["fecha_pedido"] = formato_fecha_pedido
 app.secret_key = "secreto"
 
 zona_colombia = pytz.timezone("America/Bogota")
