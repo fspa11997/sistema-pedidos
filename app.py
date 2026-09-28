@@ -68,6 +68,30 @@ seed()
 print("🔥 DB inicializada")
 
 app = Flask(__name__)
+
+
+def formato_fecha_hora(valor):
+    """Presenta fechas de la aplicación como DD/MM/AAAA HH:MM."""
+    if not valor:
+        return "-"
+    if isinstance(valor, datetime):
+        return valor.strftime("%d/%m/%Y %H:%M")
+    texto = str(valor).strip()
+    try:
+        # ISO de PostgreSQL/SQLite, con o sin segundos y zona horaria.
+        fecha = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+        return fecha.strftime("%d/%m/%Y %H:%M")
+    except (ValueError, TypeError):
+        for patron in ("%Y-%m-%d", "%d/%m/%Y %H:%M", "%d/%m/%Y"):
+            try:
+                fecha = datetime.strptime(texto, patron)
+                return fecha.strftime("%d/%m/%Y %H:%M")
+            except ValueError:
+                continue
+    return texto
+
+
+app.jinja_env.filters["fecha_hora"] = formato_fecha_hora
 app.secret_key = "secreto"
 
 zona_colombia = pytz.timezone("America/Bogota")
@@ -680,7 +704,7 @@ def registrar_compra_route():
         cursor.execute("""
             SELECT nombre, codigo_barras
             FROM productos
-            WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
+            WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
             LIMIT 1
         """, (codigo_barras, empresa_id))
         p = cursor.fetchone()
@@ -892,7 +916,7 @@ def imprimir_codigo_barras(producto_id):
     cursor.execute("""
         SELECT id, nombre, codigo_barras
         FROM productos
-        WHERE id = %s AND empresa_id = %s AND activo = TRUE
+        WHERE id = %s AND empresa_id = %s AND activo = 1
         LIMIT 1
     """, (producto_id, empresa_id))
     producto = cursor.fetchone()
@@ -932,7 +956,7 @@ def buscar_producto_codigo():
                precio_mayorista, precio_individual,
                precio_mostrador, costo
         FROM productos
-        WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
+        WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
         LIMIT 1
     """, (codigo, empresa_id))
     producto = cursor.fetchone()

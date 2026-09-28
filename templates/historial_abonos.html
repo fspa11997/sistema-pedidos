@@ -64,7 +64,7 @@
                 ${{ "{:,.0f}".format(p.abono or 0) }}
             </td>
 
-            <td>{{ p.fecha }}</td>
+            <td>{{ p.fecha|fecha_hora }}</td>
 
             <td>
                 {{ p.observacion or "-" }}

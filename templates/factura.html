@@ -247,7 +247,7 @@
         <p><b>Dirección:</b> {{ factura.direccion }}</p>
         <p><b>Ciudad:</b> {{ factura.ciudad }}</p>
         <p><b>Teléfono:</b> {{ factura.telefono }}</p>
-        <p><b>Fecha:</b> {{ factura.fecha }}</p>
+        <p><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</p>
 
         <hr>
 
@@ -309,7 +309,7 @@
         <h2>🧾 FACTURA No FS {{ factura.id }}</h2>
 
         <p><b>Cliente:</b> {{ factura.cliente }}</p>
-        <p><b>Fecha:</b> {{ factura.fecha }}</p>
+        <p><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</p>
 
         <hr>
 

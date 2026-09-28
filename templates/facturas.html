@@ -211,7 +211,7 @@
                         {% endif %}
                     </td>
 
-                    <td>{{ f.fecha }}</td>
+                    <td>{{ f.fecha|fecha_hora }}</td>
 
                     <td>
                         <a href="/factura/{{ f.id }}">
