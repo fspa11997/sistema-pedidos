@@ -102,9 +102,45 @@ def formato_fecha_hora(valor):
 app.jinja_env.filters["fecha_hora"] = formato_fecha_hora
 
 
-# Pedidos reutiliza exactamente la misma conversión UTC -> America/Bogota
-# que Factura, Facturas y Cartera.
-app.jinja_env.filters["fecha_pedido"] = formato_fecha_hora
+# ============================================================
+# FECHAS DE PEDIDOS
+# ============================================================
+# Los pedidos se guardan como TEXT usando db.ahora(), que ya
+# genera la hora de Colombia (UTC-5). Por eso no se debe volver
+# a interpretar ese texto como UTC.
+def formato_fecha_pedido(valor):
+    if not valor:
+        return ""
+
+    try:
+        if isinstance(valor, datetime):
+            if valor.tzinfo is None:
+                return valor.strftime("%d/%m/%Y %H:%M")
+            return valor.astimezone(zona_colombia).strftime("%d/%m/%Y %H:%M")
+
+        texto = str(valor).strip()
+
+        # Estos formatos representan la hora local de Colombia
+        # tal como se guarda actualmente en pedidos.
+        for patron in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d/%m/%Y %H:%M"):
+            try:
+                fecha = datetime.strptime(texto, patron)
+                return fecha.strftime("%d/%m/%Y %H:%M")
+            except ValueError:
+                continue
+
+        # Solo si llega explícitamente una fecha con zona horaria,
+        # se convierte a Bogotá.
+        fecha = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+        if fecha.tzinfo is not None:
+            return fecha.astimezone(zona_colombia).strftime("%d/%m/%Y %H:%M")
+        return fecha.strftime("%d/%m/%Y %H:%M")
+
+    except (ValueError, TypeError, OverflowError):
+        return str(valor)
+
+
+app.jinja_env.filters["fecha_pedido"] = formato_fecha_pedido
 
 app.secret_key = "secreto"
 
