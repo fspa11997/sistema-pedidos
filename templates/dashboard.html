@@ -945,6 +945,7 @@ button,input,select{font-family:inherit}
                 <td>
                     {% if p.fecha %}
                         {{ p.fecha|fecha_hora if p.fecha else 'Sin fecha' }}
+                    {% endif %}
                 </td>
                 <td>
                     {% if p.fecha_entrega %}
