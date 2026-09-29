@@ -39,41 +39,40 @@ button{border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:point
         codigo=producto.codigo_barras
     ) }}"
     alt="Código de barras de {{ producto.nombre }}">
-    
+
   <div class="acciones">
     <button class="imprimir" onclick="window.print()">🖨 Imprimir</button>
     <button class="cerrar" onclick="window.close()">Cerrar</button>
   </div>
 </div>
 <script>
-(function () {
-    const imagen = document.querySelector('.barcode');
+const imagen = document.getElementById("barcode");
 
-    function imprimirCuandoEsteLista() {
-        requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-                window.print();
-            });
-        });
-    }
+function imprimir() {
+    setTimeout(() => {
+        window.print();
+    }, 300);
+}
 
-    if (imagen.complete && imagen.naturalWidth > 0) {
-        imprimirCuandoEsteLista();
+if (imagen.complete) {
+    if (imagen.naturalWidth > 0) {
+        imprimir();
     } else {
-        imagen.addEventListener(
-            'load',
-            imprimirCuandoEsteLista,
-            { once: true }
+        alert(
+            "No se pudo generar el código de barras. " +
+            "Revisa la consola de Flask."
         );
-
-        imagen.addEventListener('error', function () {
-            alert(
-                'No se pudo cargar el código de barras. ' +
-                'Verifica el código del producto e intenta de nuevo.'
-            );
-        }, { once: true });
     }
-})();
+} else {
+    imagen.onload = imprimir;
+
+    imagen.onerror = function () {
+        alert(
+            "Error al cargar el código de barras. " +
+            "Revisa la consola de Flask."
+        );
+    };
+}
 </script>
 </body>
 </html>
