@@ -37,6 +37,35 @@ button{border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:point
     <button class="cerrar" onclick="window.close()">Cerrar</button>
   </div>
 </div>
-<script>window.addEventListener('load', function(){ setTimeout(function(){ window.print(); }, 300); });</script>
+<script>
+(function () {
+    const imagen = document.querySelector('.barcode');
+
+    function imprimirCuandoEsteLista() {
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                window.print();
+            });
+        });
+    }
+
+    if (imagen.complete && imagen.naturalWidth > 0) {
+        imprimirCuandoEsteLista();
+    } else {
+        imagen.addEventListener(
+            'load',
+            imprimirCuandoEsteLista,
+            { once: true }
+        );
+
+        imagen.addEventListener('error', function () {
+            alert(
+                'No se pudo cargar el código de barras. ' +
+                'Verifica el código del producto e intenta de nuevo.'
+            );
+        }, { once: true });
+    }
+})();
+</script>
 </body>
 </html>
