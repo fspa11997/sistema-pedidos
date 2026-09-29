@@ -702,6 +702,7 @@ def crear_factura(
     cursor = conn.cursor()
 
     fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #fecha = ahora()#
 
     total = 0
 
