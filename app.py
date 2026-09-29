@@ -111,7 +111,7 @@ def formato_fecha_pedido(valor):
             fecha = valor
         else:
             texto = str(valor).strip()
-            fecha = datetime.fromisoformat(texto.replace("Z", "-05:00"))
+            fecha = datetime.fromisoformat(texto.replace("Z", "+00:00"))
         if fecha.tzinfo is None:
             fecha = zona_colombia.localize(fecha)
         else:
