@@ -111,7 +111,7 @@ def formato_fecha_pedido(valor):
             fecha = valor
         else:
             texto = str(valor).strip()
-            fecha = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+            fecha = datetime.fromisoformat(texto.replace("Z", "+05:00"))
         if fecha.tzinfo is None:
             fecha = zona_colombia.localize(fecha)
         else:
@@ -962,16 +962,31 @@ def imprimir_codigo_barras(producto_id):
 @app.route("/codigo_barras/<codigo>")
 def codigo_barras(codigo):
     try:
+        if not codigo or not codigo.strip():
+            return "Código vacío", 400
+
         clase = barcode.get_barcode_class("code128")
         codigo_barra = clase(codigo, writer=SVGWriter())
-        contenido = codigo_barra.render({
-            "module_width": 0.30, "module_height": 12,
-            "font_size": 9, "text_distance": 4, "quiet_zone": 4
-        })
-        return Response(contenido, mimetype="image/svg+xml")
-    except Exception:
-        return "Código de barras inválido", 400
 
+        contenido = codigo_barra.render({
+            "module_width": 0.30,
+            "module_height": 15,
+            "font_size": 10,
+            "text_distance": 4,
+            "quiet_zone": 4,
+            "write_text": True
+        })
+
+        return Response(
+            contenido,
+            mimetype="image/svg+xml"
+        )
+
+    except Exception as e:
+        app.logger.exception(
+            "Error generando código de barras: %s", codigo
+        )
+        return f"Error generando código: {e}", 500
 
 @app.route("/buscar_producto_codigo")
 def buscar_producto_codigo():

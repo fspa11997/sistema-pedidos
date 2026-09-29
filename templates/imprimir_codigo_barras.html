@@ -31,7 +31,15 @@ button{border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:point
   <div class="nombre">{{ producto.nombre }}</div>
   <div class="codigo">{{ producto.codigo_barras }}</div>
   <div class="titulo">Código de barras</div>
-  <img class="barcode" src="/codigo_barras/{{ producto.codigo_barras }}" alt="Código de barras de {{ producto.nombre }}">
+  <img
+    id="barcode"
+    class="barcode"
+    src="{{ url_for(
+        'codigo_barras',
+        codigo=producto.codigo_barras
+    ) }}"
+    alt="Código de barras de {{ producto.nombre }}">
+    
   <div class="acciones">
     <button class="imprimir" onclick="window.print()">🖨 Imprimir</button>
     <button class="cerrar" onclick="window.close()">Cerrar</button>
