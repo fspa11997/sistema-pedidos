@@ -944,12 +944,12 @@ button,input,select{font-family:inherit}
                 <td>{{ "{:,.0f}".format(p.precio) }}</td>
                 <td>
                     {% if p.fecha %}
-                        {{ p.fecha|fecha_pedido if p.fecha else 'Sin fecha' }}
+                        {{ p.fecha|fecha_hora if p.fecha else 'Sin fecha' }}
                     {% endif %}
                 </td>
                 <td>
                     {% if p.fecha_entrega %}
-                        {{ p.fecha_entrega|fecha_pedido }}
+                        {{ p.fecha_entrega|fecha_hora }}
                     {% else %}
                         -
                     {% endif %}

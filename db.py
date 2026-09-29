@@ -451,8 +451,7 @@ def agregar_pedido(
     cursor = conn.cursor()
 
     from datetime import datetime
-    from db import ahora
-    fecha = ahora()
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     cursor.execute("""
         INSERT INTO pedidos (
@@ -542,9 +541,8 @@ def cambiar_estado(id, estado):
     cursor = conn.cursor()
 
     from datetime import datetime
-    from db import ahora
     if estado == "entregado":
-        fecha_entrega = ahora()
+        fecha_entrega = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     else:
         fecha_entrega = None
 
