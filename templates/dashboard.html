@@ -214,10 +214,38 @@ button,input,select{font-family:inherit}
 
 #productos .item {
     display: grid !important;
-    grid-template-columns: 145px 58px minmax(145px, auto) 95px 36px !important;
+    grid-template-columns: minmax(0, 1fr) 54px 95px 36px !important;
     gap: 8px !important;
     align-items: center !important;
     width: 100% !important;
+}
+
+#productos .item select {
+    grid-column: 1 !important;
+    width: 100% !important;
+}
+
+#productos .item .invoice-product-photo {
+    grid-column: 2 !important;
+    width: 54px !important;
+    height: 54px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    border: 1px solid #dce8f3 !important;
+    margin: 0 !important;
+}
+
+#productos .item input[name="cantidad[]"] {
+    grid-column: 3 !important;
+    width: 95px !important;
+    height: 36px !important;
+    text-align: center !important;
+}
+
+#productos .item button {
+    grid-column: 4 !important;
+    width: 36px !important;
+    height: 36px !important;
 }
 
 /* Selector del producto */
