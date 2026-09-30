@@ -972,10 +972,15 @@ def obtener_inventario(empresa_id):
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT producto, stock_unidades, codigo_barras
-        FROM inventario
-        WHERE empresa_id = %s
-        ORDER BY producto ASC
+        SELECT i.producto, i.stock_unidades, i.codigo_barras,
+               p.id AS producto_id, p.foto_mimetype,
+               CASE WHEN p.foto IS NOT NULL THEN TRUE ELSE FALSE END AS tiene_foto
+        FROM inventario i
+        LEFT JOIN productos p
+          ON p.codigo_barras = i.codigo_barras
+         AND p.empresa_id = i.empresa_id
+        WHERE i.empresa_id = %s
+        ORDER BY i.producto ASC
     """, (empresa_id,))
     data = cursor.fetchall()
     conn.close()
