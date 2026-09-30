@@ -1034,41 +1034,17 @@ function agregarProducto() {
     div.innerHTML = `
         <select name="producto[]" required>
             {% for prod in productos %}
-                <option 
-                    value="{{ prod.nombre }}" 
-                    data-product-id="{{ prod.id }}"
-                    data-stock="{% set stock = 0 %}{% for inv in inventario %}{% if inv['producto'] == prod.nombre %}{% set stock = inv['stock_unidades'] %}{% endif %}{% endfor %}{{ stock }}">
-                    {{ prod.nombre }}
-                </option>
+                <option value="{{ prod.nombre }}" data-product-id="{{ prod.id }}">{{ prod.nombre }}</option>
             {% endfor %}
         </select>
+        <img class="invoice-product-photo" alt="Foto del producto" style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" onclick="if(this.src)window.open(this.src,'_blank')">
 
-        <img class="invoice-product-photo" 
-             alt="Foto del producto" 
-             style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" 
-             onclick="if(this.src)window.open(this.src,'_blank')">
-
-        <div class="producto-stock" 
-             style="font-size:13px;font-weight:bold;color:#117be8;margin:2px 0 6px 0;">
-            📦 Disponible: 0 unidades
-        </div>
-
-        <input type="number" 
-               name="cantidad[]" 
-               placeholder="Unidades" 
-               min="1" 
-               step="1" 
-               value="1" 
-               required>
+        <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
 
         <button type="button" onclick="this.parentElement.remove()">❌</button>
     `;
 
     container.appendChild(div);
-
-    // Cargar inmediatamente foto y stock
-    const select = div.querySelector('select[name="producto[]"]');
-    actualizarFotoProducto(select);
 }
 function actualizarFotoProducto(select) {
     const item = select.closest('.item');
