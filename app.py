@@ -1,5 +1,6 @@
 import pytz
 import os
+import psycopg2
 from datetime import datetime
 import barcode
 from barcode.writer import SVGWriter
@@ -705,6 +706,39 @@ def productos_page():
     return render_template("productos.html", productos=productos)
 
 
+@app.route("/producto_foto/<int:producto_id>")
+def producto_foto(producto_id):
+    if "usuario" not in session:
+        return "No autorizado", 401
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("SELECT foto, foto_mimetype FROM productos WHERE id=%s AND empresa_id=%s", (producto_id, session["empresa_id"]))
+    fila = cursor.fetchone()
+    conn.close()
+    if not fila or not fila["foto"]:
+        return "Sin foto", 404
+    return Response(bytes(fila["foto"]), mimetype=fila["foto_mimetype"] or "image/jpeg", headers={"Cache-Control":"no-store"})
+
+@app.route("/subir_foto_producto/<int:producto_id>", methods=["POST"])
+def subir_foto_producto(producto_id):
+    if "usuario" not in session:
+        return redirect("/")
+    archivo = request.files.get("foto")
+    if not archivo or not archivo.filename:
+        flash("Selecciona una imagen.", "error")
+        return redirect("/inventario")
+    tipos = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    datos = archivo.read(5 * 1024 * 1024 + 1)
+    if archivo.mimetype not in tipos or len(datos) > 5 * 1024 * 1024:
+        flash("Usa JPG, PNG, WEBP o GIF de máximo 5 MB.", "error")
+        return redirect("/inventario")
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE productos SET foto=%s, foto_mimetype=%s WHERE id=%s AND empresa_id=%s", (psycopg2.Binary(datos), archivo.mimetype, producto_id, session["empresa_id"]))
+    conn.commit()
+    conn.close()
+    return redirect("/inventario")
+
 @app.route("/inventario")
 def inventario_page():
     if "usuario" not in session:
@@ -712,7 +746,7 @@ def inventario_page():
     empresa_id = session["empresa_id"]
     productos = obtener_productos(empresa_id)
     inventario = obtener_inventario(empresa_id)
-    return render_template("inventario.html", productos=productos, inventario=inventario)
+    return render_template("inventario.html", productos=productos, inventario=inventario, fotos_por_nombre={p["nombre"]: p["id"] for p in productos})
 
 
 @app.route("/registrar_compra", methods=["POST"])
@@ -746,6 +780,7 @@ def registrar_compra_route():
                 "inventario.html",
                 productos=obtener_productos(empresa_id),
                 inventario=obtener_inventario(empresa_id),
+                fotos_por_nombre={p["nombre"]: p["id"] for p in obtener_productos(empresa_id)},
                 error="No existe un producto con ese código de barras."
             )
 

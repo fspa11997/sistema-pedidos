@@ -51,9 +51,14 @@ def inicializar_db():
         costo REAL,
         codigo_barras TEXT,
         empresa_id INTEGER,
-        activo INTEGER DEFAULT 1
+        activo INTEGER DEFAULT 1,
+        foto BYTEA,
+        foto_mimetype TEXT
     )
     """)
+
+    cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto BYTEA")
+    cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto_mimetype TEXT")
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pedidos (
