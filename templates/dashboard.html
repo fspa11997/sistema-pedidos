@@ -821,13 +821,32 @@ button,input,select{font-family:inherit}
                         <div class="item"> 
                             <select name="producto[]" required>
                                 {% for prod in productos %}
-                                    <option value="{{ prod.nombre }}" data-product-id="{{ prod.id }}">{{ prod.nombre }}</option>
+                                    <option 
+                                        value="{{ prod.nombre }}" 
+                                        data-product-id="{{ prod.id }}"
+                                        data-stock="{% set stock = 0 %}{% for inv in inventario %}{% if inv['producto'] == prod.nombre %}{% set stock = inv['stock_unidades'] %}{% endif %}{% endfor %}{{ stock }}">
+                                        {{ prod.nombre }}
+                                    </option>
                                 {% endfor %}
                             </select>
-                            <img class="invoice-product-photo" alt="Foto del producto" style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" onclick="if(this.src)window.open(this.src,'_blank')">
 
-                            <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
+                            <img class="invoice-product-photo" 
+                                alt="Foto del producto" 
+                                style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" 
+                                onclick="if(this.src)window.open(this.src,'_blank')">
 
+                            <div class="producto-stock" 
+                                style="font-size:13px;font-weight:bold;color:#117be8;margin:2px 0 6px 0;">
+                                📦 Disponible: 0 unidades
+                            </div>
+
+                            <input type="number" 
+                                name="cantidad[]" 
+                                placeholder="Unidades" 
+                                min="1" 
+                                step="1" 
+                                value="1" 
+                                required>
                             <button type="button" onclick="this.parentElement.remove()">❌</button>
                         </div>
 
@@ -1015,25 +1034,81 @@ function agregarProducto() {
     div.innerHTML = `
         <select name="producto[]" required>
             {% for prod in productos %}
-                <option value="{{ prod.nombre }}" data-product-id="{{ prod.id }}">{{ prod.nombre }}</option>
+                <option 
+                    value="{{ prod.nombre }}" 
+                    data-product-id="{{ prod.id }}"
+                    data-stock="{% set stock = 0 %}{% for inv in inventario %}{% if inv['producto'] == prod.nombre %}{% set stock = inv['stock_unidades'] %}{% endif %}{% endfor %}{{ stock }}">
+                    {{ prod.nombre }}
+                </option>
             {% endfor %}
         </select>
-        <img class="invoice-product-photo" alt="Foto del producto" style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" onclick="if(this.src)window.open(this.src,'_blank')">
 
-        <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
+        <img class="invoice-product-photo" 
+             alt="Foto del producto" 
+             style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" 
+             onclick="if(this.src)window.open(this.src,'_blank')">
+
+        <div class="producto-stock" 
+             style="font-size:13px;font-weight:bold;color:#117be8;margin:2px 0 6px 0;">
+            📦 Disponible: 0 unidades
+        </div>
+
+        <input type="number" 
+               name="cantidad[]" 
+               placeholder="Unidades" 
+               min="1" 
+               step="1" 
+               value="1" 
+               required>
 
         <button type="button" onclick="this.parentElement.remove()">❌</button>
     `;
 
     container.appendChild(div);
+
+    // Cargar inmediatamente foto y stock
+    const select = div.querySelector('select[name="producto[]"]');
+    actualizarFotoProducto(select);
 }
 function actualizarFotoProducto(select) {
-    const img = select.closest('.item').querySelector('.invoice-product-photo');
-    const id = select.options[select.selectedIndex]?.dataset.productId;
+    const item = select.closest('.item');
+
+    const img = item.querySelector('.invoice-product-photo');
+    const stockLabel = item.querySelector('.producto-stock');
+
+    const option = select.options[select.selectedIndex];
+
+    const id = option?.dataset.productId;
+    const stock = option?.dataset.stock || 0;
+
+    // Mostrar cantidad disponible
+    if (stockLabel) {
+        stockLabel.textContent = `📦 Disponible: ${stock} unidades`;
+
+        if (parseInt(stock) <= 0) {
+            stockLabel.style.color = "#dc3545";
+        } else {
+            stockLabel.style.color = "#117be8";
+        }
+    }
+
+    // Mostrar fotografía
     if (!img) return;
-    if (!id) { img.style.display='none'; img.removeAttribute('src'); return; }
-    img.onerror = () => { img.style.display='none'; };
-    img.onload = () => { img.style.display='block'; };
+
+    if (!id) {
+        img.style.display = 'none';
+        img.removeAttribute('src');
+        return;
+    }
+
+    img.onerror = () => {
+        img.style.display = 'none';
+    };
+
+    img.onload = () => {
+        img.style.display = 'block';
+    };
+
     img.src = `/producto_foto/${id}?v=${Date.now()}`;
 }
 document.addEventListener('change', e => { if(e.target.matches('#productos select[name="producto[]"]')) actualizarFotoProducto(e.target); });
