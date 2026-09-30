@@ -195,9 +195,191 @@ button,input,select{font-family:inherit}
 .col.derecha hr{border:0;border-top:1px solid #e7eef5;margin:14px 0!important}
 
 #productos{display:flex;flex-direction:column;gap:7px!important}
-#productos .item{
-  display:grid!important;grid-template-columns:minmax(0,1fr) 95px 36px!important;
-  gap:7px!important;align-items:center!important;
+/* =========================================================
+   PRODUCTOS - VENTA
+   Diseño adaptable para PC, tablet y celular
+   ========================================================= */
+
+#productos {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+#productos .item {
+    display: grid !important;
+    grid-template-columns: minmax(150px, 1fr) 58px minmax(145px, auto) 95px 36px !important;
+    gap: 8px !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Selector del producto */
+#productos .item select {
+    width: 100% !important;
+    height: 36px !important;
+    min-width: 0 !important;
+}
+
+/* Foto */
+#productos .item .invoice-product-photo {
+    display: block;
+    width: 54px !important;
+    height: 54px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    border: 1px solid #dce8f3 !important;
+    margin: 0 !important;
+}
+
+/* Cantidad disponible */
+#productos .item .producto-stock {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #117be8 !important;
+    margin: 0 !important;
+}
+
+/* Campo cantidad a vender */
+#productos .item input[name="cantidad[]"] {
+    width: 95px !important;
+    height: 36px !important;
+    min-width: 0 !important;
+    text-align: center !important;
+}
+
+/* Botón eliminar */
+#productos .item button {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 5px !important;
+    background: #fff0f2 !important;
+    color: #e34c61 !important;
+    cursor: pointer !important;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    #productos .item {
+        grid-template-columns: minmax(130px, 1fr) 54px minmax(130px, auto) 80px 36px !important;
+        gap: 6px !important;
+    }
+
+    #productos .item .producto-stock {
+        font-size: 11px !important;
+    }
+
+    #productos .item input[name="cantidad[]"] {
+        width: 80px !important;
+    }
+}
+
+
+/* =========================================================
+   CELULAR
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    #productos .item {
+        display: grid !important;
+
+        /* Producto + foto */
+        grid-template-columns: minmax(0, 1fr) 54px !important;
+
+        gap: 8px !important;
+
+        padding: 10px !important;
+
+        background: #f8fbfe !important;
+
+        border: 1px solid #dce8f3 !important;
+
+        border-radius: 8px !important;
+    }
+
+    /* Producto ocupa la primera columna */
+    #productos .item select {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+
+        width: 100% !important;
+        height: 38px !important;
+    }
+
+    /* Foto */
+    #productos .item .invoice-product-photo {
+        grid-column: 2 !important;
+        grid-row: 1 / span 2 !important;
+
+        width: 54px !important;
+        height: 54px !important;
+    }
+
+    /* Stock */
+    #productos .item .producto-stock {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+
+        font-size: 12px !important;
+
+        white-space: normal !important;
+
+        min-height: 30px !important;
+    }
+
+    /* Cantidad a vender */
+    #productos .item input[name="cantidad[]"] {
+        grid-column: 1 !important;
+        grid-row: 3 !important;
+
+        width: 100% !important;
+        height: 38px !important;
+
+        text-align: center !important;
+    }
+
+    /* Eliminar */
+    #productos .item button {
+        grid-column: 2 !important;
+        grid-row: 3 !important;
+
+        width: 54px !important;
+        height: 38px !important;
+
+        justify-self: end !important;
+    }
+}
+
+
+/* =========================================================
+   CELULAR PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    #productos .item {
+        grid-template-columns: minmax(0, 1fr) 48px !important;
+    }
+
+    #productos .item .invoice-product-photo {
+        width: 48px !important;
+        height: 48px !important;
+    }
+
+    #productos .item button {
+        width: 48px !important;
+    }
 }
 #productos .item select,#productos .item input{height:36px!important}
 #productos .item button{
