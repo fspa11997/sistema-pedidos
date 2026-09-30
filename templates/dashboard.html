@@ -1035,13 +1035,31 @@ button,input,select{font-family:inherit}
 
                         <label>🏷️ Producto</label>
                         <div class="item"> 
-                            <img class="invoice-product-photo" alt="Foto del producto" style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0" onclick="if(this.src)window.open(this.src,'_blank')">
                             <select name="producto[]" required>
                                 {% for prod in productos %}
-                                    <option value="{{ prod.nombre }}" data-product-id="{{ prod.id }}">{{ prod.nombre }}</option>
+                                    <option value="{{ prod.nombre }}" data-product-id="{{ prod.id }}">
+                                        {{ prod.nombre }}
+                                    </option>
                                 {% endfor %}
                             </select>
-                            <input type="number" name="cantidad[]" placeholder="Unidades" min="1" step="1" value="1" required>
+
+                            <img
+                                class="invoice-product-photo"
+                                alt="Foto del producto"
+                                style="display:none;width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #dce8f3;margin:6px 0"
+                                onclick="if(this.src)window.open(this.src,'_blank')"
+                            >
+
+                            <input
+                                type="number"
+                                name="cantidad[]"
+                                placeholder="Unidades"
+                                min="1"
+                                step="1"
+                                value="1"
+                                required
+                            >
+
                             <button type="button" onclick="this.parentElement.remove()">❌</button>
                         
                         </div>
