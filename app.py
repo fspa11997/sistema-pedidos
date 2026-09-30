@@ -947,7 +947,7 @@ def imprimir_codigo_barras(producto_id):
     cursor.execute("""
         SELECT id, nombre, codigo_barras
         FROM productos
-        WHERE id = %s AND empresa_id = %s AND activo = 1
+        WHERE id = %s AND empresa_id = %s AND activo = TRUE
         LIMIT 1
     """, (producto_id, empresa_id))
     producto = cursor.fetchone()
@@ -1002,7 +1002,7 @@ def buscar_producto_codigo():
                precio_mayorista, precio_individual,
                precio_mostrador, costo
         FROM productos
-        WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
+        WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
         LIMIT 1
     """, (codigo, empresa_id))
     producto = cursor.fetchone()
@@ -1085,7 +1085,7 @@ def ventas():
         SELECT *
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = 0
+        AND eliminado = FALSE
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -1187,7 +1187,7 @@ def reportes():
         SELECT SUM(precio) as total
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = 0
+        AND eliminado = FALSE
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"] or 0
@@ -1197,7 +1197,7 @@ def reportes():
         SELECT COUNT(*) as total_pedidos
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = 0
+        AND eliminado = FALSE
     """, (empresa_id,))
 
     total_pedidos = cursor.fetchone()["total_pedidos"]
@@ -1305,14 +1305,14 @@ def pedidos():
 
         query += """
             AND estado = 'pendiente'
-            AND eliminado = 0
+            AND eliminado = FALSE
         """
 
     elif filtro == "entregados":
 
         query += """
             AND estado = 'entregado'
-            AND eliminado = 0
+            AND eliminado = FALSE
         """
 
     elif filtro == "eliminados":
@@ -1324,7 +1324,7 @@ def pedidos():
     elif filtro == "todos":
 
         query += """
-            AND eliminado = 0
+            AND eliminado = FALSE
         """
 
     # =========================
