@@ -55,7 +55,7 @@ button, input, select { font: inherit; }
   flex:1 1 100%; min-width:0; color:#71869b; font-size:10px;
   overflow-wrap:anywhere;
 }
-.photo-save {
+.photo-save { display:none;
   border:0; border-radius:7px; padding:9px 12px; min-height:34px;
   background:var(--blue); color:#fff; font-size:11px; font-weight:700;
   cursor:pointer; box-shadow:0 3px 8px rgba(17,123,232,.18);
@@ -75,10 +75,23 @@ button, input, select { font: inherit; }
 #fotoModal { backdrop-filter:blur(4px); }
 #fotoGrande { max-width:min(92vw,1100px); max-height:86vh; }
 @media (max-width:950px) {
-  body { padding-left:210px; }
-  .header-title { left:210px; }
-  .sidebar { width:210px; }
-  .main { padding:82px 18px 24px; }
+  /* En tablets y celulares, el menú pasa a una barra horizontal superior */
+  body { padding-left:0; }
+  .header-title { position:relative; left:0; right:auto; }
+  .sidebar {
+    position:relative; top:auto; left:auto; bottom:auto;
+    width:100%; height:auto; max-height:none;
+    display:flex; flex-direction:column;
+  }
+  .sidebar .nav {
+    order:-1; display:flex; gap:5px; padding:8px 10px 10px;
+    overflow-x:auto; white-space:nowrap;
+    scrollbar-width:thin;
+  }
+  .sidebar .nav-title { display:none; }
+  .sidebar .nav a { flex:0 0 auto; }
+  .sidebar .nav a.btn { height:40px; line-height:40px; padding:0 12px; }
+  .main { padding:22px 18px 24px; }
   .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .filter-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
   .filter-grid .field:last-child { grid-column:1/-1; }
@@ -86,7 +99,8 @@ button, input, select { font: inherit; }
 }
 @media (max-width:700px) {
   body { padding-left:0; }
-  .sidebar { position:relative; width:100%; height:auto; max-height:none; }
+  .sidebar { position:relative; width:100%; height:auto; max-height:none; display:flex; flex-direction:column; }
+  .sidebar .nav { order:-1; }
   .brand { height:58px; padding:0 14px; }
   .nav { display:flex; gap:5px; padding:8px 10px 10px; overflow-x:auto; white-space:nowrap; }
   .nav-title { display:none; }
@@ -158,6 +172,30 @@ button, input, select { font: inherit; }
   .data-table td:nth-child(2) { white-space:normal; min-width:190px; }
 }
 
+
+/* Elimina la franja/espacio superior en móvil y tablet */
+@media (max-width:950px) {
+  html, body {
+    margin-top:0 !important;
+    padding-top:0 !important;
+    scroll-padding-top:0 !important;
+  }
+  body { position:relative; }
+  .header-title {
+    top:0 !important;
+    margin-top:0 !important;
+    transform:none !important;
+  }
+  .sidebar {
+    top:0 !important;
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+  .main {
+    margin-top:0 !important;
+  }
+}
+
 </style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
@@ -178,7 +216,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarFoto();});
 document.querySelectorAll('.photo-input').forEach(input=>{
   input.addEventListener('change',()=>{
     const label=document.getElementById(input.id.replace('foto-input-','foto-name-'));
-    if(label) label.textContent=input.files && input.files.length ? input.files[0].name : 'Ningún archivo seleccionado';
+    const form=input.closest('.photo-form');
+    const save=form ? form.querySelector('.photo-save') : null;
+    const hasFile=!!(input.files && input.files.length);
+    if(label) label.textContent=hasFile ? input.files[0].name : 'Ningún archivo seleccionado';
+    if(save) save.style.display=hasFile ? 'inline-flex' : 'none';
   });
 });
 
