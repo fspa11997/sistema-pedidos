@@ -750,7 +750,7 @@ def inventario_page():
 
 
 @app.route("/producto/<int:producto_id>/foto", methods=["POST"])
-def subir_foto_producto(producto_id):
+def subir_foto_producto_nueva(producto_id):
     if "usuario" not in session:
         return redirect("/")#
 
