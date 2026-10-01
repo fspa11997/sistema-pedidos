@@ -1096,7 +1096,7 @@ def buscar_producto_codigo():
                precio_mayorista, precio_individual,
                precio_mostrador, costo
         FROM productos
-        WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
+        WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
         LIMIT 1
     """, (codigo, empresa_id))
     producto = cursor.fetchone()
@@ -1179,7 +1179,7 @@ def ventas():
         SELECT *
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = 0
+        AND eliminado = FALSE
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -1418,7 +1418,7 @@ def pedidos():
     elif filtro == "todos":
 
         query += """
-            AND eliminado = 0
+            AND eliminado = FALSE
         """
 
     # =========================
