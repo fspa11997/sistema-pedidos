@@ -1412,7 +1412,7 @@ def pedidos():
     elif filtro == "eliminados":
 
         query += """
-            AND eliminado = TRUE
+            AND eliminado = 1
         """
 
     elif filtro == "todos":
