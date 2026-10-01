@@ -173,8 +173,28 @@ button, input, select { font: inherit; }
 }
 
 
-/* Elimina la franja /espacio superior en móvil y tablet */
+/* Elimina la franja/espacio superior en móvil y tablet */
 @media (max-width:950px) {
+  html, body {
+    margin-top:0 !important;
+    padding-top:0 !important;
+    scroll-padding-top:0 !important;
+  }
+  body { position:relative; }
+  .header-title {
+    top:0 !important;
+    margin-top:0 !important;
+    transform:none !important;
+  }
+  .sidebar {
+    top:0 !important;
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+  .main {
+    margin-top:0 !important;
+  }
+  @media (max-width:950px) {
   html, body { margin:0 !important; padding-top:0 !important; padding-left:0 !important; }
   body { display:block !important; }
   body > br { display:none !important; }
@@ -189,6 +209,7 @@ button, input, select { font: inherit; }
     transform:none !important;
   }
   .topbar { margin-top:0 !important; }
+}
 }
 
 </style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
