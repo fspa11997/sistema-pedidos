@@ -749,6 +749,65 @@ def inventario_page():
     return render_template("inventario.html", productos=productos, inventario=inventario, fotos_por_nombre={p["nombre"]: p["id"] for p in productos})
 
 
+@app.route("/producto/<int:producto_id>/foto", methods=["POST"])
+def subir_foto_producto(producto_id):
+    if "usuario" not in session:
+        return redirect("/")#
+
+    archivo = request.files.get("foto")
+    if not archivo or not archivo.filename:
+        return redirect("/inventario")
+
+    permitidos = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    if archivo.mimetype not in permitidos:
+        return "Formato no permitido. Usa JPG, PNG, WEBP o GIF.", 400
+
+    contenido = archivo.read(5 * 1024 * 1024 + 1)
+    if not contenido:
+        return "El archivo está vacío.", 400
+    if len(contenido) > 5 * 1024 * 1024:
+        return "La foto supera el máximo de 5 MB.", 400
+
+    empresa_id = session["empresa_id"]
+    conn = conectar()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE productos
+            SET foto = %s, foto_mime = %s
+            WHERE id = %s AND empresa_id = %s
+        """, (psycopg2.Binary(contenido), archivo.mimetype, producto_id, empresa_id))
+        if cursor.rowcount == 0:
+            conn.rollback()
+            return "Producto no encontrado.", 404
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return redirect("/inventario")
+
+
+@app.route("/producto/<int:producto_id>/foto")
+def ver_foto_producto(producto_id):
+    if "usuario" not in session:
+        return redirect("/")
+    from io import BytesIO
+    from flask import send_file
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT foto, foto_mime FROM productos
+        WHERE id = %s AND empresa_id = %s
+    """, (producto_id, session["empresa_id"]))
+    fila = cursor.fetchone()
+    conn.close()
+    if not fila or not fila["foto"]:
+        return "Foto no encontrada.", 404
+    return send_file(BytesIO(bytes(fila["foto"])), mimetype=fila["foto_mime"] or "image/jpeg")
+
+
 @app.route("/registrar_compra", methods=["POST"])
 def registrar_compra_route():
 
@@ -1037,7 +1096,7 @@ def buscar_producto_codigo():
                precio_mayorista, precio_individual,
                precio_mostrador, costo
         FROM productos
-        WHERE codigo_barras = %s AND empresa_id = %s AND activo = TRUE
+        WHERE codigo_barras = %s AND empresa_id = %s AND activo = 1
         LIMIT 1
     """, (codigo, empresa_id))
     producto = cursor.fetchone()
@@ -1120,7 +1179,7 @@ def ventas():
         SELECT *
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = FALSE
+        AND eliminado = 0
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -1359,7 +1418,7 @@ def pedidos():
     elif filtro == "todos":
 
         query += """
-            AND eliminado = FALSE
+            AND eliminado = 0
         """
 
     # =========================
