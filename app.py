@@ -1179,7 +1179,7 @@ def ventas():
         SELECT *
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = FALSE
+        AND eliminado = 0
         ORDER BY id DESC
     """, (empresa_id,))
 
@@ -1281,7 +1281,7 @@ def reportes():
         SELECT SUM(precio) as total
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = FALSE
+        AND eliminado = 0
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"] or 0
@@ -1291,7 +1291,7 @@ def reportes():
         SELECT COUNT(*) as total_pedidos
         FROM pedidos
         WHERE empresa_id = %s
-        AND eliminado = FALSE
+        AND eliminado = 0
     """, (empresa_id,))
 
     total_pedidos = cursor.fetchone()["total_pedidos"]
@@ -1399,14 +1399,14 @@ def pedidos():
 
         query += """
             AND estado = 'pendiente'
-            AND eliminado = FALSE
+            AND eliminado = 0
         """
 
     elif filtro == "entregados":
 
         query += """
             AND estado = 'entregado'
-            AND eliminado = FALSE
+            AND eliminado = 0
         """
 
     elif filtro == "eliminados":
@@ -1418,7 +1418,7 @@ def pedidos():
     elif filtro == "todos":
 
         query += """
-            AND eliminado = FALSE
+            AND eliminado = 0
         """
 
     # =========================
