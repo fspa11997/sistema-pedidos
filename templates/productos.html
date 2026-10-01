@@ -49,25 +49,6 @@
   .data-table { min-width:720px; }
 }
 
-
-/* Ajuste final: encabezado y barra de navegación pegados arriba en móvil/tablet */
-@media (max-width:950px) {
-  html, body { margin:0 !important; padding-top:0 !important; padding-left:0 !important; }
-  body { display:block !important; }
-  body > br { display:none !important; }
-  .header-title {
-    position:relative !important; inset:auto !important; top:0 !important;
-    left:0 !important; right:auto !important; width:100% !important;
-    margin:0 !important; transform:none !important;
-  }
-  #flash-container { margin:0 !important; padding:0 !important; }
-  .topbar, .sidebar {
-    top:0 !important; margin:0 !important; padding-top:0 !important;
-    transform:none !important;
-  }
-  .topbar { margin-top:0 !important; }
-}
-
 </style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head><body>

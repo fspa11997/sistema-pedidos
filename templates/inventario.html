@@ -172,60 +172,6 @@ button, input, select { font: inherit; }
   .data-table td:nth-child(2) { white-space:normal; min-width:190px; }
 }
 
-
-/* Menú superior adaptable: tablets y celulares */
-@media (max-width:950px) {
-  body { padding-left:0 !important; }
-  .header-title { position:relative !important; left:0 !important; right:auto !important; }
-  .sidebar {
-    position:relative !important; top:auto !important; left:auto !important; bottom:auto !important;
-    width:100% !important; height:auto !important; max-height:none !important;
-    display:flex !important; flex-direction:column !important; overflow:visible !important;
-  }
-  .sidebar .nav {
-    order:-1; display:flex !important; flex-direction:row !important;
-    align-items:center; gap:5px; padding:8px 10px 10px !important;
-    overflow-x:auto !important; overflow-y:hidden !important; white-space:nowrap;
-    scrollbar-width:thin;
-  }
-  .sidebar .nav-title { display:none !important; }
-  .sidebar .nav a { flex:0 0 auto; }
-  .sidebar .nav a.btn { height:40px !important; line-height:40px !important; padding:0 12px !important; }
-  .main { padding:22px 18px 28px !important; }
-}
-@media (max-width:700px) {
-  .header-title { height:54px !important; padding:0 14px !important; }
-  .header-title:before { font-size:20px !important; }
-  .header-title h2 { font-size:14px !important; }
-  .header-title p { font-size:11px !important; }
-  .sidebar .brand { order:2; min-height:58px; height:auto !important; padding:10px 14px !important; }
-  .sidebar .nav a.btn { font-size:12px !important; }
-  .main { padding:18px 12px 24px !important; }
-  .form-grid { grid-template-columns:minmax(0,1fr) !important; }
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
-  .table-wrap { overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
-  .data-table { min-width:720px; }
-}
-
-
-/* Ajuste final: encabezado y barra de navegación pegados arriba en móvil/tablet */
-@media (max-width:950px) {
-  html, body { margin:0 !important; padding-top:0 !important; padding-left:0 !important; }
-  body { display:block !important; }
-  body > br { display:none !important; }
-  .header-title {
-    position:relative !important; inset:auto !important; top:0 !important;
-    left:0 !important; right:auto !important; width:100% !important;
-    margin:0 !important; transform:none !important;
-  }
-  #flash-container { margin:0 !important; padding:0 !important; }
-  .topbar, .sidebar {
-    top:0 !important; margin:0 !important; padding-top:0 !important;
-    transform:none !important;
-  }
-  .topbar { margin-top:0 !important; }
-}
-
 </style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
