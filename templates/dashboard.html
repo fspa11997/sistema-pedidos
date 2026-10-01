@@ -539,6 +539,73 @@ button,input,select{font-family:inherit}
   .filters-form{grid-template-columns:1fr!important}
   .header-title p{display:none}
 }
+
+/* Menú superior adaptable para tablets y celulares */
+@media (max-width:950px) {
+  body { padding-left:0 !important; }
+  .header-title { position:relative !important; left:0 !important; right:auto !important; }
+  .topbar {
+    position:relative !important; left:auto !important; top:auto !important; bottom:auto !important;
+    width:100% !important; height:auto !important; max-height:none !important;
+    display:flex !important; flex-direction:column !important;
+    overflow:visible !important;
+  }
+  .topbar .acciones-izq, .topbar .acciones-der {
+    position:relative !important; order:1 !important;
+    display:flex !important; flex-direction:row !important;
+    align-items:center !important; gap:5px !important;
+    width:100% !important; padding:8px 10px !important;
+    overflow-x:auto !important; overflow-y:hidden !important;
+    white-space:nowrap !important; scrollbar-width:thin;
+  }
+  .topbar .acciones-izq:before { display:none !important; }
+  .topbar .acciones-der:before { display:none !important; }
+  .topbar .acciones-izq a, .topbar .acciones-der a,
+  .topbar .acciones-izq button, .topbar .acciones-der button {
+    flex:0 0 auto !important; width:auto !important;
+  }
+  .topbar button, .topbar a button {
+    width:auto !important; min-width:max-content !important;
+    height:40px !important; min-height:40px !important;
+    padding:0 12px !important; border-radius:7px !important;
+    text-align:center !important; font-size:12px !important;
+  }
+  .topbar .sidebar-brand { order:2 !important; min-height:64px; height:auto !important; }
+  .topbar .logout-sidebar {
+    position:static !important; order:3 !important;
+    display:block !important; width:auto !important;
+    margin:4px 14px 12px !important; padding:8px 10px !important;
+  }
+  #flash-container { margin:12px 14px !important; }
+  #metricas { margin:14px 14px 0 !important; }
+  .contenedor { margin:14px !important; }
+  #formUsuario, #formEmpresa { margin:14px !important; }
+}
+@media (max-width:700px) {
+  .header-title { height:54px !important; padding:0 14px !important; }
+  .header-title h2 { font-size:14px !important; }
+  .header-title p { display:block !important; font-size:11px !important; }
+  .header-title:before { display:none !important; }
+  .topbar .acciones-izq, .topbar .acciones-der {
+    padding:6px 9px !important; gap:4px !important;
+  }
+  .topbar button, .topbar a button {
+    height:38px !important; min-height:38px !important;
+    padding:0 10px !important; font-size:11px !important;
+  }
+  .topbar .sidebar-brand { padding:12px 15px !important; min-height:58px !important; }
+  #flash-container { margin:10px 12px !important; }
+  #metricas { margin:12px !important; }
+  .contenedor { margin:12px !important; }
+  .kpi-strip { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; }
+  .kpi-strip .metrica-card { height:auto !important; min-height:88px; padding:12px !important; }
+  .kpi-strip .metrica-card p { font-size:18px !important; overflow-wrap:anywhere; }
+  .contenedor { grid-template-columns:minmax(0,1fr) !important; }
+  .venta-grid { grid-template-columns:minmax(0,1fr) !important; }
+  .filters-form { grid-template-columns:minmax(0,1fr) !important; }
+  .sale-detail-body { overflow-x:auto; }
+}
+
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
