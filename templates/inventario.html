@@ -172,8 +172,34 @@ button, input, select { font: inherit; }
   .data-table td:nth-child(2) { white-space:normal; min-width:190px; }
 }
 
-</style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+
+/* Elimina la franja/espacio superior en móvil y tablet */
+@media (max-width:950px) {
+  html, body {
+    margin-top:0 !important;
+    padding-top:0 !important;
+    scroll-padding-top:0 !important;
+  }
+  body { position:relative; }
+  .header-title {
+    top:0 !important;
+    margin-top:0 !important;
+    transform:none !important;
+  }
+  .sidebar {
+    top:0 !important;
+    margin-top:0 !important;
+    padding-top:0 !important;
+  }
+  .main {
+    margin-top:0 !important;
+  }
+}
+
+</style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+
 </head><body>
 
 <div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
