@@ -55,7 +55,7 @@ button, input, select { font: inherit; }
   flex:1 1 100%; min-width:0; color:#71869b; font-size:10px;
   overflow-wrap:anywhere;
 }
-.photo-save {
+.photo-save { display:none;
   border:0; border-radius:7px; padding:9px 12px; min-height:34px;
   background:var(--blue); color:#fff; font-size:11px; font-weight:700;
   cursor:pointer; box-shadow:0 3px 8px rgba(17,123,232,.18);
@@ -178,7 +178,11 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarFoto();});
 document.querySelectorAll('.photo-input').forEach(input=>{
   input.addEventListener('change',()=>{
     const label=document.getElementById(input.id.replace('foto-input-','foto-name-'));
-    if(label) label.textContent=input.files && input.files.length ? input.files[0].name : 'Ningún archivo seleccionado';
+    const form=input.closest('.photo-form');
+    const save=form ? form.querySelector('.photo-save') : null;
+    const hasFile=!!(input.files && input.files.length);
+    if(label) label.textContent=hasFile ? input.files[0].name : 'Ningún archivo seleccionado';
+    if(save) save.style.display=hasFile ? 'inline-flex' : 'none';
   });
 });
 
