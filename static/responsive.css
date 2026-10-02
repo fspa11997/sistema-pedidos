@@ -134,32 +134,3 @@ table { min-width:0; }
   .btn-back-uniform { max-width:none !important; }
 }
 
-/* Transición suave entre páginas */
-@view-transition {
-    navigation: auto;
-}
-
-@keyframes st-page-enter {
-    from {
-        opacity: 0.82;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-::view-transition-old(root) {
-    animation: none;
-}
-
-::view-transition-new(root) {
-    animation: st-page-enter 160ms ease-out both;
-}
-
-/* Respetar usuarios que prefieren menos movimiento */
-@media (prefers-reduced-motion: reduce) {
-    ::view-transition-new(root) {
-        animation: none;
-    }
-}
-
