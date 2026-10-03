@@ -702,6 +702,132 @@ button,input,select{font-family:inherit}
         }
       }
     </style>
+<style id="st-sidebar-reference-appearance">
+/* Apariencia de navegación igual a la barra lateral de Inventario; no cambia rutas ni lógica Jinja. */
+:root { --st-sidebar-width:253px; }
+html, body { margin:0 !important; min-height:100%; }
+body {
+  padding-left:var(--st-sidebar-width) !important;
+  background:#f3f8fd !important;
+  color:#173b63 !important;
+  font-family:Inter,"Segoe UI",Arial,sans-serif !important;
+}
+.header-title {
+  position:fixed !important; z-index:3000 !important;
+  top:0 !important; left:var(--st-sidebar-width) !important; right:0 !important;
+  width:auto !important; height:62px !important; min-height:62px !important;
+  margin:0 !important; padding:0 24px !important;
+  display:flex !important; flex-direction:row !important;
+  align-items:center !important; gap:16px !important;
+  background:#fff !important; border-bottom:1px solid #e5edf5 !important;
+  box-shadow:0 2px 12px rgba(20,55,90,.06) !important;
+}
+.header-title:before { content:"☰" !important; display:block !important; font-size:24px !important; color:#123f6e !important; }
+.header-title h2 { margin:0 !important; font-size:16px !important; font-weight:800 !important; color:#173b63 !important; }
+.header-title p { margin-left:auto !important; color:#617b96 !important; font-size:12px !important; white-space:nowrap; }
+.header-title>button { width:auto !important; min-width:0 !important; height:36px !important; min-height:36px !important; padding:0 12px !important; }
+.topbar {
+  position:fixed !important; z-index:3500 !important;
+  left:0 !important; top:0 !important; bottom:0 !important;
+  width:var(--st-sidebar-width) !important; height:100vh !important;
+  max-height:100vh !important; margin:0 !important; padding:0 !important;
+  display:flex !important; flex-direction:column !important; align-items:stretch !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  background:linear-gradient(180deg,#102f50,#0c2744) !important;
+  color:#dcecff !important; border:0 !important; border-radius:0 !important;
+  box-shadow:2px 0 12px rgba(16,47,80,.12) !important;
+}
+.sidebar-brand {
+  order:0 !important; flex:0 0 76px !important; width:100% !important;
+  min-height:76px !important; height:76px !important; margin:0 !important;
+  padding:0 22px !important; display:flex !important; flex-direction:row !important;
+  align-items:center !important; justify-content:flex-start !important; gap:12px !important;
+  background:transparent !important; border:0 !important;
+  border-bottom:1px solid rgba(255,255,255,.08) !important; border-radius:0 !important;
+  color:#fff !important; text-align:left !important;
+}
+.sidebar-brand .brand-icon { flex:0 0 auto !important; font-size:26px !important; }
+.sidebar-brand strong { display:block !important; color:#fff !important; font-size:17px !important; line-height:1.3 !important; letter-spacing:.2px !important; }
+.sidebar-brand small { display:block !important; margin-top:3px !important; color:#4fc3ff !important; font-size:10px !important; white-space:nowrap !important; }
+.acciones-izq, .acciones-der {
+  order:1 !important; display:flex !important; flex-direction:column !important;
+  align-items:stretch !important; justify-content:flex-start !important;
+  width:100% !important; min-width:0 !important; gap:2px !important;
+  margin:0 !important; padding:0 10px !important; background:transparent !important;
+}
+.acciones-izq { padding-top:14px !important; }
+.acciones-izq:before {
+  content:"MENÚ" !important; display:block !important; position:static !important;
+  margin:0 !important; padding:6px 16px !important;
+  color:#87a8c6 !important; font-size:9px !important; font-weight:700 !important;
+  letter-spacing:1.2px !important; text-align:left !important; background:transparent !important;
+}
+.acciones-der:before { display:none !important; content:none !important; }
+.topbar .acciones-izq a, .topbar .acciones-der a,
+.topbar .acciones-izq button, .topbar .acciones-der button {
+  display:flex !important; align-items:center !important; justify-content:flex-start !important;
+  flex:0 0 42px !important; width:100% !important; min-width:0 !important;
+  height:42px !important; min-height:42px !important; margin:0 !important;
+  padding:0 14px !important; border:0 !important; border-radius:5px !important;
+  background:transparent !important; color:#dcecff !important;
+  font-family:inherit !important; font-size:13px !important; font-weight:600 !important;
+  line-height:normal !important; text-align:left !important; text-decoration:none !important;
+  box-shadow:none !important; white-space:nowrap !important; cursor:pointer !important;
+}
+.topbar .acciones-izq a, .topbar .acciones-der a { padding:0 !important; }
+.topbar .acciones-izq a button, .topbar .acciones-der a button { width:100% !important; }
+.topbar .acciones-izq a:hover, .topbar .acciones-der a:hover,
+.topbar .acciones-izq button:hover, .topbar .acciones-der button:hover,
+.topbar .acciones-izq a button:hover, .topbar .acciones-der a button:hover {
+  background:rgba(17,123,232,.24) !important; color:#fff !important;
+}
+.logout-sidebar {
+  order:2 !important; position:static !important; display:flex !important;
+  align-items:center !important; justify-content:flex-start !important;
+  flex:0 0 42px !important; width:calc(100% - 20px) !important;
+  height:42px !important; min-height:42px !important; margin:14px 10px 20px !important;
+  padding:0 14px !important; border:0 !important;
+  border-top:1px solid rgba(255,255,255,.14) !important; border-radius:0 !important;
+  background:transparent !important; color:#dcecff !important;
+  font-size:13px !important; font-weight:600 !important; text-align:left !important;
+  text-decoration:none !important; box-shadow:none !important;
+}
+.logout-sidebar:hover { background:rgba(17,123,232,.18) !important; color:#fff !important; }
+/* El contenido comienza debajo de la cabecera fija. */
+#flash-container { margin:78px 24px 12px !important; }
+body > br { display:none !important; }
+@media (max-width:950px) {
+  :root { --st-sidebar-width:230px; }
+  body { padding-left:230px !important; }
+  .header-title { left:230px !important; padding:0 16px !important; }
+  .topbar { width:230px !important; }
+}
+@media (max-width:700px) {
+  body { padding-left:0 !important; }
+  .header-title { position:relative !important; left:0 !important; right:auto !important; width:100% !important; height:56px !important; min-height:56px !important; padding:0 12px !important; gap:10px !important; }
+  .header-title:before { display:none !important; }
+  .header-title h2 { font-size:14px !important; }
+  .header-title p { display:block !important; font-size:11px !important; }
+  .header-title>button { font-size:11px !important; padding:0 8px !important; }
+  .topbar {
+    position:relative !important; top:auto !important; left:auto !important; bottom:auto !important;
+    width:100% !important; height:auto !important; max-height:none !important;
+    overflow:visible !important; display:flex !important; flex-direction:column !important;
+  }
+  .sidebar-brand { order:0 !important; flex:0 0 auto !important; min-height:64px !important; height:auto !important; padding:12px 16px !important; }
+  .acciones-izq, .acciones-der { flex-direction:row !important; align-items:center !important; gap:5px !important; padding:7px 10px !important; overflow-x:auto !important; white-space:nowrap !important; scrollbar-width:thin; }
+  .acciones-izq:before { display:none !important; }
+  .topbar .acciones-izq a, .topbar .acciones-der a,
+  .topbar .acciones-izq button, .topbar .acciones-der button,
+  .topbar .acciones-izq a button, .topbar .acciones-der a button {
+    flex:0 0 auto !important; width:auto !important; min-width:max-content !important;
+    height:40px !important; min-height:40px !important; padding:0 12px !important;
+    border-radius:6px !important; font-size:12px !important;
+  }
+  .logout-sidebar { flex:0 0 auto !important; width:auto !important; min-height:38px !important; height:38px !important; margin:2px 10px 10px !important; padding:0 12px !important; border-top:0 !important; }
+  #flash-container { margin:12px !important; }
+}
+</style>
 </head>
 
 <body>
@@ -735,7 +861,7 @@ button,input,select{font-family:inherit}
 </div>
 
 <br>
-<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión y Ventas</small></div></div>
+<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
 
     <!-- IZQUIERDA -->
     <div class="acciones-izq">
