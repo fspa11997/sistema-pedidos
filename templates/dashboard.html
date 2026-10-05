@@ -638,26 +638,18 @@ button,input,select{font-family:inherit}
       }
       .acciones-izq, .acciones-der {
         display:flex !important;
-        flex-direction:row !important;
-        align-items:center !important;
-        gap:5px !important;
+        flex-direction:column !important;
+        align-items:stretch !important;
         width:100% !important;
-        padding:8px 10px !important;
-        overflow-x:auto !important;
-        overflow-y:hidden !important;
-        white-space:nowrap !important;
+        gap:2px !important;
       }
       .acciones-izq:before {
         display:block !important;
       }
       .topbar button, .topbar a button {
-        flex:0 0 auto !important;
-        width:auto !important;
-        min-width:max-content !important;
-        height:40px !important;
-        padding:0 12px !important;
-        border-radius:7px !important;
-        text-align:center !important;
+        display:block !important;
+        width:100% !important;
+        text-align:left !important;
       }
       .logout-sidebar {
         position:static !important;
@@ -669,37 +661,6 @@ button,input,select{font-family:inherit}
         color:#dcecff !important;
         text-align:left !important;
       }
-      @media (max-width:950px) {
-        /* En tablet/celular, la navegación se desplaza horizontalmente como Productos e Inventario */
-        .acciones-izq, .acciones-der {
-          display:flex !important;
-          flex-direction:row !important;
-          align-items:center !important;
-          width:100% !important;
-          padding:8px 10px !important;
-          gap:5px !important;
-          overflow-x:auto !important;
-          overflow-y:hidden !important;
-          white-space:nowrap !important;
-          scrollbar-width:thin !important;
-          box-sizing:border-box !important;
-        }
-        .acciones-izq a, .acciones-der a,
-        .acciones-izq button, .acciones-der button {
-          flex:0 0 auto !important;
-        }
-        .acciones-izq:before { display:none !important; }
-        .topbar button, .topbar a button {
-          width:auto !important;
-          min-width:max-content !important;
-          height:40px !important;
-          min-height:40px !important;
-          padding:0 12px !important;
-          text-align:center !important;
-        }
-        .acciones-izq:not(:has(button)) { display:none !important; }
-      }
-
       @media (max-width:700px) {
         .topbar {
           position:relative !important;
@@ -715,32 +676,19 @@ button,input,select{font-family:inherit}
         }
         .acciones-izq, .acciones-der {
           display:flex !important;
-          flex-direction:row !important;
-          align-items:center !important;
+          flex-direction:column !important;
           width:100% !important;
-          padding:6px 9px !important;
-          gap:4px !important;
-          overflow-x:auto !important;
-          overflow-y:hidden !important;
-          white-space:nowrap !important;
-          scrollbar-width:thin !important;
-          box-sizing:border-box !important;
-        }
-        .acciones-izq a, .acciones-der a,
-        .acciones-izq button, .acciones-der button {
-          flex:0 0 auto !important;
+          padding-left:10px !important;
+          padding-right:10px !important;
         }
         .acciones-izq:before {
           padding-left:16px !important;
         }
         .topbar button, .topbar a button {
-          width:auto !important;
-          min-width:max-content !important;
-          height:38px !important;
-          min-height:38px !important;
-          padding:0 10px !important;
-          font-size:11px !important;
-          text-align:center !important;
+          height:48px !important;
+          min-height:48px !important;
+          padding:0 16px !important;
+          font-size:15px !important;
         }
         .logout-sidebar {
           width:calc(100% - 40px) !important;
@@ -791,23 +739,37 @@ button,input,select{font-family:inherit}
 
     <!-- IZQUIERDA -->
     <div class="acciones-izq">
-
+        
         <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
             <button onclick="toggleForm()">➕ Usuario</button>
+
             <button onclick="toggleEmpresa()">🏢 Empresa</button>
+
+        <!-- ADMIN -->
+        {% elif session['rol'] == 'admin' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        <!-- VENDEDOR -->
+        {% elif session['rol'] == 'vendedor' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
         {% endif %}
     </div>
 
     <!-- OPCIONES PRINCIPALES -->
     <div class="acciones-der">
-
-        <!-- CLIENTES: comparte la misma barra horizontal con el resto del menú -->
-        {% if session['rol'] in ['owner_global', 'admin', 'vendedor'] %}
-            <a href="/clientes">
-                <button>👥 Clientes</button>
-            </a>
-        {% endif %}
 
         {% if session['rol'] in ['owner_global', 'admin'] %}
 
