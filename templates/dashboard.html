@@ -738,12 +738,15 @@ button,input,select{font-family:inherit}
 <div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
 
     <!-- IZQUIERDA -->
-    <div class="acciones-izq">
+    <div class="acciones-der">
         
         <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
 
-            
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
             <button onclick="toggleForm()">➕ Usuario</button>
 
             <button onclick="toggleEmpresa()">🏢 Empresa</button>
@@ -765,14 +768,10 @@ button,input,select{font-family:inherit}
         {% endif %}
     </div>
 
-    <!-- OPCIONES PRINCIPALES -->
-    <div class="acciones-der">
+     OPCIONES PRINCIPALES 
+    <!-- <div class="acciones-der"> -->
 
         {% if session['rol'] in ['owner_global', 'admin'] %}
-        
-            <a href="/clientes">
-                <button>👥 Clientes</button>
-            </a>
 
             <button onclick="toggleMetricas()">📊 Métricas</button>
 
