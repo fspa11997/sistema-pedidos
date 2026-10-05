@@ -743,23 +743,35 @@ button,input,select{font-family:inherit}
         <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
 
-            
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
 
             <button onclick="toggleForm()">➕ Usuario</button>
 
             <button onclick="toggleEmpresa()">🏢 Empresa</button>
 
-        
+        <!-- ADMIN -->
+        {% elif session['rol'] == 'admin' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        <!-- VENDEDOR -->
+        {% elif session['rol'] == 'vendedor' %}
+
+            <a href="/clientes">
+                <button>👥 Clientes</button>
+            </a>
+
+        {% endif %}
     </div>
 
     <!-- OPCIONES PRINCIPALES -->
     <div class="acciones-der">
 
-        {% if session['rol'] in ['owner_global', 'admin', 'vendedor'] %}
-
-            <a href="/clientes">
-                <button>👥 Clientes</button>
-            </a>
+        {% if session['rol'] in ['owner_global', 'admin'] %}
 
             <button onclick="toggleMetricas()">📊 Métricas</button>
 
