@@ -751,6 +751,13 @@ button,input,select{font-family:inherit}
 
             <button onclick="toggleEmpresa()">🏢 Empresa</button>
 
+        
+        {% endif %}
+    </div>
+
+    <!-- OPCIONES PRINCIPALES -->
+    <div class="acciones-der">
+        
         <!-- ADMIN -->
         {% elif session['rol'] == 'admin' %}
 
@@ -765,11 +772,6 @@ button,input,select{font-family:inherit}
                 <button>👥 Clientes</button>
             </a>
 
-        {% endif %}
-    </div>
-
-     OPCIONES PRINCIPALES 
-    <!-- <div class="acciones-der"> -->
 
         {% if session['rol'] in ['owner_global', 'admin'] %}
 
