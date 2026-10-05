@@ -715,9 +715,8 @@ body{padding-left:248px!important;}
 
   /* Los dos grupos conservan toda su lógica, pero visualmente
      funcionan como una sola barra horizontal. */
-  /* Cada grupo permanece como una fila horizontal independiente dentro
-     de la misma barra desplazable. Esto evita que "Clientes" quede
-     fuera del flujo de desplazamiento en algunos navegadores móviles. */
+  /* Ambos grupos forman una sola fila desplazable.
+     Así Clientes se desplaza exactamente igual que los demás módulos. */
   .acciones-izq,
   .acciones-der {
     display: flex !important;
@@ -725,7 +724,7 @@ body{padding-left:248px!important;}
     flex-direction: row !important;
     align-items: center !important;
     gap: 5px !important;
-    width: max-content !important;
+    width: auto !important;
     margin: 0 !important;
     padding: 0 !important;
   }
