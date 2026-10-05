@@ -638,18 +638,26 @@ button,input,select{font-family:inherit}
       }
       .acciones-izq, .acciones-der {
         display:flex !important;
-        flex-direction:column !important;
-        align-items:stretch !important;
+        flex-direction:row !important;
+        align-items:center !important;
+        gap:5px !important;
         width:100% !important;
-        gap:2px !important;
+        padding:8px 10px !important;
+        overflow-x:auto !important;
+        overflow-y:hidden !important;
+        white-space:nowrap !important;
       }
       .acciones-izq:before {
-        display:block !important;
+        display:none !important;
       }
       .topbar button, .topbar a button {
-        display:block !important;
-        width:100% !important;
-        text-align:left !important;
+        flex:0 0 auto !important;
+        width:auto !important;
+        min-width:max-content !important;
+        height:40px !important;
+        padding:0 12px !important;
+        border-radius:7px !important;
+        text-align:center !important;
       }
       .logout-sidebar {
         position:static !important;
