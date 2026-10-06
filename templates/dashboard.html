@@ -872,41 +872,40 @@ button,input,select{font-family:inherit}
 {% if session['rol'] in ['owner_global', 'admin'] %}
 
 <div id="metricas" style="display:none;">
-    
+
     <div class="metricas-container">
 
-        <!--<div class="metrica-card">
-            <h4>💰 Ventas Hoy</h4>
-            <p>${{ "{:,.0f}".format(total_dia) }}</p>
-        </div>-->
+        <div class="metrica-card">
+            <h4>🛒 Ventas del día</h4>
+            <p>${{ "{:,.0f}".format(total_dia or 0) }}</p>
+            <small>Facturación de hoy</small>
+        </div>
 
-        <div class="metrica-card top5-card">
-            <h4>🏆 Top 5 productos más vendidos</h4>
+        <div class="metrica-card">
+            <h4>👥 Clientes</h4>
+            <p>{{ clientes|length }}</p>
+            <small>Registrados</small>
+        </div>
 
-            {% if top_5_productos %}
-                <div class="top5-list">
-                    {% for producto in top_5_productos %}
-                        <div class="top5-row">
-                            <span class="top5-pos">
-                                {% if loop.index == 1 %}🥇
-                                {% elif loop.index == 2 %}🥈
-                                {% elif loop.index == 3 %}🥉
-                                {% else %}{{ loop.index }}
-                                {% endif %}
-                            </span>
+        <div class="metrica-card">
+            <h4>📄 Facturas</h4>
+            <p>{{ facturas_hoy }}</p>
+            <small>Emitidas hoy</small>
+        </div>
 
-                            <span class="top5-name">{{ producto['producto'] }}</span>
-                            <strong class="top5-total">{{ producto['total'] }} uds.</strong>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="top5-empty">Sin ventas este mes</div>
-            {% endif %}
+        <div class="metrica-card">
+            <h4>📦 Productos</h4>
+            <p>{{ productos|length }}</p>
+            <small>Registrados</small>
+        </div>
+
+        <div class="metrica-card">
+            <h4>💳 Cartera</h4>
+            <p>${{ "{:,.0f}".format(cartera_pendiente or 0) }}</p>
+            <small>Saldo pendiente</small>
         </div>
 
     </div>
-{% endif %}    
 
 </div>
 
@@ -1058,16 +1057,6 @@ button,input,select{font-family:inherit}
 
 
 <br>
-
-<div class="contenedor">
-
-<div class="kpi-strip" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;grid-column:1/-1;margin-bottom:0">
-<div class="metrica-card"><h4>🛒 Ventas del día</h4><p>${{ "{:,.0f}".format(total_dia or 0) }}</p><small>Facturación de hoy</small></div>
-<div class="metrica-card"><h4>👥 Clientes</h4><p>{{ clientes|length }}</p><small>Registrados</small></div>
-<div class="metrica-card"><h4>📄 Facturas</h4><p>{{ facturas_hoy }}</p><small>Emitidas hoy</small></div>
-<div class="metrica-card"><h4>📦 Productos</h4><p>{{ productos|length }}</p><small>Registrados</small></div>
-<div class="metrica-card"><h4>💳 Cartera</h4><p>${{ "{:,.0f}".format(cartera_pendiente or 0) }}</p><small>Saldo pendiente</small></div>
-</div>
 
     <!-- 📦 FORMULARIO PEDIDOS -->
     <div class="formulario">
