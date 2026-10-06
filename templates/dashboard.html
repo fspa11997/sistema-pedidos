@@ -831,7 +831,7 @@ button,input,select{font-family:inherit}
 <div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
     <!-- BARRA DE NAVEGACIÓN -->
     <nav class="nav dashboard-nav">
-        
+        <div class="nav-title">MENÚ</div>
         <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
             <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
@@ -874,6 +874,14 @@ button,input,select{font-family:inherit}
 <div id="metricas" style="display:none;">
     
     <div class="metricas-container">
+
+        <div class="kpi-strip" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;grid-column:1/-1;margin-bottom:0">
+        <div class="metrica-card"><h4>🛒 Ventas del día</h4><p>${{ "{:,.0f}".format(total_dia or 0) }}</p><small>Facturación de hoy</small></div>
+        <div class="metrica-card"><h4>👥 Clientes</h4><p>{{ clientes|length }}</p><small>Registrados</small></div>
+        <div class="metrica-card"><h4>📄 Facturas</h4><p>{{ facturas_hoy }}</p><small>Emitidas hoy</small></div>
+        <div class="metrica-card"><h4>📦 Productos</h4><p>{{ productos|length }}</p><small>Registrados</small></div>
+        <div class="metrica-card"><h4>💳 Cartera</h4><p>${{ "{:,.0f}".format(cartera_pendiente or 0) }}</p><small>Saldo pendiente</small></div>
+        </div>
 
         <!--<div class="metrica-card">
             <h4>💰 Ventas Hoy</h4>
@@ -1061,15 +1069,7 @@ button,input,select{font-family:inherit}
 
 <div class="contenedor">
 
-<div class="kpi-strip" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;grid-column:1/-1;margin-bottom:0">
-<div class="metrica-card"><h4>🛒 Ventas del día</h4><p>${{ "{:,.0f}".format(total_dia or 0) }}</p><small>Facturación de hoy</small></div>
-<div class="metrica-card"><h4>👥 Clientes</h4><p>{{ clientes|length }}</p><small>Registrados</small></div>
-<div class="metrica-card"><h4>📄 Facturas</h4><p>{{ facturas_hoy }}</p><small>Emitidas hoy</small></div>
-<div class="metrica-card"><h4>📦 Productos</h4><p>{{ productos|length }}</p><small>Registrados</small></div>
-<div class="metrica-card"><h4>💳 Cartera</h4><p>${{ "{:,.0f}".format(cartera_pendiente or 0) }}</p><small>Saldo pendiente</small></div>
-</div>
-
-    <!-- 📦 FORMULARIO PEDIDOS -->
+<!-- 📦 FORMULARIO PEDIDOS -->
     <div class="formulario">
 
         <h3>🛒 Nueva Venta <span style="color:#08ad60;font-size:11px">●</span><br><small style="font-size:10px;color:#7890a8;font-weight:500">Registra una nueva venta de forma rápida y sencilla</small></h3>
