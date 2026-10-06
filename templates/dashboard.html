@@ -828,9 +828,10 @@ button,input,select{font-family:inherit}
 </div>
 
 <br>
-<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small><div class="nav-title">MENÚ</div></div></div>
+<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
     <!-- BARRA DE NAVEGACIÓN -->
     <nav class="nav dashboard-nav">
+        <div class="nav-title">MENÚ</div>
         <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
             <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
