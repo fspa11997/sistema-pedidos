@@ -718,6 +718,15 @@ button,input,select{font-family:inherit}
   }
 }
 
+
+/* DASHBOARD PC: reducir espacio entre ST GESTION y herramientas */
+@media (min-width:951px){
+  .topbar .dashboard-nav{
+    padding-top:4px !important;
+    margin-top:-4px !important;
+  }
+}
+
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
