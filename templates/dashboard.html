@@ -625,92 +625,116 @@ button,input,select{font-family:inherit}
   .topbar { margin-top:0 !important; }
 }
 
+
+/* DASHBOARD: dimensiones y responsive iguales a PRODUCTOS */
+.topbar .dashboard-nav{
+  padding:14px 10px !important;
+  display:block !important;
+}
+.topbar .dashboard-nav a.btn,
+.topbar .dashboard-nav button.btn{
+  display:block !important;
+  width:100% !important;
+  height:42px !important;
+  min-height:42px !important;
+  padding:0 14px !important;
+  line-height:42px !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:5px !important;
+  background:transparent !important;
+  color:#dcecff !important;
+  text-align:left !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+  text-decoration:none !important;
+  cursor:pointer !important;
+  box-sizing:border-box !important;
+}
+.topbar .dashboard-nav a.btn:hover,
+.topbar .dashboard-nav button.btn:hover{
+  background:rgba(17,123,232,.24) !important;
+  color:#fff !important;
+}
+@media (max-width:950px){
+  .topbar .dashboard-nav{
+    order:-1 !important;
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    gap:5px !important;
+    width:100% !important;
+    padding:8px 10px 10px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    white-space:nowrap !important;
+    scrollbar-width:thin !important;
+    box-sizing:border-box !important;
+  }
+  .topbar .dashboard-nav a.btn,
+  .topbar .dashboard-nav button.btn{
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:max-content !important;
+    height:40px !important;
+    min-height:40px !important;
+    line-height:40px !important;
+    padding:0 12px !important;
+    font-size:12px !important;
+    text-align:center !important;
+  }
+}
+@media (max-width:700px){
+  .topbar .dashboard-nav{
+    gap:5px !important;
+    padding:8px 10px 10px !important;
+  }
+  .topbar .dashboard-nav a.btn,
+  .topbar .dashboard-nav button.btn{
+    height:40px !important;
+    min-height:40px !important;
+    line-height:40px !important;
+    padding:0 12px !important;
+    font-size:12px !important;
+  }
+}
+
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 
     <!-- Ajuste final del menú: una sola columna, siempre alineada a la izquierda -->
-    <!-- Navegación del Dashboard: mismo comportamiento que Productos/Inventario -->
     <style id="st-dashboard-menu-fix">
       .topbar {
         display:flex !important;
         flex-direction:column !important;
       }
-
-      .topbar .dashboard-nav {
+      .acciones-izq, .acciones-der {
         display:flex !important;
         flex-direction:column !important;
         align-items:stretch !important;
+        width:100% !important;
         gap:2px !important;
-        padding:13px 10px 0 !important;
-        width:100% !important;
-        box-sizing:border-box !important;
       }
-
-      .dashboard-nav .nav-title {
+      .acciones-izq:before {
         display:block !important;
-        color:#87a8c6 !important;
-        font-size:9px !important;
-        font-weight:700 !important;
-        letter-spacing:1.2px !important;
-        padding:5px 16px 7px !important;
       }
-
-      .dashboard-nav a,
-      .dashboard-nav button {
-        flex:0 0 auto !important;
-      }
-
-      .dashboard-nav button {
+      .topbar button, .topbar a button {
+        display:block !important;
         width:100% !important;
-        height:42px !important;
-        padding:0 14px !important;
-        border:0 !important;
-        border-radius:5px !important;
-        background:transparent !important;
+        text-align:left !important;
+      }
+      .logout-sidebar {
+        position:static !important;
+        display:block !important;
+        width:calc(100% - 50px) !important;
+        margin:14px 25px 24px !important;
+        padding:12px 14px !important;
+        border-top:1px solid rgba(255,255,255,.14) !important;
         color:#dcecff !important;
         text-align:left !important;
-        font-size:13px !important;
-        font-weight:600 !important;
-        cursor:pointer !important;
       }
-
-      .dashboard-nav button:hover {
-        background:rgba(17,123,232,.23) !important;
-        color:#fff !important;
-      }
-
-      @media (max-width:950px) {
-        .topbar .dashboard-nav {
-          flex-direction:row !important;
-          align-items:center !important;
-          gap:5px !important;
-          padding:8px 10px 10px !important;
-          overflow-x:auto !important;
-          overflow-y:hidden !important;
-          white-space:nowrap !important;
-          scrollbar-width:thin !important;
-          box-sizing:border-box !important;
-          -webkit-overflow-scrolling:touch !important;
-        }
-
-        .dashboard-nav .nav-title {
-          display:none !important;
-        }
-
-        .dashboard-nav a,
-        .dashboard-nav button {
-          flex:0 0 auto !important;
-          width:auto !important;
-          min-width:max-content !important;
-          height:40px !important;
-          min-height:40px !important;
-          padding:0 12px !important;
-          text-align:center !important;
-        }
-      }
-
       @media (max-width:700px) {
         .topbar {
           position:relative !important;
@@ -719,24 +743,36 @@ button,input,select{font-family:inherit}
           max-height:none !important;
           overflow:visible !important;
         }
-
         .sidebar-brand {
           min-height:82px !important;
           height:auto !important;
           padding:16px 20px !important;
         }
-
-        .topbar .dashboard-nav {
-          padding:6px 9px 8px !important;
-          gap:4px !important;
+        .acciones-izq, .acciones-der {
+          display:flex !important;
+          flex-direction:column !important;
+          width:100% !important;
+          padding-left:10px !important;
+          padding-right:10px !important;
         }
-
-        .dashboard-nav a,
-        .dashboard-nav button {
-          height:38px !important;
-          min-height:38px !important;
-          padding:0 10px !important;
-          font-size:11px !important;
+        .acciones-izq:before {
+          padding-left:16px !important;
+        }
+        .topbar button, .topbar a button {
+          height:48px !important;
+          min-height:48px !important;
+          padding:0 16px !important;
+          font-size:15px !important;
+        }
+        .logout-sidebar {
+          width:calc(100% - 40px) !important;
+          margin:14px 20px 22px !important;
+          padding:13px 16px !important;
+          font-size:15px !important;
+        }
+        .contenedor, #metricas {
+          margin-left:10px !important;
+          margin-right:10px !important;
         }
       }
     </style>
@@ -774,29 +810,39 @@ button,input,select{font-family:inherit}
 
 <br>
 <div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
-
-    <nav class="dashboard-nav">
-        <div class="nav-title">MENÚ</div>
-
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="nav dashboard-nav">
+        <!-- OWNER GLOBAL -->
         {% if session['rol'] == 'owner_global' %}
-            <button onclick="toggleForm()">➕ Usuario</button>
-            <button onclick="toggleEmpresa()">🏢 Empresa</button>
-        {% endif %}
-
-        {% if session['rol'] in ['owner_global', 'admin', 'vendedor'] %}
-            <a href="/clientes"><button>👥 Clientes</button></a>
+            <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
+            <button class="btn" onclick="toggleForm()">➕ &nbsp; Usuario</button>
+            <button class="btn" onclick="toggleEmpresa()">🏢 &nbsp; Empresa</button>
+        <!-- ADMIN -->
+        {% elif session['rol'] == 'admin' %}
+            <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
+        <!-- VENDEDOR -->
+        {% elif session['rol'] == 'vendedor' %}
+            <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
         {% endif %}
 
         {% if session['rol'] in ['owner_global', 'admin'] %}
-            <button onclick="toggleMetricas()">📊 Métricas</button>
-            <a href="/ventas"><button>💵 Ventas</button></a>
+            <button class="btn" onclick="toggleMetricas()">📊 &nbsp; Métricas</button>
+            <a class="btn" href="/ventas">💵 &nbsp; Ventas</a>
         {% endif %}
 
-        <a href="/cartera"><button>💰 Cartera</button></a>
-        <a href="/facturas"><button>📄 Facturas</button></a>
-        <a href="/pedidos"><button>🚚 Pedidos</button></a>
-        <a href="/productos"><button>🏷️ Productos</button></a>
-        <a href="/inventario"><button>📦 Inventario</button></a>
+        <a class="btn" href="/cartera">💰 &nbsp; Cartera</a>
+        <a class="btn" href="/facturas">📄 &nbsp; Facturas</a>
+        <a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a>
+        <a class="btn" href="/productos">🏷️ &nbsp; Productos</a>
+        <a class="btn" href="/inventario">📦 &nbsp; Inventario</a>
+
+        <!--
+        <a class="btn" href="/facturar_empresa">
+            <button style="background:purple; color:white;">
+                🏢 Facturar Empresa
+            </button>
+        </a>
+        -->
     </nav>
 
     <a href="/logout" class="logout-sidebar">⚙ Cerrar sesión</a>
