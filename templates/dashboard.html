@@ -718,15 +718,6 @@ button,input,select{font-family:inherit}
   }
 }
 
-
-/* DASHBOARD PC: reducir espacio entre ST GESTION y herramientas */
-@media (min-width:951px){
-  .topbar .dashboard-nav{
-    padding-top:4px !important;
-    margin-top:-4px !important;
-  }
-}
-
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
@@ -837,7 +828,7 @@ button,input,select{font-family:inherit}
 </div>
 
 <br>
-<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
+<div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small><div class="nav-title">MENÚ</div></div></div>
     <!-- BARRA DE NAVEGACIÓN -->
     <nav class="nav dashboard-nav">
         <!-- OWNER GLOBAL -->
@@ -873,7 +864,7 @@ button,input,select{font-family:inherit}
         -->
     </nav>
 
-    <a href="/logout" class="logout-sidebar">⚙ Cerrar sesión</a>
+    <a href="/logout" class="logout-sidebar">Cerrar sesión</a>
 
 </div>
 <br>
