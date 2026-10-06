@@ -699,6 +699,25 @@ button,input,select{font-family:inherit}
   }
 }
 
+
+/* DASHBOARD PC: contenido de la barra completamente a la izquierda */
+@media (min-width:951px){
+  .topbar .dashboard-nav{
+    margin-left:0 !important;
+    margin-right:auto !important;
+    text-align:left !important;
+    justify-content:flex-start !important;
+    align-items:flex-start !important;
+  }
+
+  .topbar .dashboard-nav a.btn,
+  .topbar .dashboard-nav button.btn{
+    margin-left:0 !important;
+    margin-right:0 !important;
+    text-align:left !important;
+  }
+}
+
 </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
