@@ -1,6 +1,7 @@
 import os
 import psycopg2
 from psycopg2.extras import DictCursor
+from psycopg2.pool import ThreadedConnectionPool
 import bcrypt
 import sys
 from datetime import datetime
@@ -15,8 +16,59 @@ if not DATABASE_URL:
 
 DB = DATABASE_URL
 
+# Pool de conexiones: evita abrir una conexión TCP nueva a PostgreSQL
+# en cada consulta. Esto reduce bastante la latencia en Railway.
+_POOL_MIN = 1
+_POOL_MAX = 5
+_pool = None
+
+class _PooledConnection:
+    """Pequeño adaptador para conservar conn.close() sin romper el código existente."""
+    def __init__(self, raw_conn):
+        self._raw_conn = raw_conn
+        self._returned = False
+
+    def cursor(self, *args, **kwargs):
+        return self._raw_conn.cursor(*args, **kwargs)
+
+    def commit(self):
+        return self._raw_conn.commit()
+
+    def rollback(self):
+        return self._raw_conn.rollback()
+
+    def close(self):
+        if not self._returned:
+            self._returned = True
+            try:
+                # Dejamos la conexión limpia antes de devolverla al pool.
+                self._raw_conn.rollback()
+            except Exception:
+                pass
+            _pool.putconn(self._raw_conn)
+
+    def __getattr__(self, name):
+        return getattr(self._raw_conn, name)
+
+
+def _get_pool():
+    global _pool
+    if _pool is None:
+        _pool = ThreadedConnectionPool(
+            _POOL_MIN,
+            _POOL_MAX,
+            DATABASE_URL,
+            cursor_factory=DictCursor,
+            connect_timeout=10,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=3,
+        )
+    return _pool
+
 def conectar():
-    return psycopg2.connect(DATABASE_URL, cursor_factory=DictCursor)
+    return _PooledConnection(_get_pool().getconn())
 
 
 def inicializar_db():
@@ -217,6 +269,23 @@ def inicializar_db():
     )
     """)
     
+    # Índices para las consultas que más se repiten en la aplicación.
+    # IF NOT EXISTS permite ejecutar la inicialización varias veces sin cambiar datos.
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_activo ON productos (empresa_id, activo, id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_codigo ON productos (empresa_id, codigo_barras)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_nombre ON productos (empresa_id, nombre)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pedidos_empresa_estado_elim ON pedidos (empresa_id, estado, eliminado, id DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pedidos_empresa_elim ON pedidos (empresa_id, eliminado, id DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_facturas_empresa_id ON facturas (empresa_id, id DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_facturas_empresa_fecha ON facturas (empresa_id, fecha)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_detalle_factura_factura ON detalle_factura (factura_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_codigo ON inventario (empresa_id, codigo_barras)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_producto ON inventario (empresa_id, producto)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_clientes_empresa_nombre ON clientes (empresa_id, nombre)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_creditos_empresa_saldo ON creditos (empresa_id, saldo)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pagos_credito_factura ON pagos_credito (factura_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_recibos_abono_factura ON recibos_abono (factura_id)")
+
     cursor.execute("SELECT COUNT(*) FROM empresas") 
     if cursor.fetchone()[0] == 0:
         cursor.execute("INSERT INTO empresas (nombre) VALUES ('Mi Empresa')")
@@ -356,10 +425,12 @@ def obtener_productos(empresa_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT *
+        SELECT id, nombre, precio_mayorista, precio_individual,
+               precio_mostrador, costo, codigo_barras, empresa_id, activo
         FROM productos
         WHERE empresa_id = %s
-        AND activo = TRUE           
+          AND activo = TRUE
+        ORDER BY id DESC
     """, (empresa_id,))
 
     productos = cursor.fetchall()
@@ -679,9 +750,10 @@ def productos_top_5_mes(empresa_id):
     return data
 
 
-def producto_top_mes(empresa_id):
+def producto_top_mes(empresa_id, data=None):
     """Compatibilidad: devuelve únicamente el producto número 1."""
-    data = productos_top_5_mes(empresa_id)
+    if data is None:
+        data = productos_top_5_mes(empresa_id)
     return data[0] if data else None
 
 def crear_factura(

@@ -235,8 +235,8 @@ def dashboard():
     total_mes = total_ventas_mes(empresa_id)
     facturas_hoy = facturas_emitidas_hoy(empresa_id)
     cartera_pendiente = saldo_cartera(empresa_id)
-    top_producto = producto_top_mes(empresa_id)
     top_5_productos = productos_top_5_mes(empresa_id)
+    top_producto = producto_top_mes(empresa_id, top_5_productos)
 
     filtro = request.args.get("filtro", "todos")
 
