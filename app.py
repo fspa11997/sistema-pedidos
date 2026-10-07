@@ -159,7 +159,7 @@ fecha_entrega = datetime.now(zona_colombia)
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
-    empresas = obtener_empresas(conn=conn)
+    empresas = obtener_empresas()
     
     if request.method == "POST":
         user = request.form["usuario"]
@@ -275,8 +275,8 @@ def dashboard():
     else:
         pedidos = obtener_pedidos(empresa_id, conn=conn)
 
-    productos = obtener_productos(empresa_id, conn=conn)
-    clientes = obtener_clientes(empresa_id, conn=conn)
+    productos = obtener_productos(empresa_id)
+    clientes = obtener_clientes(empresa_id)
     inventario = obtener_inventario(empresa_id, conn=conn)
 
     conn.close()
@@ -728,7 +728,7 @@ def productos_page():
     if "usuario" not in session:
         return redirect("/")
     empresa_id = session["empresa_id"]
-    productos = obtener_productos(empresa_id, conn=conn)
+    productos = obtener_productos(empresa_id, )
     return render_template("productos.html", productos=productos)
 
 
@@ -770,8 +770,8 @@ def inventario_page():
     if "usuario" not in session:
         return redirect("/")
     empresa_id = session["empresa_id"]
-    productos = obtener_productos(empresa_id, conn=conn)
-    inventario = obtener_inventario(empresa_id, conn=conn)
+    productos = obtener_productos(empresa_id)
+    inventario = obtener_inventario(empresa_id)
     return render_template("inventario.html", productos=productos, inventario=inventario, fotos_por_nombre={p["nombre"]: p["id"] for p in productos})
 
 
@@ -1370,7 +1370,7 @@ def clientes():
 
     empresa_id = session["empresa_id"]
 
-    clientes = obtener_clientes(empresa_id, conn=conn)
+    clientes = obtener_clientes(empresa_id, )
 
     return render_template(
         "clientes.html",
