@@ -33,7 +33,7 @@ body{
     border:1px solid #dfebf5!important;
     border-radius:9px!important;
     box-shadow:0 6px 20px rgba(30,70,105,.06)!important;
-    min-height:474px!important;
+    min-height:150px!important;
     display:flex!important;
     flex-direction:column!important;
     justify-content:center!important;
@@ -139,9 +139,10 @@ button,input,select{font-family:inherit}
 
 
 #flash-container{
-    margin:0 28px!important;
+    margin:78px 28px 0!important;
     padding:0!important;
 }
+
 #metricas{
   margin:78px 28px 0!important;display:flex;gap:14px!important;
 }
@@ -811,15 +812,27 @@ button,input,select{font-family:inherit}
     </button>
 </div>
 
-<div id="flash-container" style="margin: 15px 20px;">
+<div id="flash-container">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
 
-                <div class="flash-message {{ category }}">
-                    {{ message }}
-                </div>
+                {% if category == 'success' %}
+
+                    <div class="factura-exito">
+                        <div class="factura-exito-icono">✓</div>
+                        <h3>{{ message }}</h3>
+                        <p>La factura fue registrada correctamente.</p>
+                    </div>
+
+                {% else %}
+
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endif %}
 
             {% endfor %}
         {% endif %}
@@ -1233,19 +1246,7 @@ button,input,select{font-family:inherit}
             </form>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    {% if category == 'success' %}
-                        <div class="factura-exito">
-                            <div class="factura-exito-icono">✓</div>
-                            <h3>{{ message }}</h3>
-                            <p>La factura fue registrada correctamente.</p>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        
 
         </div>
 
