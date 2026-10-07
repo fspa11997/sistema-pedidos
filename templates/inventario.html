@@ -157,12 +157,54 @@ button, input, select { font: inherit; }
 @media (min-width:701px) and (max-width:950px) {
   .data-table td:nth-child(2) { white-space:normal; min-width:190px; }
 }
+
+/* Escáner de códigos de barras con cámara */
+#btn_escanear_camara{
+  border:1px solid #117be8;background:#117be8;color:#fff;padding:10px 15px;border-radius:5px;
+  font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+}
+#btn_escanear_camara:hover{filter:brightness(.96);}
+#scannerModal{
+  display:none;position:fixed;inset:0;background:rgba(4,20,38,.86);z-index:10000;
+  align-items:center;justify-content:center;padding:16px;
+}
+#scannerModal .scanner-box{
+  width:min(96vw,520px);background:#fff;border-radius:16px;overflow:hidden;
+  box-shadow:0 15px 50px rgba(0,0,0,.35);
+}
+#scannerModal .scanner-head{
+  display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+  background:#102f50;color:#fff;
+}
+#scannerModal .scanner-head strong{font-size:15px;}
+#scannerModal .scanner-close{
+  border:0;background:rgba(255,255,255,.14);color:#fff;width:34px;height:34px;
+  border-radius:50%;font-size:22px;cursor:pointer;
+}
+#scannerVideoWrap{position:relative;background:#000;aspect-ratio:4/3;overflow:hidden;}
+#scannerVideo{width:100%;height:100%;object-fit:cover;display:block;}
+#scannerFrame{
+  position:absolute;left:12%;right:12%;top:30%;height:40%;border:3px solid #fff;
+  border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.22);pointer-events:none;
+}
+#scannerFrame::after{
+  content:"";position:absolute;left:5%;right:5%;top:50%;height:2px;background:#08ad60;
+  box-shadow:0 0 8px #08ad60;
+}
+#scannerStatus{padding:12px 16px 15px;font-size:12px;color:#365572;text-align:center;}
+#scannerStatus.scanner-error{color:#c62828;font-weight:700;}
+@media(max-width:700px){
+  #scannerModal{padding:8px;}
+  #scannerModal .scanner-box{width:100%;border-radius:14px;}
+  #btn_escanear_camara{width:100%;justify-content:center;}
+}
+
 </style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head><body>
 <div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
 <aside class="sidebar"><div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div><nav class="nav"><div class="nav-title"> </div><a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><!--<a class="btn" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a>--><a class="btn" href="/productos">🏷️ &nbsp; Productos</a><a class="btn active" href="/inventario">📦 &nbsp; Inventario</a></nav></aside>
-<main class="main"><div class="page-head"><div><h1>📦 Inventario</h1><p>Consulta las existencias escribiendo o escaneando el código de barras.</p></div></div>{% if error %}<div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ error }}</div>{% endif %}<div class="stats"><div class="stat"><small>Productos con inventario</small><strong>{{ inventario|length }}</strong></div><div class="stat"><small>Unidades en inventario</small><strong>{{ inventario|sum(attribute='stock_unidades') }}</strong></div><div class="stat"><small>Alertas</small><strong>{{ inventario|selectattr('stock_unidades','le',10)|list|length }}</strong></div></div><div class="card"><div class="card-head"><h3>Buscar y filtrar inventario</h3><span style="font-size:11px;color:var(--muted)">Código, nombre y estado</span></div><div class="content"><div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));align-items:end"><div class="field"><label>Código de barras</label><input id="buscar_inventario_codigo" type="text" inputmode="numeric" autocomplete="off" placeholder="Escribe o escanea el código" autofocus></div><div class="field"><label>Nombre del producto</label><input id="buscar_inventario_nombre" type="text" autocomplete="off" placeholder="Escribe el nombre del producto"></div><div class="field"><label>Estado</label><select id="filtro_estado"><option value="">Todos los estados</option><option value="normal">NORMAL</option><option value="bajo">BAJO</option><option value="critico">CRÍTICO</option></select></div></div><div style="display:flex;gap:10px;margin-top:12px"><button type="button" class="btn-primary" id="btn_buscar_inventario">🔎 Buscar</button><button type="button" id="btn_limpiar_filtros" style="border:1px solid #d8e6f2;background:#fff;color:#365572;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer">Limpiar filtros</button></div><div id="busqueda_msg" style="margin-top:8px;font-size:11px;color:var(--muted)">Puedes buscar por código de barras, nombre del producto o filtrar por estado.</div></div></div><br><div class="card"><div class="card-head"><h3>Existencias actuales</h3><span id="resultado_busqueda" style="font-size:11px;color:var(--muted)">{{ inventario|length }} productos</span></div><div class="table-wrap"><table class="data-table" id="tabla_inventario"><thead><tr><th>Foto</th><th>Producto</th><th>Código de barras</th><th>Unidades</th><th>Estado</th></tr></thead><tbody>{% for item in inventario %}<tr data-codigo="{{ item.codigo_barras or '' }}" data-producto="{{ item.producto or '' }}" data-estado="{% if item.stock_unidades <= 5 %}critico{% elif item.stock_unidades <= 10 %}bajo{% else %}normal{% endif %}"><td>{% set foto_id = fotos_por_nombre.get(item.producto) %}{% if foto_id %}<img class="product-photo" src="{{ url_for('producto_foto', producto_id=foto_id) }}" alt="Foto de {{ item.producto }}" onclick="abrirFoto(this.src, this.alt)" onerror="this.style.display='none'" title="Toca para ampliar la foto">{% else %}<span class="photo-empty">Sin foto</span>{% endif %}</td><td><b>{{ item.producto }}</b>{% if foto_id %}<form class="photo-form" action="{{ url_for('subir_foto_producto', producto_id=foto_id) }}" method="post" enctype="multipart/form-data"><input class="photo-input" id="foto-input-{{ foto_id }}" type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif" required><label class="photo-pick" for="foto-input-{{ foto_id }}">＋ Elegir foto</label><span class="photo-name" id="foto-name-{{ foto_id }}">Ningún archivo seleccionado</span><button class="photo-save" type="submit">Guardar foto</button></form>{% endif %}</td><td>{{ item.codigo_barras or "Sin código" }}</td><td>{{ item.stock_unidades }}</td><td>{% if item.stock_unidades <= 5 %}<span class="badge critical">⚠ CRÍTICO</span>{% elif item.stock_unidades <= 10 %}<span class="badge low">⚠ BAJO</span>{% else %}<span class="badge ok">✓ NORMAL</span>{% endif %}</td></tr>{% else %}<tr><td colspan="5" style="text-align:center;padding:30px">No hay registros de inventario.</td></tr>{% endfor %}</tbody></table></div></div><div id="fotoModal" role="dialog" aria-modal="true" aria-label="Vista ampliada de fotografía" onclick="if(event.target===this)cerrarFoto()" style="display:none;position:fixed;inset:0;background:rgba(4,20,38,.82);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out"><button type="button" aria-label="Cerrar fotografía" onclick="cerrarFoto()" style="position:absolute;top:18px;right:24px;font-size:28px;background:#fff;border:0;border-radius:50%;width:42px;height:42px;cursor:pointer">×</button><img id="fotoGrande" alt="" style="max-width:min(92vw,1100px);max-height:88vh;object-fit:contain;background:#fff;border-radius:12px;padding:8px;box-shadow:0 10px 40px #0006"></div><script>
+<main class="main"><div class="page-head"><div><h1>📦 Inventario</h1><p>Consulta las existencias escribiendo o escaneando el código de barras.</p></div></div>{% if error %}<div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ error }}</div>{% endif %}<div class="stats"><div class="stat"><small>Productos con inventario</small><strong>{{ inventario|length }}</strong></div><div class="stat"><small>Unidades en inventario</small><strong>{{ inventario|sum(attribute='stock_unidades') }}</strong></div><div class="stat"><small>Alertas</small><strong>{{ inventario|selectattr('stock_unidades','le',10)|list|length }}</strong></div></div><div class="card"><div class="card-head"><h3>Buscar y filtrar inventario</h3><span style="font-size:11px;color:var(--muted)">Código, nombre y estado</span></div><div class="content"><div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));align-items:end"><div class="field"><label>Código de barras</label><input id="buscar_inventario_codigo" type="text" inputmode="numeric" autocomplete="off" placeholder="Escribe o escanea el código" autofocus></div><div class="field"><label>Nombre del producto</label><input id="buscar_inventario_nombre" type="text" autocomplete="off" placeholder="Escribe el nombre del producto"></div><div class="field"><label>Estado</label><select id="filtro_estado"><option value="">Todos los estados</option><option value="normal">NORMAL</option><option value="bajo">BAJO</option><option value="critico">CRÍTICO</option></select></div></div><div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button type="button" class="btn-primary" id="btn_buscar_inventario">🔎 Buscar</button><button type="button" id="btn_escanear_camara">📷 Escanear con cámara</button><button type="button" id="btn_limpiar_filtros" style="border:1px solid #d8e6f2;background:#fff;color:#365572;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer">Limpiar filtros</button></div><div id="busqueda_msg" style="margin-top:8px;font-size:11px;color:var(--muted)">Puedes buscar por código de barras, nombre del producto o filtrar por estado.</div></div></div><br><div class="card"><div class="card-head"><h3>Existencias actuales</h3><span id="resultado_busqueda" style="font-size:11px;color:var(--muted)">{{ inventario|length }} productos</span></div><div class="table-wrap"><table class="data-table" id="tabla_inventario"><thead><tr><th>Foto</th><th>Producto</th><th>Código de barras</th><th>Unidades</th><th>Estado</th></tr></thead><tbody>{% for item in inventario %}<tr data-codigo="{{ item.codigo_barras or '' }}" data-producto="{{ item.producto or '' }}" data-estado="{% if item.stock_unidades <= 5 %}critico{% elif item.stock_unidades <= 10 %}bajo{% else %}normal{% endif %}"><td>{% set foto_id = fotos_por_nombre.get(item.producto) %}{% if foto_id %}<img class="product-photo" src="{{ url_for('producto_foto', producto_id=foto_id) }}" alt="Foto de {{ item.producto }}" onclick="abrirFoto(this.src, this.alt)" onerror="this.style.display='none'" title="Toca para ampliar la foto">{% else %}<span class="photo-empty">Sin foto</span>{% endif %}</td><td><b>{{ item.producto }}</b>{% if foto_id %}<form class="photo-form" action="{{ url_for('subir_foto_producto', producto_id=foto_id) }}" method="post" enctype="multipart/form-data"><input class="photo-input" id="foto-input-{{ foto_id }}" type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif" required><label class="photo-pick" for="foto-input-{{ foto_id }}">＋ Elegir foto</label><span class="photo-name" id="foto-name-{{ foto_id }}">Ningún archivo seleccionado</span><button class="photo-save" type="submit">Guardar foto</button></form>{% endif %}</td><td>{{ item.codigo_barras or "Sin código" }}</td><td>{{ item.stock_unidades }}</td><td>{% if item.stock_unidades <= 5 %}<span class="badge critical">⚠ CRÍTICO</span>{% elif item.stock_unidades <= 10 %}<span class="badge low">⚠ BAJO</span>{% else %}<span class="badge ok">✓ NORMAL</span>{% endif %}</td></tr>{% else %}<tr><td colspan="5" style="text-align:center;padding:30px">No hay registros de inventario.</td></tr>{% endfor %}</tbody></table></div></div><div id="scannerModal" role="dialog" aria-modal="true" aria-label="Escanear código de barras"><div class="scanner-box"><div class="scanner-head"><strong>📷 Escanear código de barras</strong><button type="button" class="scanner-close" id="btn_cerrar_scanner" aria-label="Cerrar">×</button></div><div id="scannerVideoWrap"><video id="scannerVideo" playsinline muted></video><div id="scannerFrame"></div></div><div id="scannerStatus">Apunta la cámara trasera al código de barras.</div></div></div><div id="fotoModal" role="dialog" aria-modal="true" aria-label="Vista ampliada de fotografía" onclick="if(event.target===this)cerrarFoto()" style="display:none;position:fixed;inset:0;background:rgba(4,20,38,.82);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out"><button type="button" aria-label="Cerrar fotografía" onclick="cerrarFoto()" style="position:absolute;top:18px;right:24px;font-size:28px;background:#fff;border:0;border-radius:50%;width:42px;height:42px;cursor:pointer">×</button><img id="fotoGrande" alt="" style="max-width:min(92vw,1100px);max-height:88vh;object-fit:contain;background:#fff;border-radius:12px;padding:8px;box-shadow:0 10px 40px #0006"></div><script>
 
 function abrirFoto(src, alt){const m=document.getElementById('fotoModal');document.getElementById('fotoGrande').src=src;document.getElementById('fotoGrande').alt=alt;m.style.display='flex';}
 
@@ -180,8 +222,17 @@ document.querySelectorAll('.photo-input').forEach(input=>{
   });
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"></script>
 <script>
 const buscarInventarioCodigo = document.getElementById("buscar_inventario_codigo");
+const btnEscanearCamara = document.getElementById("btn_escanear_camara");
+const scannerModal = document.getElementById("scannerModal");
+const scannerVideo = document.getElementById("scannerVideo");
+const scannerStatus = document.getElementById("scannerStatus");
+const btnCerrarScanner = document.getElementById("btn_cerrar_scanner");
+let scannerControls = null;
+let scannerReader = null;
+let scannerCerrando = false;
 const buscarInventarioNombre = document.getElementById("buscar_inventario_nombre");
 const filtroEstado = document.getElementById("filtro_estado");
 const btnBuscarInventario = document.getElementById("btn_buscar_inventario");
@@ -189,6 +240,73 @@ const btnLimpiarFiltros = document.getElementById("btn_limpiar_filtros");
 const busquedaMsg = document.getElementById("busqueda_msg");
 const resultadoBusqueda = document.getElementById("resultado_busqueda");
 const totalInventario = {{ inventario|length }};
+
+async function abrirEscanerCamara(){
+  if(typeof ZXingBrowser === "undefined" || !ZXingBrowser.BrowserMultiFormatReader){
+    scannerStatus.textContent = "No fue posible cargar el lector de cámara. La búsqueda con lector láser sigue disponible.";
+    scannerStatus.className = "scanner-error";
+    scannerModal.style.display = "flex";
+    return;
+  }
+
+  scannerCerrando = false;
+  scannerStatus.className = "";
+  scannerStatus.textContent = "Solicitando acceso a la cámara…";
+  scannerModal.style.display = "flex";
+
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      throw new Error("El navegador no permite usar la cámara.");
+    }
+
+    // Pedimos permiso primero para que el navegador revele los nombres de las cámaras.
+    const permiso = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+    permiso.getTracks().forEach(track=>track.stop());
+
+    const dispositivos = await navigator.mediaDevices.enumerateDevices();
+    const camaras = dispositivos.filter(d=>d.kind === "videoinput");
+    const trasera = camaras.find(d=>/back|rear|environment|trasera|posterior/i.test(d.label));
+    const deviceId = trasera ? trasera.deviceId : (camaras[0] ? camaras[0].deviceId : undefined);
+
+    scannerReader = new ZXingBrowser.BrowserMultiFormatReader();
+    scannerStatus.textContent = "Apunta la cámara trasera al código de barras.";
+
+    scannerControls = await scannerReader.decodeFromVideoDevice(deviceId, scannerVideo, (resultado, error) => {
+      if(scannerCerrando) return;
+      if(resultado){
+        const codigo = resultado.getText().trim();
+        if(codigo){
+          buscarInventarioCodigo.value = codigo;
+          cerrarEscanerCamara();
+          aplicarFiltrosInventario();
+          buscarInventarioCodigo.focus();
+        }
+      }
+    });
+  }catch(error){
+    console.error("Error del escáner de cámara:", error);
+    scannerStatus.textContent = "No se pudo abrir la cámara. Revisa el permiso del navegador y vuelve a intentarlo.";
+    scannerStatus.className = "scanner-error";
+  }
+}
+
+function cerrarEscanerCamara(){
+  scannerCerrando = true;
+  try{ if(scannerControls && typeof scannerControls.stop === "function") scannerControls.stop(); }catch(e){}
+  scannerControls = null;
+  try{ if(scannerReader && typeof scannerReader.reset === "function") scannerReader.reset(); }catch(e){}
+  scannerReader = null;
+  if(scannerVideo.srcObject){
+    scannerVideo.srcObject.getTracks().forEach(track=>track.stop());
+    scannerVideo.srcObject = null;
+  }
+  scannerModal.style.display = "none";
+}
+
+btnEscanearCamara.addEventListener("click", abrirEscanerCamara);
+btnCerrarScanner.addEventListener("click", cerrarEscanerCamara);
+scannerModal.addEventListener("click", function(e){ if(e.target === scannerModal) cerrarEscanerCamara(); });
+document.addEventListener("keydown", function(e){ if(e.key === "Escape" && scannerModal.style.display === "flex") cerrarEscanerCamara(); });
 
 function aplicarFiltrosInventario() {
   const codigo = buscarInventarioCodigo.value.trim().toLowerCase();
