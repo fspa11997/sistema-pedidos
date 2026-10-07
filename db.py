@@ -390,9 +390,11 @@ def crear_cliente(nombre, direccion, ciudad, telefono,
     conn.commit()
     conn.close()
 
-def obtener_clientes(empresa_id):
+def obtener_clientes(empresa_id, conn=None):
 
-    conn = conectar()
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -404,24 +406,30 @@ def obtener_clientes(empresa_id):
 
     data = cursor.fetchall()
 
-    conn.close()
+    if _own_conn:
+        conn.close()
 
     return data
 
-def obtener_empresas():
-    conn = conectar()
+def obtener_empresas(conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("SELECT id, nombre FROM empresas")
     data = cursor.fetchall()
 
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
-def obtener_productos(empresa_id):
+def obtener_productos(empresa_id, conn=None):
     
 
-    conn = conectar()
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -434,7 +442,8 @@ def obtener_productos(empresa_id):
     """, (empresa_id,))
 
     productos = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return productos
 
 def obtener_precio_producto(nombre, empresa_id, tipo_precio):
@@ -488,8 +497,10 @@ def obtener_costo_producto(nombre_producto, empresa_id):
 
     return 0
 
-def obtener_pedidos(empresa_id):
-    conn = conectar()
+def obtener_pedidos(empresa_id, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -513,7 +524,8 @@ def obtener_pedidos(empresa_id):
     """, (empresa_id,))
 
     data = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
 
@@ -563,8 +575,10 @@ def agregar_pedido(
     conn.commit()
     conn.close()
 
-def obtener_pedidos_pendientes(empresa_id):
-    conn = conectar()
+def obtener_pedidos_pendientes(empresa_id, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -576,12 +590,15 @@ def obtener_pedidos_pendientes(empresa_id):
     """, (empresa_id,))
 
     data = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
 
-def obtener_pedidos_entregados(empresa_id):
-    conn = conectar()
+def obtener_pedidos_entregados(empresa_id, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -593,12 +610,15 @@ def obtener_pedidos_entregados(empresa_id):
     """, (empresa_id,))
 
     data = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
 
-def obtener_pedidos_eliminados(empresa_id):
-    conn = conectar()
+def obtener_pedidos_eliminados(empresa_id, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -609,7 +629,8 @@ def obtener_pedidos_eliminados(empresa_id):
     """, (empresa_id,))
 
     data = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
 def cambiar_estado(id, estado):
@@ -660,9 +681,11 @@ def recuperar_pedido(id):
 
 from db import ahora
 
-def total_ventas_dia(empresa_id):
+def total_ventas_dia(empresa_id, conn=None):
     """Total facturado hoy para la empresa actual."""
-    conn = conectar()
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -673,12 +696,15 @@ def total_ventas_dia(empresa_id):
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"] or 0
-    conn.close()
+    if _own_conn:
+        conn.close()
     return total
 
 
-def total_ventas_mes(empresa_id):
-    conn = conectar()
+def total_ventas_mes(empresa_id, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -689,13 +715,16 @@ def total_ventas_mes(empresa_id):
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"] or 0
-    conn.close()
+    if _own_conn:
+        conn.close()
     return total
 
 
-def facturas_emitidas_hoy(empresa_id):
+def facturas_emitidas_hoy(empresa_id, conn=None):
     """Cantidad de facturas emitidas hoy para la empresa actual."""
-    conn = conectar()
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -706,13 +735,16 @@ def facturas_emitidas_hoy(empresa_id):
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"] or 0
-    conn.close()
+    if _own_conn:
+        conn.close()
     return total
 
 
-def saldo_cartera(empresa_id):
+def saldo_cartera(empresa_id, conn=None):
     """Saldo pendiente de cartera de la empresa actual."""
-    conn = conectar()
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -723,13 +755,16 @@ def saldo_cartera(empresa_id):
     """, (empresa_id,))
 
     total = cursor.fetchone()["total"] or 0
-    conn.close()
+    if _own_conn:
+        conn.close()
     return total
 
 
-def productos_top_5_mes(empresa_id):
+def productos_top_5_mes(empresa_id, conn=None):
     """Devuelve los 5 productos con más unidades vendidas en el mes actual."""
-    conn = conectar()
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -746,14 +781,15 @@ def productos_top_5_mes(empresa_id):
     """, (empresa_id,))
 
     data = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
 
-def producto_top_mes(empresa_id, data=None):
+def producto_top_mes(empresa_id, data=None, conn=None):
     """Compatibilidad: devuelve únicamente el producto número 1."""
     if data is None:
-        data = productos_top_5_mes(empresa_id)
+        data = productos_top_5_mes(empresa_id, conn=conn)
     return data[0] if data else None
 
 def crear_factura(
@@ -1040,8 +1076,10 @@ def registrar_compra(producto, cantidad, empresa_id, codigo_barras=None):
     conn.commit()
     conn.close()
 
-def obtener_inventario(empresa_id):
-    conn = conectar()
+def obtener_inventario(empresa_id, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT i.producto, i.stock_unidades, i.codigo_barras,
@@ -1055,7 +1093,8 @@ def obtener_inventario(empresa_id):
         ORDER BY i.producto ASC
     """, (empresa_id,))
     data = cursor.fetchall()
-    conn.close()
+    if _own_conn:
+        conn.close()
     return data
 
 def obtener_facturas(empresa_id):

@@ -1,5 +1,6 @@
 import pytz
 import os
+import gzip
 import psycopg2
 from datetime import datetime
 import barcode
@@ -70,6 +71,31 @@ print("🔥 DB inicializada")
 
 app = Flask(__name__)
 
+# Caché de recursos estáticos: evita volver a descargar CSS, JS e imágenes
+# que no han cambiado al navegar entre módulos.
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 86400
+
+@app.after_request
+def optimizar_respuesta(response):
+    """Reduce el tiempo de transferencia sin modificar el contenido visible."""
+    content_type = response.headers.get("Content-Type", "")
+    content_length = response.headers.get("Content-Length")
+    aceptado = "gzip" in request.headers.get("Accept-Encoding", "").lower()
+
+    if (aceptado and response.status_code == 200 and
+            "Content-Encoding" not in response.headers and
+            content_length and int(content_length) >= 500 and
+            (content_type.startswith("text/html") or
+             content_type.startswith("text/css") or
+             content_type.startswith("application/javascript") or
+             content_type.startswith("text/javascript"))):
+        response.set_data(gzip.compress(response.get_data(), compresslevel=5))
+        response.headers["Content-Encoding"] = "gzip"
+        response.headers["Vary"] = "Accept-Encoding"
+        response.headers.pop("Content-Length", None)
+
+    return response
+
 
 def formato_fecha_hora(valor):
     """Convierte fechas UTC a hora de Colombia y las muestra DD/MM/AAAA HH:MM.
@@ -133,7 +159,7 @@ fecha_entrega = datetime.now(zona_colombia)
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
-    empresas = obtener_empresas()
+    empresas = obtener_empresas(conn=conn)
     
     if request.method == "POST":
         user = request.form["usuario"]
@@ -225,33 +251,33 @@ def dashboard():
     # =========================
     # RESTO DEL DASHBOARD
     # =========================
-    empresas = obtener_empresas()
+    empresas = obtener_empresas(conn=conn)
 
     buscar = request.args.get("buscar", "")
     fecha = request.args.get("fecha")
     domiciliario_filtro = request.args.get("domiciliario", "")
     
-    total_dia = total_ventas_dia(empresa_id)
-    total_mes = total_ventas_mes(empresa_id)
-    facturas_hoy = facturas_emitidas_hoy(empresa_id)
-    cartera_pendiente = saldo_cartera(empresa_id)
-    top_5_productos = productos_top_5_mes(empresa_id)
-    top_producto = producto_top_mes(empresa_id, top_5_productos)
+    total_dia = total_ventas_dia(empresa_id, conn=conn)
+    total_mes = total_ventas_mes(empresa_id, conn=conn)
+    facturas_hoy = facturas_emitidas_hoy(empresa_id, conn=conn)
+    cartera_pendiente = saldo_cartera(empresa_id, conn=conn)
+    top_5_productos = productos_top_5_mes(empresa_id, conn=conn)
+    top_producto = producto_top_mes(empresa_id, top_5_productos, conn=conn)
 
     filtro = request.args.get("filtro", "todos")
 
     if filtro == "pendientes":
-        pedidos = obtener_pedidos_pendientes(empresa_id)
+        pedidos = obtener_pedidos_pendientes(empresa_id, conn=conn)
     elif filtro == "entregados":
-        pedidos = obtener_pedidos_entregados(empresa_id)
+        pedidos = obtener_pedidos_entregados(empresa_id, conn=conn)
     elif filtro == "eliminados":
-        pedidos = obtener_pedidos_eliminados(empresa_id)
+        pedidos = obtener_pedidos_eliminados(empresa_id, conn=conn)
     else:
-        pedidos = obtener_pedidos(empresa_id)
+        pedidos = obtener_pedidos(empresa_id, conn=conn)
 
-    productos = obtener_productos(empresa_id)
-    clientes = obtener_clientes(empresa_id)
-    inventario = obtener_inventario(empresa_id)
+    productos = obtener_productos(empresa_id, conn=conn)
+    clientes = obtener_clientes(empresa_id, conn=conn)
+    inventario = obtener_inventario(empresa_id, conn=conn)
 
     conn.close()
 
@@ -702,7 +728,7 @@ def productos_page():
     if "usuario" not in session:
         return redirect("/")
     empresa_id = session["empresa_id"]
-    productos = obtener_productos(empresa_id)
+    productos = obtener_productos(empresa_id, conn=conn)
     return render_template("productos.html", productos=productos)
 
 
@@ -744,8 +770,8 @@ def inventario_page():
     if "usuario" not in session:
         return redirect("/")
     empresa_id = session["empresa_id"]
-    productos = obtener_productos(empresa_id)
-    inventario = obtener_inventario(empresa_id)
+    productos = obtener_productos(empresa_id, conn=conn)
+    inventario = obtener_inventario(empresa_id, conn=conn)
     return render_template("inventario.html", productos=productos, inventario=inventario, fotos_por_nombre={p["nombre"]: p["id"] for p in productos})
 
 
@@ -1344,7 +1370,7 @@ def clientes():
 
     empresa_id = session["empresa_id"]
 
-    clientes = obtener_clientes(empresa_id)
+    clientes = obtener_clientes(empresa_id, conn=conn)
 
     return render_template(
         "clientes.html",
