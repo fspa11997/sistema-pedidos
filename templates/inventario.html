@@ -240,40 +240,21 @@ const busquedaMsg = document.getElementById("busqueda_msg");
 const resultadoBusqueda = document.getElementById("resultado_busqueda");
 const totalInventario = {{ inventario|length }};
 
+let scannerTimer = null;
+let scannerCanvas = null;
+let scannerBusy = false;
+
 async function abrirEscanerCamara(){
   scannerCerrando = false;
   scannerStatus.className = "";
   scannerModal.style.display = "flex";
 
-  // Usamos la API nativa del navegador: no depende de CDN ni de librerías externas.
-  if(!("BarcodeDetector" in window)){
-    scannerStatus.textContent = "Este navegador no tiene lector de códigos de barras integrado. Prueba con Chrome en Android o usa el lector láser/manual.";
-    scannerStatus.className = "scanner-error";
-    return;
-  }
-
   try{
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      throw new Error("El navegador no permite usar la cámara.");
+      throw new Error("Este navegador no permite acceder a la cámara.");
     }
 
     scannerStatus.textContent = "Solicitando acceso a la cámara…";
-
-    const formatosDisponibles = [
-      "ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39",
-      "code_93", "itf", "codabar", "data_matrix", "qr_code"
-    ];
-    let formatos = formatosDisponibles;
-
-    // Algunos navegadores soportan BarcodeDetector pero no todos los formatos.
-    if(typeof BarcodeDetector.getSupportedFormats === "function"){
-      const soportados = await BarcodeDetector.getSupportedFormats();
-      formatos = formatosDisponibles.filter(f => soportados.includes(f));
-    }
-    if(!formatos.length) throw new Error("No hay formatos de código compatibles.");
-
-    const detector = new BarcodeDetector({formats: formatos});
-
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: {ideal: "environment"},
@@ -287,52 +268,80 @@ async function abrirEscanerCamara(){
     scannerVideo.setAttribute("playsinline", "true");
     scannerVideo.muted = true;
     await scannerVideo.play();
-    scannerStatus.textContent = "Apunta la cámara trasera al código de barras.";
 
-    const detectar = async () => {
-      if(scannerCerrando || scannerModal.style.display !== "flex") return;
+    scannerCanvas = document.createElement("canvas");
+    scannerCanvas.width = 640;
+    scannerCanvas.height = 360;
+    scannerStatus.textContent = "Apunta la cámara trasera al código de barras. La lectura se procesa automáticamente.";
+    scannerStatus.className = "";
 
-      try{
-        if(scannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA){
-          const resultados = await detector.detect(scannerVideo);
-          if(resultados && resultados.length){
-            const codigo = (resultados[0].rawValue || "").trim();
-            if(codigo){
-              buscarInventarioCodigo.value = codigo;
-              cerrarEscanerCamara();
-              aplicarFiltrosInventario();
-              buscarInventarioCodigo.focus();
-              return;
-            }
-          }
-        }
-      }catch(error){
-        console.warn("No se pudo analizar este fotograma:", error);
-      }
-
-      if(!scannerCerrando) setTimeout(detectar, 120);
-    };
-
-    detectar();
+    iniciarLecturaCamara();
   }catch(error){
     console.error("Error del escáner de cámara:", error);
-    try{
-      if(scannerVideo.srcObject){
-        scannerVideo.srcObject.getTracks().forEach(track => track.stop());
-        scannerVideo.srcObject = null;
-      }
-    }catch(e){}
     scannerStatus.textContent = "No se pudo abrir la cámara. Revisa el permiso del navegador y vuelve a intentarlo.";
     scannerStatus.className = "scanner-error";
   }
 }
 
+function iniciarLecturaCamara(){
+  detenerTimerEscaner();
+  scannerTimer = setInterval(capturarFotograma, 450);
+  capturarFotograma();
+}
+
+async function capturarFotograma(){
+  if(scannerCerrando || scannerBusy || scannerModal.style.display !== "flex") return;
+  if(!scannerVideo.videoWidth || !scannerVideo.videoHeight || !scannerCanvas) return;
+
+  scannerBusy = true;
+  try{
+    const ctx = scannerCanvas.getContext("2d", {willReadFrequently:true});
+    const vw = scannerVideo.videoWidth;
+    const vh = scannerVideo.videoHeight;
+    const escala = Math.min(640 / vw, 360 / vh);
+    const w = Math.max(1, Math.round(vw * escala));
+    const h = Math.max(1, Math.round(vh * escala));
+    scannerCanvas.width = w;
+    scannerCanvas.height = h;
+    ctx.drawImage(scannerVideo, 0, 0, w, h);
+
+    const imagen = scannerCanvas.toDataURL("image/jpeg", 0.72);
+    const respuesta = await fetch("/decodificar_codigo_camara", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      credentials: "same-origin",
+      body: JSON.stringify({imagen})
+    });
+
+    if(!respuesta.ok) return;
+    const datos = await respuesta.json();
+    const codigo = (datos.codigo || "").trim();
+
+    if(datos.ok && codigo){
+      buscarInventarioCodigo.value = codigo;
+      cerrarEscanerCamara();
+      aplicarFiltrosInventario();
+      buscarInventarioCodigo.focus();
+      busquedaMsg.textContent = "Código detectado: " + codigo;
+    }
+  }catch(error){
+    console.warn("No se pudo analizar el fotograma:", error);
+  }finally{
+    scannerBusy = false;
+  }
+}
+
+function detenerTimerEscaner(){
+  if(scannerTimer){
+    clearInterval(scannerTimer);
+    scannerTimer = null;
+  }
+}
+
 function cerrarEscanerCamara(){
   scannerCerrando = true;
-  try{ if(scannerControls && typeof scannerControls.stop === "function") scannerControls.stop(); }catch(e){}
-  scannerControls = null;
-  try{ if(scannerReader && typeof scannerReader.reset === "function") scannerReader.reset(); }catch(e){}
-  scannerReader = null;
+  detenerTimerEscaner();
+  scannerBusy = false;
   if(scannerVideo.srcObject){
     scannerVideo.srcObject.getTracks().forEach(track=>track.stop());
     scannerVideo.srcObject = null;
