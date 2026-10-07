@@ -872,7 +872,7 @@ button,input,select{font-family:inherit}
 {% if session['rol'] in ['owner_global', 'admin'] %}
 
 <div id="metricas" style="display:none;">
-
+    
     <div class="metricas-container">
 
         <div class="metrica-card">
@@ -906,11 +906,11 @@ button,input,select{font-family:inherit}
         </div>
 
     </div>
+{% endif %}    
 
 </div>
-{% endif %}
-<br>
 
+<br>
 
 <!-- 🔐 SOLO SUPERAADMIN -->
 {% if session['rol'] == 'owner_global' %}
@@ -1056,8 +1056,8 @@ button,input,select{font-family:inherit}
 {% endif %}
 
 
-
 <br>
+
 
     <!-- 📦 FORMULARIO PEDIDOS -->
     <div class="formulario">
