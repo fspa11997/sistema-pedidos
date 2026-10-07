@@ -141,6 +141,12 @@ def inicializar_db():
     # =========================
     # MOVIMIENTOS INVENTARIO
     # =========================
+    # Índices para acelerar las búsquedas más frecuentes.
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_activo ON productos (empresa_id, activo)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_codigo ON productos (empresa_id, codigo_barras)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_codigo ON inventario (empresa_id, codigo_barras)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_producto ON inventario (empresa_id, producto)")
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS movimientos_inventario (
         id SERIAL PRIMARY KEY,
@@ -356,10 +362,12 @@ def obtener_productos(empresa_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT *
+        SELECT id, nombre, precio_mayorista, precio_individual,
+               precio_mostrador, costo, codigo_barras, empresa_id,
+               activo, foto_mimetype
         FROM productos
         WHERE empresa_id = %s
-        AND activo = TRUE           
+        AND activo = TRUE
     """, (empresa_id,))
 
     productos = cursor.fetchall()
