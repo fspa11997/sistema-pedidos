@@ -625,8 +625,7 @@ def crear_factura_route():
         cantidad = int(cantidades[i])
 
         cursor.execute("""
-            SELECT precio_mayorista, precio_individual, precio_mostrador
-            FROM productos
+            SELECT * FROM productos
             WHERE nombre=%s AND empresa_id=%s
         """, (producto, empresa_id))
 
@@ -745,8 +744,9 @@ def inventario_page():
     if "usuario" not in session:
         return redirect("/")
     empresa_id = session["empresa_id"]
+    productos = obtener_productos(empresa_id)
     inventario = obtener_inventario(empresa_id)
-    return render_template("inventario.html", inventario=inventario)
+    return render_template("inventario.html", productos=productos, inventario=inventario, fotos_por_nombre={p["nombre"]: p["id"] for p in productos})
 
 
 @app.route("/producto/<int:producto_id>/foto", methods=["POST"])
@@ -835,10 +835,11 @@ def registrar_compra_route():
         conn.close()
 
         if not p:
-            inventario = obtener_inventario(empresa_id)
             return render_template(
                 "inventario.html",
-                inventario=inventario,
+                productos=obtener_productos(empresa_id),
+                inventario=obtener_inventario(empresa_id),
+                fotos_por_nombre={p["nombre"]: p["id"] for p in obtener_productos(empresa_id)},
                 error="No existe un producto con ese código de barras."
             )
 
