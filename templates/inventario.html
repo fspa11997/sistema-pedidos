@@ -222,7 +222,6 @@ document.querySelectorAll('.photo-input').forEach(input=>{
   });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js"></script>
 <script>
 const buscarInventarioCodigo = document.getElementById("buscar_inventario_codigo");
 const btnEscanearCamara = document.getElementById("btn_escanear_camara");
@@ -242,49 +241,87 @@ const resultadoBusqueda = document.getElementById("resultado_busqueda");
 const totalInventario = {{ inventario|length }};
 
 async function abrirEscanerCamara(){
-  if(typeof ZXingBrowser === "undefined" || !ZXingBrowser.BrowserMultiFormatReader){
-    scannerStatus.textContent = "No fue posible cargar el lector de cámara. La búsqueda con lector láser sigue disponible.";
-    scannerStatus.className = "scanner-error";
-    scannerModal.style.display = "flex";
-    return;
-  }
-
   scannerCerrando = false;
   scannerStatus.className = "";
-  scannerStatus.textContent = "Solicitando acceso a la cámara…";
   scannerModal.style.display = "flex";
+
+  // Usamos la API nativa del navegador: no depende de CDN ni de librerías externas.
+  if(!("BarcodeDetector" in window)){
+    scannerStatus.textContent = "Este navegador no tiene lector de códigos de barras integrado. Prueba con Chrome en Android o usa el lector láser/manual.";
+    scannerStatus.className = "scanner-error";
+    return;
+  }
 
   try{
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
       throw new Error("El navegador no permite usar la cámara.");
     }
 
-    // Pedimos permiso primero para que el navegador revele los nombres de las cámaras.
-    const permiso = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
-    permiso.getTracks().forEach(track=>track.stop());
+    scannerStatus.textContent = "Solicitando acceso a la cámara…";
 
-    const dispositivos = await navigator.mediaDevices.enumerateDevices();
-    const camaras = dispositivos.filter(d=>d.kind === "videoinput");
-    const trasera = camaras.find(d=>/back|rear|environment|trasera|posterior/i.test(d.label));
-    const deviceId = trasera ? trasera.deviceId : (camaras[0] ? camaras[0].deviceId : undefined);
+    const formatosDisponibles = [
+      "ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39",
+      "code_93", "itf", "codabar", "data_matrix", "qr_code"
+    ];
+    let formatos = formatosDisponibles;
 
-    scannerReader = new ZXingBrowser.BrowserMultiFormatReader();
+    // Algunos navegadores soportan BarcodeDetector pero no todos los formatos.
+    if(typeof BarcodeDetector.getSupportedFormats === "function"){
+      const soportados = await BarcodeDetector.getSupportedFormats();
+      formatos = formatosDisponibles.filter(f => soportados.includes(f));
+    }
+    if(!formatos.length) throw new Error("No hay formatos de código compatibles.");
+
+    const detector = new BarcodeDetector({formats: formatos});
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: {ideal: "environment"},
+        width: {ideal: 1280},
+        height: {ideal: 720}
+      },
+      audio: false
+    });
+
+    scannerVideo.srcObject = stream;
+    scannerVideo.setAttribute("playsinline", "true");
+    scannerVideo.muted = true;
+    await scannerVideo.play();
     scannerStatus.textContent = "Apunta la cámara trasera al código de barras.";
 
-    scannerControls = await scannerReader.decodeFromVideoDevice(deviceId, scannerVideo, (resultado, error) => {
-      if(scannerCerrando) return;
-      if(resultado){
-        const codigo = resultado.getText().trim();
-        if(codigo){
-          buscarInventarioCodigo.value = codigo;
-          cerrarEscanerCamara();
-          aplicarFiltrosInventario();
-          buscarInventarioCodigo.focus();
+    const detectar = async () => {
+      if(scannerCerrando || scannerModal.style.display !== "flex") return;
+
+      try{
+        if(scannerVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA){
+          const resultados = await detector.detect(scannerVideo);
+          if(resultados && resultados.length){
+            const codigo = (resultados[0].rawValue || "").trim();
+            if(codigo){
+              buscarInventarioCodigo.value = codigo;
+              cerrarEscanerCamara();
+              aplicarFiltrosInventario();
+              buscarInventarioCodigo.focus();
+              return;
+            }
+          }
         }
+      }catch(error){
+        console.warn("No se pudo analizar este fotograma:", error);
       }
-    });
+
+      if(!scannerCerrando) setTimeout(detectar, 120);
+    };
+
+    detectar();
   }catch(error){
     console.error("Error del escáner de cámara:", error);
+    try{
+      if(scannerVideo.srcObject){
+        scannerVideo.srcObject.getTracks().forEach(track => track.stop());
+        scannerVideo.srcObject = null;
+      }
+    }catch(e){}
     scannerStatus.textContent = "No se pudo abrir la cámara. Revisa el permiso del navegador y vuelve a intentarlo.";
     scannerStatus.className = "scanner-error";
   }
