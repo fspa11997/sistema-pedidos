@@ -158,123 +158,58 @@ button, input, select { font: inherit; }
   .data-table td:nth-child(2) { white-space:normal; min-width:190px; }
 }
 
-/* ESCÁNER DE CÓDIGO DE BARRAS CON CÁMARA */
-#scannerModal{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:10000;
-  background:rgba(4,20,38,.92);
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-}
-.scanner-box{
-  width:min(520px,100%);
-  background:#fff;
-  border-radius:14px;
-  overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-}
-.scanner-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:14px 16px;
-  border-bottom:1px solid #e4edf5;
-}
-.scanner-head h3{
-  margin:0;
-  color:#173b63;
-  font-size:15px;
-}
-.scanner-close{
-  border:0;
-  background:#eef4f8;
-  color:#173b63;
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  font-size:22px;
-  line-height:1;
-  cursor:pointer;
-}
-.scanner-video-wrap{
-  position:relative;
-  background:#000;
-  aspect-ratio:4/3;
-  overflow:hidden;
-}
-#scannerVideo{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover;
-}
-.scanner-guide{
-  position:absolute;
-  left:12%;
-  right:12%;
-  top:34%;
-  height:32%;
-  border:2px solid #fff;
-  border-radius:10px;
-  box-shadow:0 0 0 9999px rgba(0,0,0,.22);
-  pointer-events:none;
-}
-.scanner-guide::after{
-  content:"";
-  position:absolute;
-  left:4%;
-  right:4%;
-  top:50%;
-  height:2px;
-  background:#fff;
-  opacity:.9;
-}
-.scanner-status{
-  padding:12px 15px 15px;
-  color:#526b84;
-  font-size:12px;
-  text-align:center;
-}
-#btn_abrir_scanner{
-  border:0;
-  background:#173b63;
-  color:#fff;
-  padding:10px 15px;
-  border-radius:5px;
-  font-weight:700;
-  cursor:pointer;
-}
-#btn_abrir_scanner:hover{filter:brightness(1.06);}
+/* Escáner de código de barras: interfaz ligera, sin activar cámara hasta que el usuario lo solicite */
+.barcode-search-row{display:flex;gap:7px;align-items:stretch}
+.barcode-search-row .field{}
+.barcode-search-row input{min-width:0;flex:1}
+.btn-scan{border:1px solid #cbdced;background:#f5f9fd;color:#244d78;padding:0 12px;border-radius:5px;font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap}
+.btn-scan:hover{background:#eaf3fc;border-color:#9fc5eb}
+#scannerModal{display:none;position:fixed;inset:0;z-index:10000;background:rgba(4,20,38,.86);align-items:center;justify-content:center;padding:18px}
+.scanner-box{width:min(94vw,520px);background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.35)}
+.scanner-head{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #e5edf5}
+.scanner-head strong{font-size:14px;color:#173b63}
+.scanner-close{border:0;background:#f1f5f9;color:#365572;border-radius:50%;width:34px;height:34px;font-size:21px;cursor:pointer}
+.scanner-video-wrap{position:relative;background:#071522;aspect-ratio:4/3;overflow:hidden}
+#scannerVideo{width:100%;height:100%;display:block;object-fit:cover}
+.scanner-guide{position:absolute;left:12%;right:12%;top:34%;height:32%;border:2px solid rgba(255,255,255,.9);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}
+.scanner-guide:after{content:"";position:absolute;left:5%;right:5%;top:50%;height:2px;background:#08ad60;box-shadow:0 0 8px #08ad60}
+.scanner-status{padding:11px 14px;font-size:11px;color:#617b96;text-align:center;min-height:38px}
+.scanner-actions{display:flex;justify-content:center;padding:0 14px 14px}
+.scanner-stop{border:0;background:#ef4760;color:#fff;padding:9px 15px;border-radius:6px;font-weight:700;cursor:pointer}
 @media(max-width:700px){
-  #scannerModal{padding:0;}
-  .scanner-box{width:100%;height:100%;border-radius:0;display:flex;flex-direction:column;}
-  .scanner-video-wrap{flex:1;aspect-ratio:auto;}
-  .scanner-status{padding-bottom:calc(15px + env(safe-area-inset-bottom));}
+  .barcode-search-row{gap:6px}
+  .btn-scan{padding:0 10px}
+  #scannerModal{padding:10px}
+  .scanner-box{width:100%;border-radius:12px}
 }
-
 </style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head><body>
 <div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
 <aside class="sidebar"><div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div><nav class="nav"><div class="nav-title"> </div><a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><!--<a class="btn" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a>--><a class="btn" href="/productos">🏷️ &nbsp; Productos</a><a class="btn active" href="/inventario">📦 &nbsp; Inventario</a></nav></aside>
-<main class="main"><div class="page-head"><div><h1>📦 Inventario</h1><p>Consulta las existencias escribiendo o escaneando el código de barras.</p></div></div>{% if error %}<div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ error }}</div>{% endif %}<div class="stats"><div class="stat"><small>Productos con inventario</small><strong>{{ inventario|length }}</strong></div><div class="stat"><small>Unidades en inventario</small><strong>{{ inventario|sum(attribute='stock_unidades') }}</strong></div><div class="stat"><small>Alertas</small><strong>{{ inventario|selectattr('stock_unidades','le',10)|list|length }}</strong></div></div><div class="card"><div class="card-head"><h3>Buscar y filtrar inventario</h3><span style="font-size:11px;color:var(--muted)">Código, nombre y estado</span></div><div class="content"><div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));align-items:end"><div class="field"><label>Código de barras</label><input id="buscar_inventario_codigo" type="text" inputmode="numeric" autocomplete="off" placeholder="Escribe o escanea el código" autofocus></div><div class="field"><label>Nombre del producto</label><input id="buscar_inventario_nombre" type="text" autocomplete="off" placeholder="Escribe el nombre del producto"></div><div class="field"><label>Estado</label><select id="filtro_estado"><option value="">Todos los estados</option><option value="normal">NORMAL</option><option value="bajo">BAJO</option><option value="critico">CRÍTICO</option></select></div></div><div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><button type="button" class="btn-primary" id="btn_buscar_inventario">🔎 Buscar</button><button type="button" id="btn_abrir_scanner">📷 Escanear con cámara</button><button type="button" id="btn_limpiar_filtros" style="border:1px solid #d8e6f2;background:#fff;color:#365572;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer">Limpiar filtros</button></div><div id="busqueda_msg" style="margin-top:8px;font-size:11px;color:var(--muted)">Puedes buscar por código de barras, nombre del producto o filtrar por estado.</div></div></div><br><div class="card"><div class="card-head"><h3>Existencias actuales</h3><span id="resultado_busqueda" style="font-size:11px;color:var(--muted)">{{ inventario|length }} productos</span></div><div class="table-wrap"><table class="data-table" id="tabla_inventario"><thead><tr><th>Foto</th><th>Producto</th><th>Código de barras</th><th>Unidades</th><th>Estado</th></tr></thead><tbody>{% for item in inventario %}<tr data-codigo="{{ item.codigo_barras or '' }}" data-producto="{{ item.producto or '' }}" data-estado="{% if item.stock_unidades <= 5 %}critico{% elif item.stock_unidades <= 10 %}bajo{% else %}normal{% endif %}"><td>{% set foto_id = fotos_por_nombre.get(item.producto) %}{% if foto_id %}<img class="product-photo" src="{{ url_for('producto_foto', producto_id=foto_id) }}" alt="Foto de {{ item.producto }}" onclick="abrirFoto(this.src, this.alt)" onerror="this.style.display='none'" title="Toca para ampliar la foto">{% else %}<span class="photo-empty">Sin foto</span>{% endif %}</td><td><b>{{ item.producto }}</b>{% if foto_id %}<form class="photo-form" action="{{ url_for('subir_foto_producto', producto_id=foto_id) }}" method="post" enctype="multipart/form-data"><input class="photo-input" id="foto-input-{{ foto_id }}" type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif" required><label class="photo-pick" for="foto-input-{{ foto_id }}">＋ Elegir foto</label><span class="photo-name" id="foto-name-{{ foto_id }}">Ningún archivo seleccionado</span><button class="photo-save" type="submit">Guardar foto</button></form>{% endif %}</td><td>{{ item.codigo_barras or "Sin código" }}</td><td>{{ item.stock_unidades }}</td><td>{% if item.stock_unidades <= 5 %}<span class="badge critical">⚠ CRÍTICO</span>{% elif item.stock_unidades <= 10 %}<span class="badge low">⚠ BAJO</span>{% else %}<span class="badge ok">✓ NORMAL</span>{% endif %}</td></tr>{% else %}<tr><td colspan="5" style="text-align:center;padding:30px">No hay registros de inventario.</td></tr>{% endfor %}</tbody></table></div></div><div id="scannerModal" role="dialog" aria-modal="true" aria-label="Escanear código de barras">
+<main class="main"><div class="page-head"><div><h1>📦 Inventario</h1><p>Consulta las existencias escribiendo o escaneando el código de barras.</p></div></div>{% if error %}<div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ error }}</div>{% endif %}<div class="stats"><div class="stat"><small>Productos con inventario</small><strong>{{ inventario|length }}</strong></div><div class="stat"><small>Unidades en inventario</small><strong>{{ inventario|sum(attribute='stock_unidades') }}</strong></div><div class="stat"><small>Alertas</small><strong>{{ inventario|selectattr('stock_unidades','le',10)|list|length }}</strong></div></div><div class="card"><div class="card-head"><h3>Buscar y filtrar inventario</h3><span style="font-size:11px;color:var(--muted)">Código, nombre y estado</span></div><div class="content"><div class="form-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));align-items:end"><div class="field"><label>Código de barras</label>
+<div class="barcode-search-row">
+<input id="buscar_inventario_codigo" type="text" inputmode="numeric" autocomplete="off" placeholder="Escribe o escanea el código" autofocus>
+<button type="button" class="btn-scan" id="btn_abrir_escaner" aria-label="Escanear código de barras con la cámara">📷 Escanear</button>
+</div>
+</div><div class="field"><label>Nombre del producto</label><input id="buscar_inventario_nombre" type="text" autocomplete="off" placeholder="Escribe el nombre del producto"></div><div class="field"><label>Estado</label><select id="filtro_estado"><option value="">Todos los estados</option><option value="normal">NORMAL</option><option value="bajo">BAJO</option><option value="critico">CRÍTICO</option></select></div></div><div style="display:flex;gap:10px;margin-top:12px"><button type="button" class="btn-primary" id="btn_buscar_inventario">🔎 Buscar</button><button type="button" id="btn_limpiar_filtros" style="border:1px solid #d8e6f2;background:#fff;color:#365572;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer">Limpiar filtros</button></div><div id="busqueda_msg" style="margin-top:8px;font-size:11px;color:var(--muted)">Puedes buscar por código de barras, nombre del producto o filtrar por estado.</div></div></div><br><div class="card"><div class="card-head"><h3>Existencias actuales</h3><span id="resultado_busqueda" style="font-size:11px;color:var(--muted)">{{ inventario|length }} productos</span></div><div class="table-wrap"><table class="data-table" id="tabla_inventario"><thead><tr><th>Foto</th><th>Producto</th><th>Código de barras</th><th>Unidades</th><th>Estado</th></tr></thead><tbody>{% for item in inventario %}<tr data-codigo="{{ item.codigo_barras or '' }}" data-producto="{{ item.producto or '' }}" data-estado="{% if item.stock_unidades <= 5 %}critico{% elif item.stock_unidades <= 10 %}bajo{% else %}normal{% endif %}"><td>{% set foto_id = fotos_por_nombre.get(item.producto) %}{% if foto_id %}<img class="product-photo" src="{{ url_for('producto_foto', producto_id=foto_id) }}" alt="Foto de {{ item.producto }}" onclick="abrirFoto(this.src, this.alt)" onerror="this.style.display='none'" title="Toca para ampliar la foto">{% else %}<span class="photo-empty">Sin foto</span>{% endif %}</td><td><b>{{ item.producto }}</b>{% if foto_id %}<form class="photo-form" action="{{ url_for('subir_foto_producto', producto_id=foto_id) }}" method="post" enctype="multipart/form-data"><input class="photo-input" id="foto-input-{{ foto_id }}" type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif" required><label class="photo-pick" for="foto-input-{{ foto_id }}">＋ Elegir foto</label><span class="photo-name" id="foto-name-{{ foto_id }}">Ningún archivo seleccionado</span><button class="photo-save" type="submit">Guardar foto</button></form>{% endif %}</td><td>{{ item.codigo_barras or "Sin código" }}</td><td>{{ item.stock_unidades }}</td><td>{% if item.stock_unidades <= 5 %}<span class="badge critical">⚠ CRÍTICO</span>{% elif item.stock_unidades <= 10 %}<span class="badge low">⚠ BAJO</span>{% else %}<span class="badge ok">✓ NORMAL</span>{% endif %}</td></tr>{% else %}<tr><td colspan="5" style="text-align:center;padding:30px">No hay registros de inventario.</td></tr>{% endfor %}</tbody></table></div></div>
+<div id="scannerModal" role="dialog" aria-modal="true" aria-label="Escáner de código de barras">
   <div class="scanner-box">
     <div class="scanner-head">
-      <h3>📷 Escanear código de barras</h3>
-      <button type="button" class="scanner-close" id="btn_cerrar_scanner" aria-label="Cerrar escáner">×</button>
+      <strong>📷 Escanear código de barras</strong>
+      <button type="button" class="scanner-close" id="btn_cerrar_escaner" aria-label="Cerrar escáner">×</button>
     </div>
     <div class="scanner-video-wrap">
       <video id="scannerVideo" playsinline muted></video>
-      <div class="scanner-guide"></div>
+      <div class="scanner-guide" aria-hidden="true"></div>
     </div>
     <div class="scanner-status" id="scannerStatus">Apunta la cámara al código de barras.</div>
+    <div class="scanner-actions">
+      <button type="button" class="scanner-stop" id="btn_detener_escaner">Cerrar cámara</button>
+    </div>
   </div>
-</div><div id="fotoModal" role="dialog" aria-modal="true" aria-label="Vista ampliada de fotografía" onclick="if(event.target===this)cerrarFoto()" style="display:none;position:fixed;inset:0;background:rgba(4,20,38,.82);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out"><button type="button" aria-label="Cerrar fotografía" onclick="cerrarFoto()" style="position:absolute;top:18px;right:24px;font-size:28px;background:#fff;border:0;border-radius:50%;width:42px;height:42px;cursor:pointer">×</button><img id="fotoGrande" alt="" style="max-width:min(92vw,1100px);max-height:88vh;object-fit:contain;background:#fff;border-radius:12px;padding:8px;box-shadow:0 10px 40px #0006"></div><script src="https://unpkg.com/@zxing/browser@0.2.1"></script>
-<script>
+</div>
+<div id="fotoModal" role="dialog" aria-modal="true" aria-label="Vista ampliada de fotografía" onclick="if(event.target===this)cerrarFoto()" style="display:none;position:fixed;inset:0;background:rgba(4,20,38,.82);z-index:9999;align-items:center;justify-content:center;padding:24px;cursor:zoom-out"><button type="button" aria-label="Cerrar fotografía" onclick="cerrarFoto()" style="position:absolute;top:18px;right:24px;font-size:28px;background:#fff;border:0;border-radius:50%;width:42px;height:42px;cursor:pointer">×</button><img id="fotoGrande" alt="" style="max-width:min(92vw,1100px);max-height:88vh;object-fit:contain;background:#fff;border-radius:12px;padding:8px;box-shadow:0 10px 40px #0006"></div><script>
 
 function abrirFoto(src, alt){const m=document.getElementById('fotoModal');document.getElementById('fotoGrande').src=src;document.getElementById('fotoGrande').alt=alt;m.style.display='flex';}
 
@@ -292,6 +227,225 @@ document.querySelectorAll('.photo-input').forEach(input=>{
   });
 });
 </script>
+
+<script>
+/*
+ * Escáner de código de barras.
+ * Rendimiento: no carga ninguna librería ni solicita la cámara al abrir Inventario.
+ * El lector se inicializa únicamente cuando el usuario pulsa "Escanear".
+ */
+(() => {
+  const scanButton = document.getElementById("btn_abrir_escaner");
+  const scanModal = document.getElementById("scannerModal");
+  const scanVideo = document.getElementById("scannerVideo");
+  const scanStatus = document.getElementById("scannerStatus");
+  const closeScanButton = document.getElementById("btn_cerrar_escaner");
+  const stopScanButton = document.getElementById("btn_detener_escaner");
+  const codeInput = document.getElementById("buscar_inventario_codigo");
+
+  let scanStream = null;
+  let scanAnimation = 0;
+  let scanRunning = false;
+  let detector = null;
+  let zxingReader = null;
+
+  function setScanStatus(text, error = false) {
+    scanStatus.textContent = text;
+    scanStatus.style.color = error ? "#d83f57" : "#617b96";
+  }
+
+  function stopCamera() {
+    scanRunning = false;
+    if (scanAnimation) {
+      cancelAnimationFrame(scanAnimation);
+      scanAnimation = 0;
+    }
+    if (zxingReader && typeof zxingReader.reset === "function") {
+      try { zxingReader.reset(); } catch (_) {}
+    }
+    if (scanStream) {
+      scanStream.getTracks().forEach(track => track.stop());
+      scanStream = null;
+    }
+    scanVideo.srcObject = null;
+  }
+
+  function closeScanner() {
+    stopCamera();
+    scanModal.style.display = "none";
+  }
+
+  function finishScan(value) {
+    const clean = String(value || "").trim();
+    if (!clean) return;
+    codeInput.value = clean;
+    closeScanner();
+    codeInput.focus();
+    if (typeof aplicarFiltrosInventario === "function") {
+      aplicarFiltrosInventario();
+    }
+  }
+
+  async function loadZXing() {
+    if (window.ZXingBrowser) return true;
+
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-barcode-scanner="zxing"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(!!window.ZXingBrowser), {once:true});
+        existing.addEventListener("error", reject, {once:true});
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js";
+      script.async = true;
+      script.dataset.barcodeScanner = "zxing";
+      script.onload = () => resolve(!!window.ZXingBrowser);
+      script.onerror = () => reject(new Error("No se pudo cargar el lector alternativo."));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function startNativeScanner() {
+    if (!("BarcodeDetector" in window)) return false;
+
+    try {
+      const formats = [
+        "code_128","code_39","code_93","codabar",
+        "ean_13","ean_8","itf","upc_a","upc_e"
+      ];
+      try {
+        detector = new BarcodeDetector({formats});
+      } catch (_) {
+        detector = new BarcodeDetector();
+      }
+
+      scanRunning = true;
+
+      const detectFrame = async () => {
+        if (!scanRunning) return;
+
+        if (scanVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          try {
+            const codes = await detector.detect(scanVideo);
+            if (codes && codes.length) {
+              finishScan(codes[0].rawValue);
+              return;
+            }
+          } catch (_) {}
+        }
+
+        scanAnimation = requestAnimationFrame(detectFrame);
+      };
+
+      scanAnimation = requestAnimationFrame(detectFrame);
+      return true;
+    } catch (_) {
+      detector = null;
+      return false;
+    }
+  }
+
+  async function startZXingScanner() {
+    try {
+      const loaded = await loadZXing();
+      if (!loaded) return false;
+
+      const hints = new Map();
+      if (window.ZXing && window.ZXing.DecodeHintType && window.ZXing.BarcodeFormat) {
+        hints.set(window.ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+          window.ZXing.BarcodeFormat.CODE_128,
+          window.ZXing.BarcodeFormat.CODE_39,
+          window.ZXing.BarcodeFormat.CODE_93,
+          window.ZXing.BarcodeFormat.CODABAR,
+          window.ZXing.BarcodeFormat.EAN_13,
+          window.ZXing.BarcodeFormat.EAN_8,
+          window.ZXing.BarcodeFormat.ITF,
+          window.ZXing.BarcodeFormat.UPC_A,
+          window.ZXing.BarcodeFormat.UPC_E
+        ]);
+      }
+
+      zxingReader = new window.ZXingBrowser.BrowserMultiFormatReader(hints, 250);
+      zxingReader.decodeFromVideoElement(
+        scanVideo,
+        (result, error) => {
+          if (!scanRunning) return;
+          if (result) {
+            finishScan(result.getText());
+          }
+        }
+      );
+      scanRunning = true;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function openScanner() {
+    scanModal.style.display = "flex";
+    setScanStatus("Solicitando acceso a la cámara…");
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setScanStatus("Este navegador no permite acceder a la cámara. Puedes escribir el código manualmente.", true);
+      return;
+    }
+
+    try {
+      scanStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: {ideal: "environment"},
+          width: {ideal: 1280},
+          height: {ideal: 720}
+        },
+        audio: false
+      });
+
+      scanVideo.srcObject = scanStream;
+      await scanVideo.play();
+      setScanStatus("Apunta la cámara al código de barras.");
+
+      const nativeStarted = await startNativeScanner();
+      if (nativeStarted) return;
+
+      setScanStatus("Preparando lector compatible…");
+      const fallbackStarted = await startZXingScanner();
+      if (!fallbackStarted) {
+        stopCamera();
+        setScanStatus("No se pudo iniciar el lector en este navegador. Puedes escribir el código manualmente.", true);
+      }
+    } catch (error) {
+      stopCamera();
+      const denied = error && (error.name === "NotAllowedError" || error.name === "PermissionDeniedError");
+      setScanStatus(
+        denied
+          ? "Permiso de cámara no concedido. Actívalo en el navegador para escanear."
+          : "No se pudo acceder a la cámara. Verifica que el sitio use HTTPS y vuelve a intentarlo.",
+        true
+      );
+    }
+  }
+
+  scanButton.addEventListener("click", openScanner);
+  closeScanButton.addEventListener("click", closeScanner);
+  stopScanButton.addEventListener("click", closeScanner);
+
+  scanModal.addEventListener("click", (event) => {
+    if (event.target === scanModal) closeScanner();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && scanModal.style.display === "flex") {
+      closeScanner();
+    }
+  });
+
+  window.addEventListener("pagehide", stopCamera);
+})();
+</script>
+
 <script>
 const buscarInventarioCodigo = document.getElementById("buscar_inventario_codigo");
 const buscarInventarioNombre = document.getElementById("buscar_inventario_nombre");
@@ -361,112 +515,4 @@ btnLimpiarFiltros.addEventListener("click", function() {
   aplicarFiltrosInventario();
   buscarInventarioCodigo.focus();
 });
-
-// ===============================
-// ESCÁNER DE CÓDIGO DE BARRAS
-// ===============================
-const btnAbrirScanner = document.getElementById("btn_abrir_scanner");
-const btnCerrarScanner = document.getElementById("btn_cerrar_scanner");
-const scannerModal = document.getElementById("scannerModal");
-const scannerVideo = document.getElementById("scannerVideo");
-const scannerStatus = document.getElementById("scannerStatus");
-
-let scannerReader = null;
-let scannerControls = null;
-let scannerAbierto = false;
-
-async function cerrarScanner() {
-  scannerAbierto = false;
-
-  if (scannerControls) {
-    try {
-      scannerControls.stop();
-    } catch (e) {}
-    scannerControls = null;
-  }
-
-  if (scannerVideo.srcObject) {
-    scannerVideo.srcObject.getTracks().forEach(track => track.stop());
-    scannerVideo.srcObject = null;
-  }
-
-  if (scannerReader) {
-    try {
-      scannerReader.reset();
-    } catch (e) {}
-    scannerReader = null;
-  }
-
-  scannerModal.style.display = "none";
-}
-
-async function abrirScanner() {
-  if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    alert("La cámara necesita una conexión segura (HTTPS). Abre ST Gestión desde su dirección HTTPS.");
-    return;
-  }
-
-  if (!window.ZXingBrowser || !ZXingBrowser.BrowserMultiFormatReader) {
-    alert("No se pudo cargar el escáner de códigos de barras. Revisa la conexión a Internet y vuelve a intentarlo.");
-    return;
-  }
-
-  scannerModal.style.display = "flex";
-  scannerStatus.textContent = "Solicitando acceso a la cámara...";
-  scannerAbierto = true;
-
-  try {
-    scannerReader = new ZXingBrowser.BrowserMultiFormatReader();
-
-    scannerStatus.textContent = "Apunta la cámara al código de barras...";
-
-    scannerControls = await scannerReader.decodeFromConstraints(
-      {
-        audio: false,
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      },
-      scannerVideo,
-      (result, error, controls) => {
-        if (!scannerAbierto || !result) return;
-
-        const codigo = result.getText().trim();
-
-        if (!codigo) return;
-
-        buscarInventarioCodigo.value = codigo;
-        aplicarFiltrosInventario();
-
-        scannerStatus.textContent = `✓ Código detectado: ${codigo}`;
-
-        setTimeout(() => {
-          cerrarScanner();
-          buscarInventarioCodigo.focus();
-        }, 250);
-      }
-    );
-  } catch (error) {
-    console.error("Error del escáner:", error);
-
-    scannerStatus.textContent =
-      "No se pudo acceder a la cámara. Revisa el permiso de cámara del navegador.";
-
-    setTimeout(() => cerrarScanner(), 1800);
-  }
-}
-
-btnAbrirScanner.addEventListener("click", abrirScanner);
-btnCerrarScanner.addEventListener("click", cerrarScanner);
-
-scannerModal.addEventListener("click", function(e) {
-  if (e.target === scannerModal) cerrarScanner();
-});
-
-document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape" && scannerAbierto) cerrarScanner();
-});
-
 </script></main></body></html>
