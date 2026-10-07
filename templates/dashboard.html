@@ -872,8 +872,10 @@ button,input,select{font-family:inherit}
 {% if session['rol'] in ['owner_global', 'admin'] %}
 
 <div id="metricas" style="display:none;">
-    
+
     <div class="metricas-container">
+
+        <!-- MÉTRICAS GENERALES -->
 
         <div class="metrica-card">
             <h4>🛒 Ventas del día</h4>
@@ -905,7 +907,21 @@ button,input,select{font-family:inherit}
             <small>Saldo pendiente</small>
         </div>
 
+
+        <!-- TOP 5 PRODUCTOS MÁS VENDIDOS -->
+
+        <div class="metrica-card top5-card">
+            <h4>🏆 Top 5 productos más vendidos</h4>
+
+            <!-- AQUÍ DEJAS EXACTAMENTE
+                 EL CONTENIDO QUE YA TIENES
+                 PARA MOSTRAR EL TOP 5 -->
+
+        </div>
+
     </div>
+
+</div>
 {% endif %}    
 
 </div>
@@ -1056,7 +1072,9 @@ button,input,select{font-family:inherit}
 {% endif %}
 
 
+
 <br>
+
 
 
     <!-- 📦 FORMULARIO PEDIDOS -->
