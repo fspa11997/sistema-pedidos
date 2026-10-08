@@ -736,9 +736,35 @@ button,input,select{font-family:inherit}
    ========================================================= */
 
 #flash-container {
+    position: fixed !important;
+    top: 76px !important;
+    left: 268px !important;
+    right: 20px !important;
     margin: 0 !important;
     padding: 0 !important;
-    height: 0 !important;
+    height: auto !important;
+    z-index: 500 !important;
+    pointer-events: none !important;
+}
+
+#flash-container .factura-exito,
+#flash-container .flash-message {
+    pointer-events: auto !important;
+    max-width: 520px !important;
+    margin: 0 0 12px auto !important;
+}
+
+#flash-container .factura-exito {
+    min-height: 0 !important;
+    padding: 18px 24px !important;
+    border-radius: 8px !important;
+}
+
+#flash-container .factura-exito-icono {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 26px !important;
+    margin-bottom: 10px !important;
 }
 
 #flash-container + br,
@@ -1581,6 +1607,17 @@ body::-webkit-scrollbar {
 
 /* Tablet y celular: vuelve al flujo normal para que todo sea visible. */
 @media (max-width:950px){
+  #flash-container{
+    top:74px !important;
+    left:12px !important;
+    right:12px !important;
+  }
+  #flash-container .factura-exito,
+  #flash-container .flash-message{
+    max-width:none !important;
+    width:100% !important;
+  }
+
   .formulario{
     position:relative !important;
     top:auto !important;
