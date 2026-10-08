@@ -19,7 +19,7 @@ DB = DATABASE_URL
 # Pool de conexiones: evita abrir una conexión TCP nueva a PostgreSQL
 # en cada consulta. Esto reduce bastante la latencia en Railway.
 _POOL_MIN = 1
-_POOL_MAX = 5
+_POOL_MAX = 10
 _pool = None
 
 class _PooledConnection:
@@ -278,9 +278,16 @@ def inicializar_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_pedidos_empresa_elim ON pedidos (empresa_id, eliminado, id DESC)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_facturas_empresa_id ON facturas (empresa_id, id DESC)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_facturas_empresa_fecha ON facturas (empresa_id, fecha)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_facturas_empresa_cliente ON facturas (empresa_id, cliente, id DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pedidos_empresa_cliente ON pedidos (empresa_id, cliente, id DESC)")
+
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_detalle_factura_factura ON detalle_factura (factura_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_codigo ON inventario (empresa_id, codigo_barras)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_producto ON inventario (empresa_id, producto)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_empresa_id ON usuarios (empresa_id, id DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventario_empresa_producto_codigo ON inventario (empresa_id, producto, codigo_barras)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pagos_credito_factura_empresa ON pagos_credito (factura_id, empresa_id, id DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_recibos_abono_factura_empresa ON recibos_abono (factura_id, empresa_id, id DESC)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_clientes_empresa_nombre ON clientes (empresa_id, nombre)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_creditos_empresa_saldo ON creditos (empresa_id, saldo)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_pagos_credito_factura ON pagos_credito (factura_id)")
@@ -446,9 +453,10 @@ def obtener_productos(empresa_id, conn=None):
         conn.close()
     return productos
 
-def obtener_precio_producto(nombre, empresa_id, tipo_precio):
-
-    conn = conectar()
+def obtener_precio_producto(nombre, empresa_id, tipo_precio, conn=None):
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -456,27 +464,28 @@ def obtener_precio_producto(nombre, empresa_id, tipo_precio):
                precio_individual,
                precio_mostrador
         FROM productos
-        WHERE nombre=%s AND empresa_id=%s
+        WHERE nombre = %s
+          AND empresa_id = %s
+          AND activo = 1
+        LIMIT 1
     """, (nombre, empresa_id))
 
-    p = cursor.fetchone()
-    conn.close()
+    resultado = cursor.fetchone()
 
-    if not p:
+    if _own_conn:
+        conn.close()
+
+    if not resultado:
         return 0
 
     if tipo_precio == "mayorista":
-        return p["precio_mayorista"]
+        return resultado["precio_mayorista"] or 0
 
-    elif tipo_precio == "individual":
-        return p["precio_individual"]
+    if tipo_precio == "individual":
+        return resultado["precio_individual"] or 0
 
-    elif tipo_precio == "mostrador":
-        return p["precio_mostrador"]
+    return resultado["precio_mostrador"] or 0
 
-    # fallback seguro
-    return p["precio_individual"]
-    
 def obtener_costo_producto(nombre_producto, empresa_id):
 
     conn = conectar()
@@ -691,7 +700,8 @@ def total_ventas_dia(empresa_id, conn=None):
     cursor.execute("""
         SELECT COALESCE(SUM(total), 0) AS total
         FROM facturas
-        WHERE DATE(fecha::timestamp) = CURRENT_DATE
+        WHERE fecha >= CURRENT_DATE::text
+          AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
           AND empresa_id = %s
     """, (empresa_id,))
 
@@ -710,7 +720,8 @@ def total_ventas_mes(empresa_id, conn=None):
     cursor.execute("""
         SELECT COALESCE(SUM(total), 0) AS total
         FROM facturas
-        WHERE TO_CHAR(fecha::timestamp, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')
+        WHERE fecha >= DATE_TRUNC('month', CURRENT_DATE)::date::text
+          AND fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date::text
           AND empresa_id = %s
     """, (empresa_id,))
 
@@ -730,7 +741,8 @@ def facturas_emitidas_hoy(empresa_id, conn=None):
     cursor.execute("""
         SELECT COUNT(*) AS total
         FROM facturas
-        WHERE DATE(fecha::timestamp) = CURRENT_DATE
+        WHERE fecha >= CURRENT_DATE::text
+          AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
           AND empresa_id = %s
     """, (empresa_id,))
 
@@ -760,6 +772,42 @@ def saldo_cartera(empresa_id, conn=None):
     return total
 
 
+def obtener_metricas_dashboard(empresa_id, conn=None):
+    """Obtiene las métricas principales del dashboard en una sola ida a PostgreSQL."""
+    _own_conn = conn is None
+    if _own_conn:
+        conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            COALESCE(SUM(CASE
+                WHEN fecha >= CURRENT_DATE::text
+                 AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
+                THEN total ELSE 0 END), 0) AS total_dia,
+            COALESCE(SUM(CASE
+                WHEN fecha >= DATE_TRUNC('month', CURRENT_DATE)::date::text
+                 AND fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date::text
+                THEN total ELSE 0 END), 0) AS total_mes,
+            COUNT(*) FILTER (
+                WHERE fecha >= CURRENT_DATE::text
+                  AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
+            ) AS facturas_hoy,
+            COALESCE((
+                SELECT SUM(c.saldo)
+                FROM creditos c
+                WHERE c.empresa_id = %s
+                  AND COALESCE(c.saldo, 0) > 0
+            ), 0) AS cartera_pendiente
+        FROM facturas
+        WHERE empresa_id = %s
+    """, (empresa_id, empresa_id))
+
+    data = cursor.fetchone()
+    if _own_conn:
+        conn.close()
+    return data
+
 def productos_top_5_mes(empresa_id, conn=None):
     """Devuelve los 5 productos con más unidades vendidas en el mes actual."""
     _own_conn = conn is None
@@ -774,7 +822,8 @@ def productos_top_5_mes(empresa_id, conn=None):
         FROM detalle_factura d
         INNER JOIN facturas f ON f.id = d.factura_id
         WHERE f.empresa_id = %s
-          AND TO_CHAR(f.fecha::timestamp, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')
+          AND f.fecha >= DATE_TRUNC('month', CURRENT_DATE)::date::text
+          AND f.fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date::text
         GROUP BY d.producto
         ORDER BY total DESC, d.producto ASC
         LIMIT 5
@@ -1150,7 +1199,7 @@ def crear_factura_empresa(empresa_id):
 
     for p in pedidos:
 
-        precio_unitario = obtener_precio_producto(p["producto"], empresa_id)
+        precio_unitario = obtener_precio_producto(p["producto"], empresa_id, "mostrador", conn=conn)
 
         subtotal = precio_unitario * p["cantidad"]
 
@@ -1203,7 +1252,8 @@ def crear_pedido_desde_factura(
     precio_unitario = obtener_precio_producto(
         producto,
         empresa_id,
-        tipo_precio
+        tipo_precio,
+        conn=conn
     )
 
     # Calcular total por unidades.

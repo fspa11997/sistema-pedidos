@@ -24,6 +24,7 @@ from db import (
     total_ventas_mes,
     facturas_emitidas_hoy,
     saldo_cartera,
+    obtener_metricas_dashboard,
     producto_top_mes,
     productos_top_5_mes,
     crear_factura, 
@@ -257,12 +258,14 @@ def dashboard():
     fecha = request.args.get("fecha")
     domiciliario_filtro = request.args.get("domiciliario", "")
     
-    total_dia = total_ventas_dia(empresa_id, conn=conn)
-    total_mes = total_ventas_mes(empresa_id, conn=conn)
-    facturas_hoy = facturas_emitidas_hoy(empresa_id, conn=conn)
-    cartera_pendiente = saldo_cartera(empresa_id, conn=conn)
+    metricas = obtener_metricas_dashboard(empresa_id, conn=conn)
+    total_dia = metricas["total_dia"] or 0
+    total_mes = metricas["total_mes"] or 0
+    facturas_hoy = metricas["facturas_hoy"] or 0
+    cartera_pendiente = metricas["cartera_pendiente"] or 0
+
     top_5_productos = productos_top_5_mes(empresa_id, conn=conn)
-    top_producto = producto_top_mes(empresa_id, top_5_productos, conn=conn)
+    top_producto = top_5_productos[0] if top_5_productos else None
 
     filtro = request.args.get("filtro", "todos")
 
@@ -275,8 +278,8 @@ def dashboard():
     else:
         pedidos = obtener_pedidos(empresa_id, conn=conn)
 
-    productos = obtener_productos(empresa_id)
-    clientes = obtener_clientes(empresa_id)
+    productos = obtener_productos(empresa_id, conn=conn)
+    clientes = obtener_clientes(empresa_id, conn=conn)
     inventario = obtener_inventario(empresa_id, conn=conn)
 
     conn.close()
@@ -1492,12 +1495,6 @@ def pedidos():
     query += " ORDER BY id DESC"
 
     # =========================
-    # DEBUG
-    # =========================
-    print("QUERY:", query)
-    print("PARAMS:", params)
-
-    # =========================
     # EJECUTAR
     # =========================
     cursor.execute(query, params)
@@ -1514,100 +1511,87 @@ def pedidos():
 
 @app.route("/cartera")
 def cartera():
-
     if "usuario" not in session:
         return redirect("/")
 
     empresa_id = session["empresa_id"]
 
-    # =========================
-    # FILTROS
-    # =========================
     factura_filtro = request.args.get("factura", "").strip()
     cliente_filtro = request.args.get("cliente", "").strip()
     estado = request.args.get("estado", "").strip().lower()
     fecha = request.args.get("fecha", "").strip()
 
-    facturas = obtener_facturas(empresa_id)
+    conn = conectar()
+    cursor = conn.cursor()
 
-    facturas = [dict(f) for f in facturas]
+    # Los totales generales se calculan en PostgreSQL, evitando descargar
+    # todas las facturas para sumarlas en Python.
+    cursor.execute("""
+        SELECT
+            COALESCE(SUM(total), 0) AS total_facturado,
+            COALESCE(SUM(abono), 0) AS total_abonado,
+            COALESCE(SUM(GREATEST(total - abono, 0)), 0) AS total_deben
+        FROM facturas
+        WHERE empresa_id = %s
+    """, (empresa_id,))
+    resumen = cursor.fetchone()
 
-    # =========================
-    # TOTALES GLOBALES
-    # =========================
-    total_facturado = 0
-    total_abonado = 0
-    total_deben = 0
+    query = """
+        SELECT *,
+               GREATEST(total - COALESCE(abono, 0), 0) AS saldo_calculado,
+               CASE
+                   WHEN GREATEST(total - COALESCE(abono, 0), 0) <= 0 THEN 'pagado'
+                   WHEN COALESCE(abono, 0) > 0 THEN 'parcial'
+                   ELSE 'pendiente'
+               END AS estado_calculado
+        FROM facturas
+        WHERE empresa_id = %s
+    """
+    params = [empresa_id]
 
-    # =========================
-    # CALCULAR SALDO REAL
-    # =========================
-    for f in facturas:
-
-        total = f["total"] or 0
-        abono = f["abono"] or 0
-
-        saldo = total - abono
-        f["saldo"] = saldo
-
-        total_facturado += total
-        total_abonado += abono
-
-        if saldo > 0:
-            total_deben += saldo
-
-        if saldo <= 0:
-            f["estado_calculado"] = "pagado"
-        elif abono > 0:
-            f["estado_calculado"] = "parcial"
-        else:
-            f["estado_calculado"] = "pendiente"
-
-    # =========================
-    # FILTRO NÚMERO DE FACTURA
-    # =========================
     if factura_filtro:
-        facturas = [
-            f for f in facturas
-            if str(f["id"]) == factura_filtro
-        ]
+        query += " AND id = %s"
+        try:
+            params.append(int(factura_filtro))
+        except ValueError:
+            params.append(-1)
 
-    # =========================
-    # FILTRO CLIENTE
-    # =========================
     if cliente_filtro:
-        facturas = [
-            f for f in facturas
-            if cliente_filtro.lower() in str(f["cliente"] or "").lower()
-        ]
+        query += " AND LOWER(COALESCE(cliente, '')) LIKE %s"
+        params.append(f"%{cliente_filtro.lower()}%")
 
-    # =========================
-    # FILTRO FECHA
-    # =========================
     if fecha:
-        facturas = [
-            f for f in facturas
-            if f["fecha"] and str(f["fecha"]).startswith(fecha)
-        ]
+        # fecha se guarda en formato ISO; esta comparación aprovecha
+        # el índice (empresa_id, fecha) y evita fecha::date.
+        query += " AND fecha >= %s AND fecha < (%s::date + INTERVAL '1 day')::text"
+        params.extend([fecha, fecha])
 
-    # =========================
-    # FILTRO ESTADO
-    # =========================
-    if estado:
-        facturas = [
-            f for f in facturas
-            if f["estado_calculado"] == estado
-        ]
+    if estado in ("pagado", "parcial", "pendiente"):
+        if estado == "pagado":
+            query += " AND GREATEST(total - COALESCE(abono, 0), 0) <= 0"
+        elif estado == "parcial":
+            query += " AND COALESCE(abono, 0) > 0 AND total > COALESCE(abono, 0)"
+        else:
+            query += " AND COALESCE(abono, 0) <= 0 AND total > 0"
 
-    # =========================
-    # MOSTRAR CARTERA
-    # =========================
+    query += " ORDER BY id DESC"
+
+    cursor.execute(query, params)
+    facturas = cursor.fetchall()
+    conn.close()
+
+    # Mantener los nombres de las claves que ya usa la plantilla.
+    facturas = [dict(f) for f in facturas]
+    for f in facturas:
+        f["saldo"] = f.get("saldo_calculado", 0) or 0
+        f["estado_calculado"] = f.get("estado_calculado", "pendiente")
+
     return render_template(
         "cartera.html",
         facturas=facturas,
-        total_facturado=total_facturado,
-        total_abonado=total_abonado,
-        total_deben=total_deben
+        total_facturado=resumen["total_facturado"] or 0,
+        total_abonado=resumen["total_abonado"] or 0,
+        total_deben=resumen["total_deben"] or 0
     )
 
 
@@ -1791,7 +1775,8 @@ def actualizar_cliente(id):
             ciudad=%s,
             telefono=%s
         WHERE id=%s
-    """, (nombre, direccion, ciudad, telefono, id))
+          AND empresa_id=%s
+    """, (nombre, direccion, ciudad, telefono, id, session["empresa_id"]))
 
     conn.commit()
     conn.close()
