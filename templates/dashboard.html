@@ -1258,8 +1258,6 @@ button,input,select{font-family:inherit}
                     <button type="button" onclick="agregarProducto()">➕ Producto</button>
 
                     <hr>
-
-                    🧾 BOTÓN FINAL
                     <button type="submit" style="background:#117be8; color:white; padding:10px 16px; border:none; border-radius:6px;">
                         🧾 Crear Factura
                     </button> 
@@ -1291,110 +1289,7 @@ button,input,select{font-family:inherit}
     });
     </script>
 
-    <!-- 📊 TABLA -->
-    <div id="pedidosModal" class="modal-pedidos">
-
-        <!-- 🔥 FILTROS -->
-        <h3 style="text-align:left;">📋 Lista de Pedidos 📦</h3>
-        <!-- 🔥 FILTROS NUEVOS -->
-        <div class="filters-bar">
-
-            <form method="GET" action="/dashboard" class="filters-form">
-
-                <input type="text" name="buscar" placeholder="Buscar cliente o producto">
-
-                <input type="date" name="fecha">
-
-                <input type="text" name="domiciliario" placeholder="Domiciliario">
-
-                <button type="submit">🔍 Filtrar</button>
-
-            </form>
-
-            <div class="filters-buttons">
-
-                <a href="/dashboard?filtro=todos"><button>📋 Todos</button></a>
-                <a href="/dashboard?filtro=pendientes"><button>⏳ Pendientes</button></a>
-                <a href="/dashboard?filtro=entregados"><button>✅ Entregados</button></a>
-                <a href="/dashboard?filtro=eliminados"><button>🗑 Eliminados</button></a>
-
-            </div>
-
-        </div>
-        <hr>
-
-<br>
-
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Producto</th>
-                <th>Dirección</th>
-                <th>Ciudad</th>
-                <th>Teléfono</th>
-                <th>Domiciliario</th>
-                <th>Unidades</th>
-                <th>Precio</th>
-                <th>Fecha</th>
-                <th>Fecha Entrega</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-
-            {% for p in pedidos %}
-            <tr>
-                <td>{{ p.id }}</td>
-                <td>{{ p.cliente }}</td>
-                <td>{{ p.producto }}</td>
-                <td>{{ p.direccion }}</td>
-                <td>{{ p.ciudad }}</td>
-                <td>{{ p.telefono }}</td>
-                <td>{{ p.domiciliario }}</td>
-                <td>{{ p.cantidad }}</td>
-                <td>{{ "{:,.0f}".format(p.precio) }}</td>
-                <td>
-                    {% if p.fecha %}
-                        {{ p.fecha|fecha_hora if p.fecha else 'Sin fecha' }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if p.fecha_entrega %}
-                        {{ p.fecha_entrega|fecha_hora }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if p.estado == 'pendiente' %}
-                        <span style="color:orange;">⏳ Pendiente</span>
-                    {% elif p.estado == 'entregado' %}
-                        <span style="color:green;">✅ Entregado</span>
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if p.eliminado == 0 %}
-                        <form action="/entregar/{{ p.id }}" style="display:inline;">
-                            <button type="submit">✅</button>
-                        </form>
-
-                        <form action="/eliminar/{{ p.id }}" style="display:inline;">
-                            <button type="submit">🗑</button>
-                        </form>
-                    {% else %}
-                        <form action="/recuperar/{{ p.id }}" style="display:inline;">
-                            <button type="submit">♻</button>
-                        </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-
-    </div>
-
-</div>
+    
 
 
 <script>
