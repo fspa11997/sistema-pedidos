@@ -11,76 +11,215 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <title>Pedidos • ST Gestión</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+        .container { max-width: 1400px; margin: auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .header h2 { margin: 0; color: #1f2937; font-size: 22px; }
+        .header p { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+        .btn-back {
+            text-decoration: none;
+            background: #60a5fa;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: .2s;
+            white-space: nowrap;
+        }
+        .btn-back:hover { background: #3b82f6; }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.08);
+            border: 1px solid #e5e7eb;
+        }
+        .card-title { margin: 0 0 16px; color: #1f2937; font-size: 16px; }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+        .filters input, .filters select, .form-grid input, .form-grid select {
+            width: 100%;
+            min-height: 42px;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            color: #374151;
+            outline: none;
+        }
+        .filters input:focus, .filters select:focus, .form-grid input:focus, .form-grid select:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96,165,250,.15);
+        }
+        .btn-filter, .btn-primary {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .btn-filter:hover, .btn-primary:hover { background: #1d4ed8; }
+        .filter-tabs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+        .filter-tabs a { text-decoration:none; }
+        .filter-tab {
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor:pointer;
+        }
+        .filter-tab:hover, .filter-tab.active { background:#dbeafe; }
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,.08);
+            border: 1px solid #e5e7eb;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        thead { background: #2563eb; color: white; }
+        th, td { padding: 13px 14px; text-align: left; white-space: nowrap; }
+        th { font-size: 12px; letter-spacing: .2px; }
+        td { font-size: 13px; }
+        tbody tr { border-bottom: 1px solid #e5e7eb; }
+        tbody tr:hover { background: #f9fafb; }
+        .total { font-weight: bold; color: #1f2937; }
+        .btn-view, .btn-edit, .btn-history, .btn-pay, .btn-green, .btn-red, .btn-blue {
+            color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor:pointer; font-weight:700;
+            text-decoration:none; display:inline-block; font-size:12px;
+        }
+        .btn-view { background:#10b981; }
+        .btn-view:hover { background:#059669; }
+        .btn-edit, .btn-blue, .btn-history { background:#3b82f6; }
+        .btn-edit:hover, .btn-blue:hover, .btn-history:hover { background:#2563eb; }
+        .btn-pay, .btn-green { background:#10b981; }
+        .btn-pay:hover, .btn-green:hover { background:#059669; }
+        .btn-red { background:#ef4444; }
+        .btn-red:hover { background:#dc2626; }
+        .acciones { display:flex; gap:7px; align-items:center; }
+        .acciones form { margin:0; }
+        .badge { display:inline-flex; align-items:center; gap:4px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; }
+        .badge-pendiente { background:#fff7ed; color:#d97706; }
+        .badge-parcial { background:#fffbeb; color:#b45309; }
+        .badge-pagado, .badge-entregado { background:#ecfdf5; color:#059669; }
+        .badge-eliminado { background:#fef2f2; color:#dc2626; }
+        .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:15px; }
+        .form-grid button { align-self:end; min-height:42px; }
+        .section-note { margin:0 0 16px; color:#6b7280; font-size:12px; }
+        .empty { text-align:center; padding:35px !important; color:#6b7280; }
+        .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-bottom:25px; }
+        .summary-card { background:white; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+        .summary-card small { display:block; color:#6b7280; margin-bottom:6px; }
+        .summary-card strong { font-size:20px; color:#1f2937; }
+        #modalAbono { display:none; position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:9999; align-items:center; justify-content:center; padding:20px; }
+        #modalAbono .modal-card { width:min(480px,100%); background:white; border-radius:14px; padding:22px; box-shadow:0 15px 45px rgba(0,0,0,.2); }
+        #modalAbono h3 { margin:0 0 16px; color:#1f2937; }
+        #modalAbono input { width:100%; min-height:42px; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; margin-bottom:12px; }
+        .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:5px; }
+        .btn-cancel { border:1px solid #d1d5db; background:#fff; color:#374151; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer; }
+        @media (max-width:700px) {
+            body { padding:18px 12px; }
+            .header { align-items:flex-start; }
+            .header h2 { font-size:19px; }
+            .summary-grid { grid-template-columns:1fr; }
+            .card { padding:15px; }
+            .filters { grid-template-columns:1fr; }
+            .filter-tabs { display:grid; grid-template-columns:1fr 1fr; }
+            .filter-tab { width:100%; }
+            table { min-width:760px; }
+        }
+</style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='professional.css') }}">
 </head>
-<body class="st-modern-page">
-<div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
-<aside class="sidebar">
-    <div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
-    <nav class="nav">
-        <div class="nav-title">MENÚ</div>
-        <a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><a class="btn" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn active" href="/pedidos">🚚 &nbsp; Pedidos</a><a class="btn" href="/productos">🏷️ &nbsp; Productos</a><a class="btn" href="/inventario">📦 &nbsp; Inventario</a>
-    </nav>
-</aside>
-<main class="main">
-    <div class="page-head st-page-head-with-back">
-        <div><h1>🚚 Pedidos</h1><p>Consulta, filtra y administra los pedidos registrados.</p></div>
-        <a href="/dashboard" class="btn-back-uniform">← Volver</a>
+<body>
+<div class="container">
+    <div class="header">
+        <div>
+            <h2>📦 Pedidos</h2>
+            <p>Consulta y gestiona los pedidos registrados en el sistema.</p>
+        </div>
+        <a href="/dashboard" class="btn-back">⬅ Volver</a>
     </div>
 
-    <div class="card st-filter-card">
-        <div class="card-head"><div><h3>Filtros de búsqueda</h3><span class="st-card-subtitle">Encuentra rápidamente un pedido</span></div></div>
-        <div class="content">
-            <form method="GET" action="/pedidos" class="form-grid st-pedido-filter-grid">
-                <input type="hidden" name="filtro" value="{{ filtro }}">
-                <div class="field"><label>Cliente o producto</label><input type="text" name="buscar" placeholder="Buscar cliente o producto" value="{{ request.args.get('buscar', '') }}"></div>
-                <div class="field"><label>Fecha</label><input type="date" name="fecha" value="{{ request.args.get('fecha', '') }}"></div>
-                <div class="field"><label>Domiciliario</label><input type="text" name="domiciliario" placeholder="Nombre del domiciliario" value="{{ request.args.get('domiciliario', '') }}"></div>
-                <div class="field st-filter-submit"><label>&nbsp;</label><button class="btn-primary" type="submit">🔎 Filtrar</button></div>
-            </form>
-            <div class="st-filter-tabs">
-                <a href="/pedidos?filtro=todos" class="{{ 'active' if filtro == 'todos' else '' }}">📋 Todos</a>
-                <a href="/pedidos?filtro=pendientes" class="{{ 'active' if filtro == 'pendientes' else '' }}">⏳ Pendientes</a>
-                <a href="/pedidos?filtro=entregados" class="{{ 'active' if filtro == 'entregados' else '' }}">✅ Entregados</a>
-                <a href="/pedidos?filtro=eliminados" class="{{ 'active' if filtro == 'eliminados' else '' }}">🗑 Eliminados</a>
-            </div>
+    <div class="card">
+        <h3 class="card-title">🔎 Buscar y filtrar pedidos</h3>
+        <form method="GET" action="/pedidos" class="filters">
+            <input type="hidden" name="filtro" value="{{ filtro }}">
+            <input type="text" name="buscar" placeholder="🔎 Cliente o producto" value="{{ request.args.get('buscar', '') }}">
+            <input type="date" name="fecha" value="{{ request.args.get('fecha', '') }}">
+            <input type="text" name="domiciliario" placeholder="🚚 Domiciliario" value="{{ request.args.get('domiciliario', '') }}">
+            <button type="submit" class="btn-filter">🔎 Filtrar</button>
+        </form>
+        <div class="filter-tabs">
+            <a href="/pedidos?filtro=todos"><button type="button" class="filter-tab {% if filtro == 'todos' %}active{% endif %}">📋 Todos</button></a>
+            <a href="/pedidos?filtro=pendientes"><button type="button" class="filter-tab {% if filtro == 'pendientes' %}active{% endif %}">⏳ Pendientes</button></a>
+            <a href="/pedidos?filtro=entregados"><button type="button" class="filter-tab {% if filtro == 'entregados' %}active{% endif %}">✅ Entregados</button></a>
+            <a href="/pedidos?filtro=eliminados"><button type="button" class="filter-tab {% if filtro == 'eliminados' %}active{% endif %}">🗑 Eliminados</button></a>
         </div>
     </div>
 
-    <div class="card st-table-card">
-        <div class="card-head"><div><h3>Listado de pedidos</h3><span class="st-card-subtitle">Seguimiento y acciones de cada pedido</span></div><span class="st-count">{{ pedidos|length }} pedidos</span></div>
-        <div class="table-wrap">
-            <table class="data-table st-pedidos-table">
-                <thead><tr><th>ID</th><th>Cliente</th><th>Producto</th><th>Dirección</th><th>Ciudad</th><th>Teléfono</th><th>Domiciliario</th><th>Cant.</th><th>Precio</th><th>Fecha</th><th>Entrega</th><th>Estado</th><th>Acción</th></tr></thead>
-                <tbody>
-                {% if pedidos %}
-                    {% for p in pedidos %}
-                    <tr>
-                        <td><span class="st-id">#{{ p["id"] }}</span></td>
-                        <td><b>{{ p["cliente"] }}</b></td>
-                        <td>{{ p["producto"] }}</td><td>{{ p["direccion"] }}</td><td>{{ p["ciudad"] }}</td><td>{{ p["telefono"] }}</td><td>{{ p["domiciliario"] or "-" }}</td><td>{{ p["cantidad"] }}</td>
-                        <td><b>${{ "{:,.0f}".format(p["precio"] or 0) }}</b></td><td>{{ p["fecha"]|fecha_hora }}</td><td>{{ p["fecha_entrega"]|fecha_hora }}</td>
-                        <td>{% if p["estado"] == 'pendiente' %}<span class="badge pendiente">⏳ Pendiente</span>{% else %}<span class="badge entregado">✅ Entregado</span>{% endif %}</td>
-                        <td class="acciones st-actions">
-                            {% if p["eliminado"] == 0 %}
+    <div class="table-container">
+        <table>
+            <thead><tr>
+                <th>ID</th><th>Cliente</th><th>Producto</th><th>Dirección</th><th>Ciudad</th><th>Teléfono</th><th>Domiciliario</th><th>Cant.</th><th>Precio</th><th>Fecha</th><th>Entrega</th><th>Estado</th><th>Acción</th>
+            </tr></thead>
+            <tbody>
+            {% if pedidos %}
+                {% for p in pedidos %}
+                <tr>
+                    <td>#{{ p["id"] }}</td>
+                    <td><b>{{ p["cliente"] }}</b></td>
+                    <td>{{ p["producto"] }}</td>
+                    <td>{{ p["direccion"] }}</td>
+                    <td>{{ p["ciudad"] }}</td>
+                    <td>{{ p["telefono"] }}</td>
+                    <td>{{ p["domiciliario"] or "-" }}</td>
+                    <td>{{ p["cantidad"] }}</td>
+                    <td class="total">${{ "{:,.0f}".format(p["precio"] or 0) }}</td>
+                    <td>{{ p["fecha"]|fecha_hora }}</td>
+                    <td>{{ p["fecha_entrega"]|fecha_hora }}</td>
+                    <td>{% if p["estado"] == 'pendiente' %}<span class="badge badge-pendiente">⏳ Pendiente</span>{% else %}<span class="badge badge-entregado">✅ Entregado</span>{% endif %}</td>
+                    <td class="acciones">
+                        {% if p["eliminado"] == 0 %}
                             <form action="/entregar/{{ p['id'] }}"><button class="btn-green" title="Marcar como entregado">✔</button></form>
                             <form action="/eliminar/{{ p['id'] }}"><button class="btn-red" title="Eliminar pedido">🗑</button></form>
-                            {% else %}
+                        {% else %}
                             <form action="/recuperar/{{ p['id'] }}"><button class="btn-blue" title="Recuperar pedido">♻</button></form>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="13" class="st-empty">No hay pedidos para mostrar</td></tr>
-                {% endif %}
-                </tbody>
-            </table>
-        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr><td colspan="13" class="empty">No hay pedidos para mostrar.</td></tr>
+            {% endif %}
+            </tbody>
+        </table>
     </div>
-</main>
+</div>
 </body>
 </html>

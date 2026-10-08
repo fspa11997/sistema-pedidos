@@ -1,52 +1,22 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#102f50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ST Gestión">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <title>Crear usuario • ST Gestión</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='professional.css') }}">
-    <style>
-      body{margin:0;background:#f3f8fd;min-height:100vh;color:#173b63}
-      .user-page{max-width:560px;margin:44px auto;padding:0 16px}
-      .user-card{background:#fff;border:1px solid #dce8f3;border-radius:12px;box-shadow:0 8px 24px rgba(30,70,105,.07);padding:28px}
-      .user-card h1{margin:0 0 6px;font-size:22px;color:#173b63}
-      .user-card p{margin:0 0 22px;color:#7088a0;font-size:13px}
-      .user-card label{display:block;margin:0 0 6px;font-size:12px;font-weight:800;color:#234d79}
-      .user-card input,.user-card select{width:100%;height:42px;padding:0 12px;margin:0 0 15px;border:1px solid #d8e6f2;border-radius:6px;box-sizing:border-box}
-      .user-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
-      .user-actions button{height:40px;padding:0 18px;border:0;border-radius:6px;background:#08ad60;color:#fff;font-weight:800;cursor:pointer}
-      .user-actions a{display:inline-flex;align-items:center}
-    </style>
-</head>
-<body>
-  <main class="user-page">
-    <div class="back-action"><a href="/dashboard" class="btn-back-uniform">⬅ Volver</a></div>
-    <section class="user-card">
-      <h1>👤 Crear usuario</h1>
-      <p>Registra un nuevo usuario para acceder al sistema.</p>
-      <form method="POST">
-        <label for="usuario">Usuario</label>
-        <input id="usuario" type="text" name="usuario" placeholder="Nombre de usuario" required>
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<h2>Crear Usuario</h2>
 
-        <label for="password">Contraseña</label>
-        <input id="password" type="password" name="password" placeholder="Contraseña segura" required>
+<form method="POST">
+    <input type="text" name="usuario" placeholder="Usuario" required><br><br>
+    <input type="password" name="password" placeholder="Contraseña" required><br><br>
 
-        <label for="rol">Rol</label>
-        <select id="rol" name="rol">
-          <option value="admin">Admin</option>
-          <option value="empleado">Empleado</option>
-        </select>
+    <select name="rol">
+        <option value="admin">Admin</option>
+        <option value="empleado">Empleado</option>
+    </select><br><br>
 
-        <div class="user-actions">
-          <button type="submit">Crear usuario</button>
-        </div>
-      </form>
-    </section>
-  </main>
-</body>
-</html>
+    <button type="submit">Crear</button>
+</form>

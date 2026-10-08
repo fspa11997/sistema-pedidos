@@ -61,7 +61,6 @@
 @keyframes st-page-in { from { opacity: .94; } to { opacity: 1; } }
 html, body { background-color: #f3f8fd; }
 </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='professional.css') }}">
 </head><body>
 <div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
 <aside class="sidebar"><div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div><nav class="nav"><div class="nav-title">MENÚ</div><a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><a class="btn" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a><a class="btn active" href="/productos">🏷️ &nbsp; Productos</a><a class="btn " href="/inventario">📦 &nbsp; Inventario</a></nav></aside>
