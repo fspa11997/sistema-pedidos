@@ -1,0 +1,261 @@
+
+/* =========================================================
+   ST GESTIÓN — CAPA VISUAL PROFESIONAL
+   Unifica todos los templates con la referencia visual de
+   Inventario / Productos. Solo presentación; no altera lógica.
+========================================================= */
+:root{
+  --st-pro-blue:#5aa9e6;
+  --st-pro-blue-dark:#2f80ed;
+  --st-pro-blue-soft:#eaf5ff;
+  --st-pro-navy:#102f50;
+  --st-pro-bg:#f3f8fd;
+  --st-pro-line:#dce8f3;
+  --st-pro-text:#173b63;
+  --st-pro-muted:#7088a0;
+  --st-pro-shadow:0 8px 24px rgba(30,70,105,.07);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,"Segoe UI",Arial,sans-serif!important;
+  color:var(--st-pro-text);
+}
+
+/* ---------- Headers / títulos ---------- */
+.header-title,.header{
+  position:relative!important;
+  min-height:62px;
+  box-sizing:border-box;
+}
+.header-title{
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+  padding:0 24px!important;
+  background:#fff!important;
+  border-bottom:1px solid #e5edf5!important;
+  box-shadow:0 2px 12px rgba(20,55,90,.06)!important;
+}
+.header-title h2,.header h2{
+  color:var(--st-pro-text)!important;
+  font-weight:800!important;
+  letter-spacing:-.2px;
+}
+.header-title p{color:#617b96!important}
+
+/* ---------- Botón VOLVER: siempre arriba a la derecha ---------- */
+.btn-back-uniform,
+a.btn-back-uniform,
+button.btn-back-uniform,
+.btn-back,
+.volver-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:126px!important;
+  height:40px!important;
+  padding:0 16px!important;
+  border:1px solid #8cc6ef!important;
+  border-radius:7px!important;
+  background:#5aa9e6!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  text-decoration:none!important;
+  cursor:pointer!important;
+  box-shadow:0 3px 10px rgba(47,128,237,.12)!important;
+  transition:background .18s ease,box-shadow .18s ease,transform .18s ease!important;
+}
+.btn-back-uniform:hover,
+a.btn-back-uniform:hover,
+button.btn-back-uniform:hover,
+.btn-back:hover,
+.volver-btn:hover{
+  background:#2f80ed!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px rgba(47,128,237,.20)!important;
+  transform:translateY(-1px)!important;
+}
+/* Header con botón: esquina superior derecha */
+.header-title > .btn-back-uniform,
+.header-title > a:has(.btn-back-uniform){
+  position:absolute!important;
+  right:24px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+}
+.header-title > .btn-back-uniform:hover{
+  transform:translateY(calc(-50% - 1px))!important;
+}
+/* Wrappers usados por Cartera / Pedidos */
+.back-action{
+  position:relative!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  min-height:40px!important;
+  margin:0 0 14px!important;
+}
+.back-action .btn-back-uniform{
+  position:static!important;
+}
+/* Cabeceras con layout propio */
+.header:has(.btn-back-uniform){
+  justify-content:space-between!important;
+}
+
+/* ---------- Contenedores / tarjetas ---------- */
+.card,.filters-card,.table-card,.table-container,.filters,.content > .card,
+.total-box,.metrica-card{
+  border:1px solid var(--st-pro-line)!important;
+  box-shadow:var(--st-pro-shadow)!important;
+}
+.card,.filters-card,.table-card,.table-container,.filters{
+  border-radius:10px!important;
+  background:#fff!important;
+}
+.card-head{
+  background:#fff!important;
+  padding:17px 20px!important;
+  border-bottom:1px solid #e5edf5!important;
+}
+.card-head h2,.card-head h3,.card h2,.card h3{
+  color:var(--st-pro-text)!important;
+}
+
+/* ---------- Formularios ---------- */
+input,select,textarea{
+  font-family:inherit!important;
+}
+input,select,textarea,
+.filters-form input,.filters-form select,
+.filters-form-modern input,.filters-form-modern select,
+.filter-form input,.filter-form select{
+  border:1px solid #d8e6f2!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#365572!important;
+  outline:none!important;
+  transition:border-color .15s ease,box-shadow .15s ease!important;
+}
+input:focus,select:focus,textarea:focus,
+.filters-form input:focus,.filters-form select:focus,
+.filters-form-modern input:focus,.filters-form-modern select:focus{
+  border-color:#79b7f4!important;
+  box-shadow:0 0 0 3px rgba(90,169,230,.13)!important;
+}
+label,.field label{
+  color:#234d79!important;
+  font-weight:700!important;
+}
+
+/* ---------- Botones de acción ---------- */
+.btn-blue,.btn-primary,.btn-view,.btn-filter,.btn-save,
+.btn-green,.btn-red,.filter-btn,.toggle-btn{
+  border-radius:6px!important;
+  font-weight:800!important;
+  transition:filter .15s ease,transform .15s ease,box-shadow .15s ease!important;
+}
+.btn-blue,.btn-primary,.btn-view,.btn-filter,.btn-save{
+  background:var(--st-pro-blue-dark)!important;
+  color:#fff!important;
+}
+.btn-green{background:#08ad60!important;color:#fff!important}
+.btn-red{background:#ef4760!important;color:#fff!important}
+.btn-blue:hover,.btn-primary:hover,.btn-view:hover,.btn-filter:hover,.btn-save:hover,
+.btn-green:hover,.btn-red:hover{
+  filter:brightness(.95)!important;
+  transform:translateY(-1px)!important;
+}
+
+/* ---------- Tablas ---------- */
+table,.data-table{
+  border-collapse:collapse!important;
+  background:#fff!important;
+}
+table th,.data-table th{
+  background:#f5f9fd!important;
+  color:#234d79!important;
+  font-weight:800!important;
+  text-transform:uppercase;
+  letter-spacing:.35px;
+  border-bottom:1px solid var(--st-pro-line)!important;
+}
+table td,.data-table td{
+  color:#536f8b!important;
+  border-bottom:1px solid #edf2f7!important;
+}
+table tbody tr:hover,.data-table tbody tr:hover{
+  background:#f7fbff!important;
+}
+
+/* ---------- Estados / métricas ---------- */
+.badge{font-weight:800!important}
+.stat,.metrica-card{
+  background:#fff!important;
+  border-radius:10px!important;
+}
+.stat strong{color:var(--st-pro-text)!important}
+
+/* ---------- Edición de cliente ---------- */
+body:has(.btn-save) .card{
+  position:relative!important;
+  max-width:680px!important;
+  margin:34px auto!important;
+  padding:28px!important;
+}
+body:has(.btn-save) .card h2{
+  padding-right:145px!important;
+  margin-top:0!important;
+}
+body:has(.btn-save) .card > form > a{
+  position:absolute!important;
+  top:22px!important;
+  right:22px!important;
+}
+body:has(.btn-save) .card > form > a .btn-back{
+  margin:0!important;
+}
+
+/* ---------- Factura / recibos ---------- */
+.hoja-carta,.media-carta,.recibo{
+  border:1px solid var(--st-pro-line)!important;
+  border-radius:10px!important;
+  box-shadow:var(--st-pro-shadow)!important;
+}
+.btn-print{
+  background:var(--st-pro-blue-dark)!important;
+  border-radius:7px!important;
+  box-shadow:0 4px 12px rgba(47,128,237,.16)!important;
+}
+
+/* ---------- Código de barras ---------- */
+.label{
+  border:1px solid var(--st-pro-line)!important;
+  border-radius:12px!important;
+  box-shadow:var(--st-pro-shadow)!important;
+}
+.imprimir{background:var(--st-pro-blue-dark)!important;border-radius:7px!important}
+.cerrar{background:#eaf1f7!important;color:var(--st-pro-text)!important;border-radius:7px!important}
+
+/* ---------- Crear usuario (pantalla antigua sin layout) ---------- */
+body:has(form[action=""]):not(:has(.login-card)){
+  background:var(--st-pro-bg)!important;
+}
+
+/* ---------- Responsive ---------- */
+@media(max-width:700px){
+  .header-title{padding:0 14px!important;min-height:58px!important}
+  .header-title > .btn-back-uniform,
+  .header-title > a:has(.btn-back-uniform){
+    right:12px!important;
+  }
+  .header-title h2{font-size:14px!important}
+  .header-title p{display:none!important}
+  .btn-back-uniform,.btn-back,.volver-btn{min-width:112px!important;height:38px!important;font-size:12px!important}
+  body:has(.btn-save) .card{margin:18px 12px!important;padding:20px!important}
+  body:has(.btn-save) .card h2{padding-right:0!important;margin-top:48px!important}
+  body:has(.btn-save) .card > form > a{top:18px!important;right:18px!important}
+}
