@@ -34,18 +34,20 @@
             font-size: 30px;
         }
 
-        .volver-btn {
-            background: linear-gradient(135deg,#2f80ed,#56ccf2);
+        .btn-back {
+            text-decoration: none;
+            background: #60a5fa;
             color: white;
             padding: 10px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: 0.2s;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            transition: .2s;
+            white-space: nowrap;
         }
 
-        .volver-btn:hover {
-            transform: scale(1.03);
+        .btn-back:hover {
+            background: #3b82f6;
         }
 
         /* CARD */
@@ -216,21 +218,6 @@
             font-size: 20px;
             color: #374151;
         }
-        .btn-back {
-            text-decoration: none;
-            background: #60a5fa;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            transition: .2s;
-            white-space: nowrap;
-        }
-
-        .btn-back:hover {
-            background: #3b82f6;
-        }
 
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
@@ -243,7 +230,7 @@
 <div class="header">
     <h2>📊 Historial de Ventas</h2>
 
-    <a href="/dashboard" class="btn-back-uniform">
+    <a href="/dashboard" class="btn-back">
         ⬅ Volver
     </a>
 </div>
