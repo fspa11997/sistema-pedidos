@@ -718,6 +718,25 @@ button,input,select{font-family:inherit}
     text-align:left !important;
   }
 }
+/* =========================================================
+   ELIMINAR ESPACIO GRIS ENTRE ENCABEZADO Y NUEVA VENTA
+   ========================================================= */
+
+#flash-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+}
+
+#flash-container + br,
+.topbar + br {
+    display: none !important;
+}
+
+/* El contenido comienza exactamente debajo del encabezado */
+.formulario {
+    margin-top: 62px !important;
+}
 
 </style>
 
@@ -801,7 +820,7 @@ button,input,select{font-family:inherit}
 <body>
 
 <div class="header-title">
-    <h2>Nueva venta 🛒</h2>
+    <h2>NUEVA VENTA 🛒</h2>
 
     <p style="margin:0; font-size:13px; color:#666;">
         Usuario: <b>{{ session['usuario'] }}</b> <!--| Rol: <b>{{ session['rol'] }}</b> MUESTRA EL ROL -->
@@ -839,8 +858,6 @@ button,input,select{font-family:inherit}
     {% endwith %}
 
 </div>
-
-<br>
 <div class="topbar"><div class="sidebar-brand"><span class="brand-icon">⚙️</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
     <!-- BARRA DE NAVEGACIÓN -->
     <nav class="nav dashboard-nav">
@@ -881,7 +898,6 @@ button,input,select{font-family:inherit}
     <a href="/logout" class="logout-sidebar">Cerrar sesión</a>
 
 </div>
-<br>
 {% if session['rol'] in ['owner_global', 'admin'] %}
 
 <div id="metricas" style="display:none;">
