@@ -1467,4 +1467,20 @@ document.addEventListener("DOMContentLoaded",actualizarDetalleVenta);
     font-size:12px;
     padding-top:8px;
 }
+/* =========================================================
+   OCULTAR BARRA VERTICAL DEL DASHBOARD
+   ========================================================= */
+
+html,
+body {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
 </style>
