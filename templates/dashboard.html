@@ -1630,4 +1630,58 @@ body::-webkit-scrollbar {
     overflow:visible !important;
   }
 }
+
+/* Notificación de factura: centrada en el área de trabajo y con tonos acordes a ST Gestión */
+#flash-container {
+    left: 248px !important;
+    right: 0 !important;
+    top: 76px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+}
+
+#flash-container .factura-exito {
+    width: min(520px, 100%) !important;
+    max-width: 520px !important;
+    margin: 0 auto 12px !important;
+    background: #e8f5ee !important;
+    border: 1px solid #28a36a !important;
+    border-left: 5px solid #168653 !important;
+    color: #173d2d !important;
+    box-shadow: 0 10px 28px rgba(16, 47, 80, .18) !important;
+    text-align: center !important;
+}
+
+#flash-container .factura-exito h3,
+#flash-container .factura-exito p {
+    color: #173d2d !important;
+}
+
+#flash-container .factura-exito-icono {
+    background: #168653 !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+@media (max-width: 950px) {
+    #flash-container {
+        left: 0 !important;
+        right: 0 !important;
+        top: 74px !important;
+        padding: 0 12px !important;
+    }
+    #flash-container .factura-exito,
+    #flash-container .flash-message {
+        width: 100% !important;
+        max-width: 520px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
+
 </style>
