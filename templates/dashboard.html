@@ -512,9 +512,17 @@ button,input,select{font-family:inherit}
 }
 
 #formUsuario,#formEmpresa{
-  margin:78px 28px 18px!important;background:#fff!important;
-  border:1px solid var(--line)!important;border-radius:9px!important;
-  box-shadow:0 6px 20px rgba(30,70,105,.06)!important;padding:20px!important;
+  position:fixed!important;
+  top:62px!important; left:248px!important; right:0!important; bottom:0!important;
+  z-index:2400!important;
+  margin:0!important; padding:24px!important;
+  background:#f3f8fd!important;
+  border:1px solid var(--line)!important; border-radius:0!important;
+  box-shadow:0 8px 28px rgba(16,47,80,.18)!important;
+  overflow:auto!important; box-sizing:border-box!important;
+}
+@media(max-width:950px){
+  #formUsuario,#formEmpresa{top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:4000!important;padding:16px!important;}
 }
 
 #modalInventario,#modalProductos{
@@ -1347,11 +1355,25 @@ window.onload = function () {
 
 function toggleForm() {
     const form = document.getElementById("formUsuario");
-    form.style.display = form.style.display === "none" ? "block" : "none";
+    if (!form) return;
+    const visible = window.getComputedStyle(form).display !== "none";
+    const empresa = document.getElementById("formEmpresa");
+    if (empresa) empresa.style.display = "none";
+    const metricas = document.getElementById("metricas");
+    if (metricas) metricas.style.display = "none";
+    form.style.display = visible ? "none" : "block";
+    if (!visible) form.scrollTop = 0;
 }
 function toggleEmpresa() {
     const form = document.getElementById("formEmpresa");
-    form.style.display = form.style.display === "none" ? "block" : "none";
+    if (!form) return;
+    const visible = window.getComputedStyle(form).display !== "none";
+    const usuario = document.getElementById("formUsuario");
+    if (usuario) usuario.style.display = "none";
+    const metricas = document.getElementById("metricas");
+    if (metricas) metricas.style.display = "none";
+    form.style.display = visible ? "none" : "block";
+    if (!visible) form.scrollTop = 0;
 }
 function agregarProducto() {
     const container = document.getElementById("productos");
