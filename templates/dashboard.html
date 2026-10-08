@@ -1494,3 +1494,64 @@ body::-webkit-scrollbar {
     z-index: 100 !important;
 }
 </style>
+
+<style id="st-dashboard-fit-final">
+/* =========================================================
+   AJUSTE FINAL — DASHBOARD COMPLETO EN PANTALLA
+   Evita que .formulario (fixed) sume width:100% + left/right
+   y provoque desbordamiento horizontal en escritorio.
+========================================================= */
+@media (min-width:951px){
+  html, body{
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:hidden !important;
+  }
+
+  .formulario{
+    position:fixed !important;
+    top:62px !important;
+    left:248px !important;
+    right:0 !important;
+    width:auto !important;
+    max-width:none !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+    height:calc(100vh - 62px) !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+  }
+
+  .formulario .venta-form,
+  .formulario .venta-grid,
+  .formulario .col{
+    min-width:0 !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  .venta-grid{
+    grid-template-columns:minmax(0,1fr) minmax(320px,.72fr) !important;
+  }
+
+  #productos .item{
+    min-width:0 !important;
+    max-width:100% !important;
+  }
+}
+
+/* Tablet y celular: vuelve al flujo normal para que todo sea visible. */
+@media (max-width:950px){
+  .formulario{
+    position:relative !important;
+    top:auto !important;
+    left:auto !important;
+    right:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    height:auto !important;
+    margin:0 !important;
+    overflow:visible !important;
+  }
+}
+</style>
