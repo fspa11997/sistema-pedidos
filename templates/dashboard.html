@@ -815,6 +815,43 @@ button,input,select{font-family:inherit}
         }
       }
     </style>
+
+<style id="st-metricas-visibility-fix">
+/* Las métricas deben quedar por encima del formulario fijo del dashboard. */
+#metricas {
+    position: fixed !important;
+    top: 78px !important;
+    left: 248px !important;
+    right: 0 !important;
+    margin: 0 28px 20px 20px !important;
+    width: auto !important;
+    max-height: calc(100vh - 98px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    z-index: 200 !important;
+    background: #f7fbff !important;
+    padding: 0 !important;
+}
+
+#metricas .metricas-container {
+    box-sizing: border-box !important;
+    padding-bottom: 18px !important;
+}
+
+@media (max-width: 950px) {
+    #metricas {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        max-height: none !important;
+        margin: 14px 10px !important;
+        z-index: 10 !important;
+    }
+}
+</style>
 </head>
 
 <body>
@@ -900,7 +937,7 @@ button,input,select{font-family:inherit}
 </div>
 {% if session['rol'] in ['owner_global', 'admin'] %}
 
-<div id="metricas" style="display:none;"><div class="nav-title">MENÚ</div>
+<div id="metricas" style="display:none;">
 
     <div class="metricas-container">
 
@@ -1349,12 +1386,11 @@ document.querySelectorAll('#productos select[name="producto[]"]').forEach(actual
 
 function toggleMetricas() {
     const div = document.getElementById("metricas");
+    if (!div) return;
 
-    if (div.style.display === "none") {
-        div.style.display = "flex";
-    } else {
-        div.style.display = "none";
-    }
+    const ocultas = getComputedStyle(div).display === "none" || div.style.display === "none";
+    div.style.display = ocultas ? "block" : "none";
+    div.setAttribute("aria-hidden", ocultas ? "false" : "true");
 }
 
 function togglePedidos() {
