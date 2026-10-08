@@ -84,6 +84,8 @@ def optimizar_respuesta(response):
     aceptado = "gzip" in request.headers.get("Accept-Encoding", "").lower()
 
     if (aceptado and response.status_code == 200 and
+            not response.direct_passthrough and
+            not response.is_streamed and
             "Content-Encoding" not in response.headers and
             content_length and int(content_length) >= 500 and
             (content_type.startswith("text/html") or

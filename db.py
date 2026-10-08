@@ -700,8 +700,8 @@ def total_ventas_dia(empresa_id, conn=None):
     cursor.execute("""
         SELECT COALESCE(SUM(total), 0) AS total
         FROM facturas
-        WHERE fecha >= CURRENT_DATE::text
-          AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
+        WHERE fecha >= CURRENT_DATE
+          AND fecha < (CURRENT_DATE + INTERVAL '1 day')
           AND empresa_id = %s
     """, (empresa_id,))
 
@@ -720,8 +720,8 @@ def total_ventas_mes(empresa_id, conn=None):
     cursor.execute("""
         SELECT COALESCE(SUM(total), 0) AS total
         FROM facturas
-        WHERE fecha >= DATE_TRUNC('month', CURRENT_DATE)::date::text
-          AND fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date::text
+        WHERE fecha >= DATE_TRUNC('month', CURRENT_DATE)
+          AND fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')
           AND empresa_id = %s
     """, (empresa_id,))
 
@@ -741,8 +741,8 @@ def facturas_emitidas_hoy(empresa_id, conn=None):
     cursor.execute("""
         SELECT COUNT(*) AS total
         FROM facturas
-        WHERE fecha >= CURRENT_DATE::text
-          AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
+        WHERE fecha >= CURRENT_DATE
+          AND fecha < (CURRENT_DATE + INTERVAL '1 day')
           AND empresa_id = %s
     """, (empresa_id,))
 
@@ -782,16 +782,16 @@ def obtener_metricas_dashboard(empresa_id, conn=None):
     cursor.execute("""
         SELECT
             COALESCE(SUM(CASE
-                WHEN fecha >= CURRENT_DATE::text
-                 AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
+                WHEN fecha >= CURRENT_DATE
+                 AND fecha < (CURRENT_DATE + INTERVAL '1 day')
                 THEN total ELSE 0 END), 0) AS total_dia,
             COALESCE(SUM(CASE
-                WHEN fecha >= DATE_TRUNC('month', CURRENT_DATE)::date::text
-                 AND fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date::text
+                WHEN fecha >= DATE_TRUNC('month', CURRENT_DATE)
+                 AND fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')
                 THEN total ELSE 0 END), 0) AS total_mes,
             COUNT(*) FILTER (
-                WHERE fecha >= CURRENT_DATE::text
-                  AND fecha < (CURRENT_DATE + INTERVAL '1 day')::text
+                WHERE fecha >= CURRENT_DATE
+                  AND fecha < (CURRENT_DATE + INTERVAL '1 day')
             ) AS facturas_hoy,
             COALESCE((
                 SELECT SUM(c.saldo)
@@ -822,8 +822,8 @@ def productos_top_5_mes(empresa_id, conn=None):
         FROM detalle_factura d
         INNER JOIN facturas f ON f.id = d.factura_id
         WHERE f.empresa_id = %s
-          AND f.fecha >= DATE_TRUNC('month', CURRENT_DATE)::date::text
-          AND f.fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')::date::text
+          AND f.fecha >= DATE_TRUNC('month', CURRENT_DATE)
+          AND f.fecha < (DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month')
         GROUP BY d.producto
         ORDER BY total DESC, d.producto ASC
         LIMIT 5
