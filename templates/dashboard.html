@@ -144,7 +144,20 @@ button,input,select{font-family:inherit}
 }
 
 #metricas{
-  margin:78px 28px 0!important;display:flex;gap:14px!important;
+  position:fixed!important;
+  top:62px!important;
+  left:248px!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:200!important;
+  margin:0!important;
+  padding:16px 20px 28px!important;
+  display:none;
+  gap:14px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  background:#f3f8fd!important;
+  box-sizing:border-box!important;
 }
 .metricas-container{display:flex!important;gap:14px!important;width:100%}
 .metrica-card{
@@ -815,43 +828,6 @@ button,input,select{font-family:inherit}
         }
       }
     </style>
-
-<style id="st-metricas-visibility-fix">
-/* Las métricas deben quedar por encima del formulario fijo del dashboard. */
-#metricas {
-    position: fixed !important;
-    top: 78px !important;
-    left: 248px !important;
-    right: 0 !important;
-    margin: 0 28px 20px 20px !important;
-    width: auto !important;
-    max-height: calc(100vh - 98px) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-    z-index: 200 !important;
-    background: #f7fbff !important;
-    padding: 0 !important;
-}
-
-#metricas .metricas-container {
-    box-sizing: border-box !important;
-    padding-bottom: 18px !important;
-}
-
-@media (max-width: 950px) {
-    #metricas {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        width: auto !important;
-        max-height: none !important;
-        margin: 14px 10px !important;
-        z-index: 10 !important;
-    }
-}
-</style>
 </head>
 
 <body>
@@ -1386,11 +1362,12 @@ document.querySelectorAll('#productos select[name="producto[]"]').forEach(actual
 
 function toggleMetricas() {
     const div = document.getElementById("metricas");
-    if (!div) return;
 
-    const ocultas = getComputedStyle(div).display === "none" || div.style.display === "none";
-    div.style.display = ocultas ? "block" : "none";
-    div.setAttribute("aria-hidden", ocultas ? "false" : "true");
+    if (div.style.display === "none") {
+        div.style.display = "flex";
+    } else {
+        div.style.display = "none";
+    }
 }
 
 function togglePedidos() {
@@ -1529,6 +1506,32 @@ body::-webkit-scrollbar {
     overflow-y: auto !important;
     z-index: 100 !important;
 }
+
+/* MÉTRICAS: panel visible por encima de la Nueva Venta fija */
+@media (min-width:951px){
+  #metricas{
+    left:248px!important;
+    top:62px!important;
+    right:0!important;
+    bottom:0!important;
+  }
+}
+@media (max-width:950px){
+  #metricas{
+    position:relative!important;
+    top:auto!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:100%!important;
+    min-height:calc(100vh - 62px)!important;
+    margin:0!important;
+    padding:12px!important;
+    z-index:200!important;
+    overflow:visible!important;
+  }
+}
+
 </style>
 
 <style id="st-dashboard-fit-final">
