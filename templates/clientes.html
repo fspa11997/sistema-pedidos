@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -11,167 +11,64 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <title>Clientes • ST Gestión</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='professional.css') }}">
 </head>
-
-<body>
-
-<!-- 🔵 HEADER -->
-<div class="header-title">
-
-    <h2>👥 CLIENTES</h2>
-
-    <p style="margin:0; font-size:13px; color:#666;">
-        Gestión de clientes registrados
-    </p>
-
-    <!-- BOTONES DERECHA -->
-    <div style="
-        position:absolute;
-        right:0;
-        top:0;
-        display:flex;
-        gap:10px;
-    ">
-
-        <!--<a href="/clientes">
-            <button class="btn-green">
-                🔄 Actualizar
-            </button>
-        </a>-->
-
+<body class="st-modern-page">
+<div class="header-title"><h2>ST GESTIÓN</h2><p>Gestión de clientes</p></div>
+<aside class="sidebar">
+    <div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
+    <nav class="nav">
+        <div class="nav-title">MENÚ</div>
+        <a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><a class="btn active" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a><a class="btn" href="/productos">🏷️ &nbsp; Productos</a><a class="btn" href="/inventario">📦 &nbsp; Inventario</a>
+    </nav>
+</aside>
+<main class="main">
+    <div class="page-head st-page-head-with-back">
+        <div><h1>👥 Clientes</h1><p>Administra la información de tus clientes registrados.</p></div>
+        <a href="/dashboard" class="btn-back-uniform">← Volver</a>
     </div>
-    <a href="/dashboard" class="btn-back-uniform">⬅ Volver</a>
-</div>
 
-<br>
+    <div class="st-client-toolbar"><button onclick="toggleFormCliente()" class="btn-primary">＋ Nuevo cliente</button><span>Registra y consulta clientes desde un solo lugar.</span></div>
 
-<!-- 🔥 BOTÓN NUEVO CLIENTE -->
-<button
-    onclick="toggleFormCliente()"
-    class="btn-blue"
-    style="margin-bottom:15px;"
->
-    ➕ Nuevo Cliente
-</button>
+    <div id="formCliente" class="card st-collapsible-card" style="display:none;">
+        <div class="card-head"><div><h3>Nuevo cliente</h3><span class="st-card-subtitle">Completa los datos básicos del cliente</span></div></div>
+        <div class="content">
+            <form method="POST" action="/crear_cliente" class="form-grid st-client-form">
+                <div class="field"><label>Nombre</label><input type="text" name="nombre" placeholder="Nombre completo" required></div>
+                <div class="field"><label>Dirección</label><input type="text" name="direccion" placeholder="Dirección"></div>
+                <div class="field"><label>Ciudad</label><input type="text" name="ciudad" placeholder="Ciudad"></div>
+                <div class="field"><label>Teléfono</label><input type="text" name="telefono" placeholder="Número de teléfono"></div>
+                <div class="field"><label>Tipo de identificación</label><select name="tipo_id"><option value="cc">CC</option><option value="nit">NIT</option></select></div>
+                <div class="field"><label>Identificación</label><input type="text" name="identificacion" placeholder="Número de identificación"></div>
+                <div class="field st-client-submit"><label>&nbsp;</label><button type="submit" class="btn-green">💾 Guardar cliente</button></div>
+            </form>
+        </div>
+    </div>
 
-<!-- 🔥 FORMULARIO CARD -->
-<div
-    id="formCliente"
-    class="filters-card"
-    style="display:none; max-width:700px;"
->
-
-    <form method="POST"
-          action="/crear_cliente"
-          class="filters-form-modern">
-
-        <input type="text"
-               name="nombre"
-               placeholder="👤 Nombre"
-               required>
-
-        <input type="text"
-               name="direccion"
-               placeholder="📍 Dirección">
-
-        <input type="text"
-               name="ciudad"
-               placeholder="🏙 Ciudad">
-
-        <input type="text"
-               name="telefono"
-               placeholder="📞 Teléfono">
-
-        <select name="tipo_id">
-            <option value="cc">CC</option>
-            <option value="nit">NIT</option>
-        </select>
-
-        <input type="text"
-               name="identificacion"
-               placeholder="🪪 Identificación">
-
-        <button type="submit" class="btn-green">
-            💾 Guardar Cliente
-        </button>
-
-    </form>
-
-</div>
-
-<br>
-
-<!-- 📊 TABLA -->
-<div class="table-card">
-
-<table>
-
-    <thead>
-        <tr>
-            <th>Cliente</th>
-            <th>Dirección</th>
-            <th>Ciudad</th>
-            <th>Teléfono</th>
-            <th>Identificación</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        {% for c in clientes %}
-        <tr>
-
-            <td>
-                <b>{{ c.nombre }}</b>
-            </td>
-
-            <td>{{ c.direccion }}</td>
-
-            <td>{{ c.ciudad }}</td>
-
-            <td>{{ c.telefono }}</td>
-
-            <td>{{ c.identificacion }}</td>
-            
-            <td>
-
-                <a href="/editar_cliente/{{ c.id }}">
-                    <button class="btn-blue">
-                        ✏️ Editar
-                    </button>
-                </a>
-
-            </td>
-        </tr>
-        {% endfor %}
-
-    </tbody>
-
-</table>
-
-</div>
-
-<!-- TOGGLE -->
+    <div class="card st-table-card">
+        <div class="card-head"><div><h3>Listado de clientes</h3><span class="st-card-subtitle">Información registrada y edición rápida</span></div><span class="st-count">{{ clientes|length }} clientes</span></div>
+        <div class="table-wrap">
+            <table class="data-table st-clientes-table">
+                <thead><tr><th>Cliente</th><th>Dirección</th><th>Ciudad</th><th>Teléfono</th><th>Identificación</th><th>Acción</th></tr></thead>
+                <tbody>
+                {% for c in clientes %}
+                    <tr><td><b>{{ c.nombre }}</b></td><td>{{ c.direccion or '-' }}</td><td>{{ c.ciudad or '-' }}</td><td>{{ c.telefono or '-' }}</td><td>{{ c.identificacion or '-' }}</td><td><a href="/editar_cliente/{{ c.id }}" class="btn-blue st-inline-btn">✏️ Editar</a></td></tr>
+                {% else %}
+                    <tr><td colspan="6" class="st-empty">No hay clientes registrados.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
 <script>
-
-function toggleFormCliente() {
-
-    let f = document.getElementById("formCliente");
-
-    if (f.style.display === "none") {
-        f.style.display = "block";
-    } else {
-        f.style.display = "none";
-    }
+function toggleFormCliente(){
+    const f=document.getElementById('formCliente');
+    f.style.display=f.style.display==='none'?'block':'none';
 }
-
 </script>
-
 </body>
 </html>

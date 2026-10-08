@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -16,216 +16,72 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='professional.css') }}">
 </head>
+<body class="st-modern-page">
+<div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
+<aside class="sidebar">
+    <div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div>
+    <nav class="nav">
+        <div class="nav-title">MENÚ</div>
+        <a class="btn" href="/dashboard">⌂ &nbsp; Inicio</a><a class="btn" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn active" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a><a class="btn" href="/productos">🏷️ &nbsp; Productos</a><a class="btn" href="/inventario">📦 &nbsp; Inventario</a>
+    </nav>
+</aside>
+<main class="main">
+    <div class="page-head st-page-head-with-back">
+        <div><h1>💰 Cartera</h1><p>Consulta saldos, estados de pago y registra abonos.</p></div>
+        <a href="/dashboard" class="btn-back-uniform">← Volver</a>
+    </div>
 
-<body>
+    <div class="card st-filter-card">
+        <div class="card-head"><div><h3>Filtros de cartera</h3><span class="st-card-subtitle">Filtra facturas por cliente, estado o fecha</span></div></div>
+        <div class="content">
+            <form method="GET" action="/cartera" class="form-grid st-cartera-filter-grid">
+                <div class="field"><label>N.º de factura</label><input type="text" name="factura" placeholder="Número de factura" value="{{ request.args.get('factura', '') }}"></div>
+                <div class="field"><label>Cliente</label><input type="text" name="cliente" placeholder="Buscar cliente" value="{{ request.args.get('cliente', '') }}"></div>
+                <div class="field"><label>Estado</label><select name="estado"><option value="">Todos</option><option value="pendiente" {% if request.args.get('estado') == 'pendiente' %}selected{% endif %}>⏳ Pendiente</option><option value="parcial" {% if request.args.get('estado') == 'parcial' %}selected{% endif %}>⚠ Parcial</option><option value="pagado" {% if request.args.get('estado') == 'pagado' %}selected{% endif %}>✅ Pagado</option></select></div>
+                <div class="field"><label>Fecha</label><input type="date" name="fecha" value="{{ request.args.get('fecha', '') }}"></div>
+                <div class="field st-filter-submit"><label>&nbsp;</label><button class="btn-primary" type="submit">🔎 Filtrar</button></div>
+            </form>
+        </div>
+    </div>
 
-<!-- 🔵 HEADER -->
-<div class="header-title">
-
-    <h2>💰 CARTERA</h2>
-
-    <p style="margin:0; font-size:13px; color:#666;">
-        Usuario: <b>{{ session['usuario'] }}</b>
-    </p>
-</div>
-
-<div class="back-action">
- <a href="/dashboard" class="btn-back-uniform">
-        ⬅ Volver
-    </a>
-</div>
-
-<br>
-
-<!-- 🔥 FILTROS (MISMO ESTILO PEDIDOS) -->
-<div class="filters-card">
-
-    <form method="GET" action="/cartera" class="filters-form-modern">
-
-        <input
-            type="text"
-            name="factura"
-            placeholder="🧾 N.º de factura"
-            value="{{ request.args.get('factura', '') }}"
-        >
-
-        <input
-            type="text"
-            name="cliente"
-            placeholder="🔎 Cliente"
-            value="{{ request.args.get('cliente', '') }}"
-        >
-
-        <select name="estado">
-            <option value="">Todos</option>
-            <option value="pendiente" {% if request.args.get('estado') == 'pendiente' %}selected{% endif %}>⏳ Pendiente</option>
-            <option value="parcial" {% if request.args.get('estado') == 'parcial' %}selected{% endif %}>⚠ Parcial</option>
-            <option value="pagado" {% if request.args.get('estado') == 'pagado' %}selected{% endif %}>✅ Pagado</option>
-        </select>
-
-        <input
-            type="date"
-            name="fecha"
-            value="{{ request.args.get('fecha', '') }}"
-        >
-
-        <button type="submit">🔎 Filtrar</button>
-
-    </form>
-
-</div>
-
-<br>
-
-<br>
-
-<!-- 📊 TABLA -->
-<div class="table-card">
-
-<table>
-
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Plazo pago</th>
-            <th>Total</th>
-            <th>Abono</th>
-            <th>Saldo</th>
-            <th>Estado</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        {% for f in facturas %}
-        <tr>
-
-            <td>#{{ f.id }}</td>
-
-            <td><b>{{ f.cliente }}</b></td>
-
-            <td>{{ f.fecha|fecha_hora }}</td>
-
-            <!-- 📅 PLAZO DE PAGO -->
-            <td>
-                {{ f.plazo_pago or "-" }}
-            </td>
-
-            <!-- 💰 TOTAL -->
-            <td>
-                <b>${{ "{:,.0f}".format(f.total or 0) }}</b>
-            </td>
-
-            <!-- 💵 ABONO -->
-            <td>
-                <span style="color:green; font-weight:bold;">
-                    ${{ "{:,.0f}".format(f.abono or 0) }}
-                </span>
-            </td>
-
-            <!-- 📉 SALDO -->
-            <td>
-                {% set saldo = (f.total or 0) - (f.abono or 0) %}
-                <b>${{ "{:,.0f}".format(saldo) }}</b>
-            </td>
-
-            <!-- 🔵 ESTADO -->
-            <td>
-                {% if saldo <= 0 %}
-                    <span class="badge entregado">✅ Pagado</span>
-
-                {% elif (f.abono or 0) > 0 %}
-                    <span class="badge alerta-naranja">⚠ Parcial</span>
-
+    <div class="card st-table-card">
+        <div class="card-head"><div><h3>Facturas a crédito</h3><span class="st-card-subtitle">Control de pagos y saldos pendientes</span></div><span class="st-count">{{ facturas|length }} registros</span></div>
+        <div class="table-wrap">
+            <table class="data-table st-cartera-table">
+                <thead><tr><th>ID</th><th>Cliente</th><th>Fecha</th><th>Plazo pago</th><th>Total</th><th>Abono</th><th>Saldo</th><th>Estado</th><th>Acción</th></tr></thead>
+                <tbody>
+                {% for f in facturas %}
+                    {% set saldo = (f.total or 0) - (f.abono or 0) %}
+                    <tr>
+                        <td><span class="st-id">#{{ f.id }}</span></td><td><b>{{ f.cliente }}</b></td><td>{{ f.fecha|fecha_hora }}</td><td>{{ f.plazo_pago or '-' }}</td>
+                        <td><b>${{ "{:,.0f}".format(f.total or 0) }}</b></td><td><span class="st-money-positive">${{ "{:,.0f}".format(f.abono or 0) }}</span></td><td><b>${{ "{:,.0f}".format(saldo) }}</b></td>
+                        <td>{% if saldo <= 0 %}<span class="badge entregado">✅ Pagado</span>{% elif (f.abono or 0) > 0 %}<span class="badge alerta-naranja">⚠ Parcial</span>{% else %}<span class="badge pendiente">⏳ Pendiente</span>{% endif %}</td>
+                        <td class="acciones st-actions st-cartera-actions"><a href="/factura/{{ f.id }}" class="btn-view st-inline-btn">Ver</a><a href="/historial_abonos/{{ f.id }}" class="btn-blue st-inline-btn">📜 Historial</a><button type="button" onclick="abrirAbono('{{ f.id }}')" class="btn-green">💰 Abonar</button></td>
+                    </tr>
                 {% else %}
-                    <span class="badge pendiente">⏳ Pendiente</span>
-                {% endif %}
-            </td>
+                    <tr><td colspan="9" class="st-empty">No hay facturas para mostrar.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
 
-            <!-- ⚙️ ACCIONES -->
-            <td class="acciones">
-
-                <a href="/factura/{{ f.id }}">
-                    <button class="btn-view">Ver</button>
-                </a>
-                <a href="/historial_abonos/{{ f.id }}">
-                    <button class="btn-blue">
-                        📜 Historial
-                    </button>
-                </a>
-
-                <button type="button" onclick="abrirAbono('{{ f.id }}')" class="btn-green">
-                    💰 Abonar
-                </button>
-
-            </td>
-
-        </tr>
-        {% endfor %}
-
-    </tbody>
-
-</table>
-<!-- 💰 MODAL ABONO -->
-<div id="modalAbono" style="display:none;">
-
-    <form method="POST" action="/abonar_credito">
-
-        <input type="hidden" name="factura_id" id="facturaIdInput">
-
-        <input
-            type="number"
-            step="0.01"
-            name="abono"
-            placeholder="Valor abono"
-            required
-        >
-
-        <input
-            type="text"
-            name="observacion"
-            placeholder="Observación"
-        >
-
-        <button type="submit">
-            Guardar Abono
-        </button>
-
-    </form>
-
+<div id="modalAbono" class="st-modal" style="display:none;" onclick="if(event.target===this) cerrarAbono()">
+    <div class="st-modal-card">
+        <div class="st-modal-head"><div><h3>Registrar abono</h3><p>Ingresa el valor y una observación opcional.</p></div><button type="button" onclick="cerrarAbono()" class="st-modal-close">×</button></div>
+        <form method="POST" action="/abonar_credito" class="st-modal-form">
+            <input type="hidden" name="factura_id" id="facturaIdInput">
+            <div class="field"><label>Valor del abono</label><input type="number" step="0.01" name="abono" placeholder="0" required></div>
+            <div class="field"><label>Observación</label><input type="text" name="observacion" placeholder="Observación (opcional)"></div>
+            <div class="st-modal-actions"><button type="button" class="btn-back-modal" onclick="cerrarAbono()">Cancelar</button><button type="submit" class="btn-green">💾 Guardar abono</button></div>
+        </form>
+    </div>
 </div>
 <script>
-function abrirAbono(id) {
-    console.log("Factura ID:", id);
-
-    // ejemplo: abrir modal
-    document.getElementById("modalAbono").style.display = "block";
-
-    // opcional: guardar ID en formulario
-    document.getElementById("formAbono").action = "/abonar_factura/" + id;
-}
-
-function abrirAbono(facturaId) {
-
-    document.getElementById("modalAbono").style.display = "flex";
-
-    document.getElementById("facturaIdInput").value = facturaId;        
-}
-
-function cerrarAbono() {
-
-    document.getElementById("modalAbono").style.display = "none";
-}
-
-function abrirAbono(facturaId){
-
-    document.getElementById("modalAbono").style.display = "block";
-
-    document.getElementById("facturaIdInput").value = facturaId;
-}
+function abrirAbono(facturaId){document.getElementById('facturaIdInput').value=facturaId;document.getElementById('modalAbono').style.display='flex';}
+function cerrarAbono(){document.getElementById('modalAbono').style.display='none';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape') cerrarAbono();});
 </script>
 </body>
 </html>
