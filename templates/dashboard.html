@@ -1468,6 +1468,7 @@ document.addEventListener("input",e=>{if(e.target.closest("#productos"))actualiz
 document.addEventListener("change",e=>{if(e.target.closest("#productos"))actualizarDetalleVenta()});
 document.addEventListener("DOMContentLoaded",actualizarDetalleVenta);
 </script>
+<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </body>
 </html>
 <style>

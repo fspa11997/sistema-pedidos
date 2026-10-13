@@ -134,3 +134,101 @@ table { min-width:0; }
   .btn-back-uniform { max-width:none !important; }
 }
 
+
+/* Ajustes transversales adicionales: se aplican después de los estilos propios
+   de cada plantilla. Solo presentación; no modifica rutas ni lógica. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { min-width: 0; }
+main, section, article, header, footer, nav, form, fieldset,
+.container, .container-fluid, .wrapper, .page, .page-content, .main,
+.content, .panel, .card, .modal, .modal-content {
+  min-width: 0;
+  max-width: 100%;
+}
+input, select, textarea, button {
+  font: inherit;
+  max-width: 100%;
+}
+input[type="checkbox"], input[type="radio"] { width: auto; min-height: 0; }
+textarea { resize: vertical; }
+button, input[type="submit"], input[type="button"], .btn, a.button {
+  touch-action: manipulation;
+}
+form img, .product-image, .foto-producto { max-width: 100%; height: auto; }
+pre, code { overflow-wrap: anywhere; }
+a, p, h1, h2, h3, h4, label, small { overflow-wrap: anywhere; }
+
+/* Tablet: distribuir paneles y formularios sin desbordamiento. */
+@media screen and (min-width: 701px) and (max-width: 1024px) {
+  body { padding-left: 16px; padding-right: 16px; }
+  .container, .container-fluid, .wrapper, .page, .page-content,
+  .main, .content, .panel { width: 100% !important; }
+  .row, .toolbar, .actions, .form-actions, .button-group {
+    flex-wrap: wrap !important;
+  }
+  .form-grid, .grid, .stats, .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .table-responsive, .table-container, .table-wrap, .table-card {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Celular: una columna, controles cómodos y sin scroll horizontal de página. */
+@media screen and (max-width: 700px) {
+  body { min-width: 0 !important; }
+  .container, .container-fluid, .wrapper, .page, .page-content,
+  .main, .content, .panel, .card, .section, .form-container {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .row, .toolbar, .actions, .form-actions, .button-group,
+  .page-header, .page-head, .header, .header-actions {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .form-grid, .grid, .cards-grid, .stats, .metrics, .metric-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  form { max-width: 100%; }
+  form > input, form > select, form > textarea,
+  .form-group input, .form-group select, .form-group textarea,
+  .field input, .field select, .field textarea {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  button, input[type="submit"], input[type="button"], .btn {
+    max-width: 100%;
+    white-space: normal;
+  }
+  .table-responsive, .table-container, .table-wrap, .table-card,
+  .table-wrapper, .tabla-container {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    max-width: 100%;
+  }
+  img, video, canvas, iframe { max-width: 100% !important; }
+  .modal, .modal-content, .dialog, .popup {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* Teléfonos estrechos */
+@media screen and (max-width: 380px) {
+  body { padding-left: 8px !important; padding-right: 8px !important; }
+  h1 { font-size: 1.35rem; }
+  h2 { font-size: 1.15rem; }
+  th, td { padding: 6px !important; }
+}
