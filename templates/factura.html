@@ -270,6 +270,63 @@
             }
         }
 
+    
+        /* CORRECCIÓN FINAL: evitar que la regla general de tirilla limite media carta a 76 mm. */
+        @media print {
+            html, body { box-sizing:border-box !important; }
+            body.modo-media-carta,
+            html:has(body.modo-media-carta) {
+                width:100% !important;
+                min-width:0 !important;
+                max-width:none !important;
+                margin:0 !important;
+                padding:0 !important;
+            }
+            body.modo-media-carta {
+                display:block !important;
+                font-size:8px !important;
+                line-height:1.12 !important;
+            }
+            body.modo-media-carta .invoice {
+                display:block !important;
+                width:100% !important;
+                max-width:none !important;
+                box-sizing:border-box !important;
+                margin:0 !important;
+                height:133mm !important;
+                min-height:133mm !important;
+                max-height:133mm !important;
+                overflow:hidden !important;
+                page-break-inside:avoid !important;
+                break-inside:avoid !important;
+                page-break-after:avoid !important;
+                break-after:avoid !important;
+            }
+            body.modo-media-carta .invoice-header { padding:2mm 4mm !important; }
+            body.modo-media-carta .invoice-body { padding:2mm 4mm !important; }
+            body.modo-media-carta .parties { grid-template-columns:1fr 1fr !important; display:grid !important; }
+            body.modo-media-carta table { min-width:0 !important; width:100% !important; }
+            body.modo-media-carta .footer { display:flex !important; }
+            body.modo-media-carta .cut-line { display:none !important; }
+            body.modo-media-carta .invoice:last-of-type { border-bottom:0 !important; }
+        }
+
+        @media print {
+            html:has(body.modo-tirilla), body.modo-tirilla {
+                width:76mm !important;
+                min-width:0 !important;
+                max-width:76mm !important;
+                margin:0 !important;
+                padding:0 !important;
+            }
+            body.modo-tirilla .invoice {
+                width:76mm !important;
+                max-width:76mm !important;
+                min-width:0 !important;
+                margin:0 !important;
+            }
+        }
+
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
@@ -379,8 +436,12 @@ function imprimirFactura(modo) {
     }
 
     if (modo === 'tirilla') {
+        document.documentElement.style.width = '76mm';
+        document.body.style.width = '76mm';
         estilo.textContent = '@page { size: 80mm auto; margin: 2mm; }';
     } else {
+        document.documentElement.style.width = 'auto';
+        document.body.style.width = 'auto';
         estilo.textContent = '@page { size: letter portrait; margin: 4mm; }';
     }
 
@@ -391,6 +452,8 @@ function imprimirFactura(modo) {
 
 window.addEventListener('afterprint', function () {
     document.body.classList.remove('modo-tirilla', 'modo-media-carta');
+    document.documentElement.style.width = '';
+    document.body.style.width = '';
 });
 </script>
 
