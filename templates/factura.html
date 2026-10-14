@@ -1,243 +1,633 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
     <meta name="theme-color" content="#102f50">
+
     <meta name="apple-mobile-web-app-capable" content="yes">
+
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
     <meta name="apple-mobile-web-app-title" content="ST Gestión">
+
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
     <title>Factura FS-{{ factura.id }} | ST Gestión</title>
+
     <style>
+
         :root { --navy:#102f50; --blue:#2364aa; --blue-light:#eaf3ff; --ink:#1f2937; --muted:#64748b; --line:#e2e8f0; --paper:#fff; --bg:#eef3f8; --green:#087f5b; --orange:#a85b00; }
+
         * { box-sizing:border-box; }
+
         body { margin:0; padding:28px 16px 40px; background:var(--bg); color:var(--ink); font-family:Inter,"Segoe UI",Arial,sans-serif; font-size:14px; line-height:1.45; }
+
         .toolbar { max-width:900px; margin:0 auto 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+
         .toolbar-note { color:var(--muted); font-size:12px; }
+
         .toolbar-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
         .btn { border:0; border-radius:9px; padding:11px 16px; min-height:42px; font-weight:700; font-size:13px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+
         .btn-primary { color:#fff; background:var(--navy); box-shadow:0 4px 10px #102f5020; }
+
         .btn-secondary { color:var(--navy); background:#fff; border:1px solid #cbd5e1; }
+
         .invoice { max-width:900px; margin:0 auto 24px; background:var(--paper); border:1px solid #e0e7ef; border-radius:16px; overflow:hidden; box-shadow:0 12px 35px rgba(16,47,80,.09); }
+
         .invoice-header { padding:28px 34px 24px; background:linear-gradient(125deg,#102f50,#1c5688); color:#fff; display:flex; justify-content:space-between; gap:24px; align-items:flex-start; }
+
         .brand { display:flex; align-items:center; gap:13px; min-width:0; }
+
         .brand-mark { width:46px; height:46px; flex:0 0 46px; display:grid; place-items:center; border-radius:12px; background:#ffffff1c; border:1px solid #ffffff40; font-weight:800; font-size:18px; letter-spacing:-1px; }
+
         .brand-name { font-size:19px; font-weight:800; letter-spacing:.6px; line-height:1.2; }
+
         .brand-subtitle { margin-top:4px; color:#d7e7f7; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; }
+
         .invoice-number { text-align:right; min-width:155px; }
+
         .invoice-kicker { color:#d7e7f7; font-size:10px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase; }
+
         .invoice-number strong { display:block; margin-top:4px; font-size:24px; line-height:1.2; overflow-wrap:anywhere; }
+
         .invoice-number .date { display:block; margin-top:8px; color:#e2edf8; font-size:12px; }
+
         .invoice-body { padding:28px 34px 30px; }
+
         .copy-label { display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border-radius:6px; background:var(--blue-light); color:var(--blue); font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+
         .section-title { margin:22px 0 11px; color:var(--navy); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1.1px; }
+
         .parties { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+
         .info-card { padding:16px 17px; border:1px solid var(--line); border-radius:11px; min-width:0; }
+
         .info-card .eyebrow { color:var(--muted); font-size:10px; font-weight:800; letter-spacing:1.1px; text-transform:uppercase; margin-bottom:8px; }
+
         .client-name { font-size:16px; font-weight:800; color:#172b43; overflow-wrap:anywhere; margin-bottom:8px; }
+
         .info-line { margin:4px 0; color:#475569; font-size:12px; overflow-wrap:anywhere; }
+
         .info-line b { color:#334155; font-weight:700; }
+
         .payment-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+
         .payment-item { border:1px solid var(--line); border-radius:10px; padding:12px 13px; min-width:0; }
+
         .payment-item span { display:block; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
+
         .payment-item strong { display:block; margin-top:5px; font-size:13px; color:#172b43; overflow-wrap:anywhere; }
+
         .pill { display:inline-block; border-radius:999px; padding:4px 9px; font-size:11px; font-weight:800; }
+
         .pill-paid { background:#dcfce7; color:#166534; }
+
         .pill-pending { background:#fff1d6; color:#92400e; }
+
         .pill-partial { background:#ffedd5; color:#9a3412; }
+
         .table-wrap { width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:10px; margin-top:10px; }
+
         table { width:100%; border-collapse:collapse; min-width:540px; }
+
         thead { background:#f0f5fb; }
+
         th { color:#334e68; text-align:left; padding:12px 13px; font-size:10px; letter-spacing:.6px; text-transform:uppercase; border-bottom:1px solid #dce6f0; }
+
         td { padding:12px 13px; font-size:12px; color:#334155; border-bottom:1px solid #edf1f5; vertical-align:top; }
+
         tbody tr:last-child td { border-bottom:0; }
+
         tbody tr:nth-child(even) { background:#fbfdff; }
+
         .num { text-align:right; white-space:nowrap; }
+
         .product-name { color:#172b43; font-weight:700; }
+
         .totals-row { display:flex; justify-content:flex-end; margin-top:16px; }
+
         .totals { width:100%; max-width:330px; border:1px solid var(--line); border-radius:11px; padding:14px 16px; }
+
         .total-line { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:5px 0; color:#526174; font-size:12px; }
+
         .total-line strong { color:#243b53; text-align:right; white-space:nowrap; }
+
         .total-line.balance strong { color:var(--orange); }
+
         .grand-total { margin:8px -16px -14px; padding:13px 16px; border-radius:0 0 10px 10px; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:800; }
+
         .grand-total strong { font-size:19px; white-space:nowrap; }
+
         .footer { margin-top:25px; padding-top:15px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:flex-start; gap:18px; color:var(--muted); font-size:10px; }
+
         .footer strong { color:#334e68; }
+
         .legal-note { max-width:520px; }
+
         .thanks { white-space:nowrap; font-weight:800; color:var(--blue); }
+
         .cut-line { max-width:900px; margin:0 auto 24px; border-top:2px dashed #a9b8c8; position:relative; text-align:center; }
+
         .cut-line span { position:relative; top:-10px; padding:2px 12px; background:var(--bg); color:#75869a; font-size:10px; font-weight:700; letter-spacing:1.5px; }
+
         @media (max-width:640px) {
+
             body { padding:12px 8px 24px; }
+
             .toolbar { align-items:stretch; margin-bottom:12px; }
+
             .toolbar-note { width:100%; }
+
             .toolbar-actions { width:100%; }
+
             .toolbar-actions .btn { flex:1; }
+
             .invoice { border-radius:11px; margin-bottom:16px; }
+
             .invoice-header { padding:20px 17px; gap:12px; }
+
             .brand { gap:9px; }
+
             .brand-mark { width:38px; height:38px; flex-basis:38px; font-size:15px; }
+
             .brand-name { font-size:15px; }
+
             .brand-subtitle { font-size:9px; letter-spacing:1px; }
+
             .invoice-number { min-width:100px; }
+
             .invoice-number strong { font-size:18px; }
+
             .invoice-kicker { font-size:9px; letter-spacing:1px; }
+
             .invoice-number .date { font-size:10px; }
+
             .invoice-body { padding:19px 15px 22px; }
+
             .parties { grid-template-columns:1fr; gap:10px; }
+
             .payment-strip { grid-template-columns:1fr 1fr; }
+
             .payment-item:last-child { grid-column:1/-1; }
+
             .info-card { padding:13px; }
+
             .footer { flex-direction:column; }
+
             .thanks { white-space:normal; }
+
             .totals { max-width:none; }
+
         }
-        /* Impresión compacta para rollo térmico Epson M267D (rollo nominal de 80 mm).
-           En el cuadro de impresión seleccionar papel/rollo de 80 mm y escala 100%. */
-        @page { size: 80mm auto; margin: 2mm; }
+
+        /* Impresión: el tamaño de página se ajusta desde imprimirFactura(). */
+        @page { size: 5.5in 8.5in; margin: 8mm; }
         @media print {
-            html, body { width:76mm !important; min-width:0 !important; margin:0 !important; padding:0 !important; background:#fff !important; color:#111 !important; font-family:Arial, sans-serif !important; font-size:9px !important; line-height:1.25 !important; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
-            .toolbar, .cut-line { display:none !important; }
-            .invoice { display:block !important; width:76mm !important; max-width:76mm !important; min-width:0 !important; margin:0 auto !important; padding:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; overflow:visible !important; break-after:page; page-break-after:always; }
-            .invoice:last-of-type { break-after:auto !important; page-break-after:auto !important; }
-            .invoice-header { display:block !important; padding:3mm 2mm !important; background:#fff !important; color:#111 !important; border-bottom:1px solid #333 !important; }
-            .brand { display:flex !important; align-items:center !important; gap:2mm !important; }
-            .brand-mark { display:none !important; }
-            .brand-name { color:#111 !important; font-size:13px !important; letter-spacing:0 !important; }
-            .brand-subtitle { color:#333 !important; font-size:8px !important; letter-spacing:.5px !important; }
-            .invoice-number { margin-top:2mm !important; text-align:left !important; min-width:0 !important; }
-            .invoice-kicker { color:#333 !important; font-size:8px !important; letter-spacing:.4px !important; }
-            .invoice-number strong { color:#111 !important; font-size:15px !important; margin-top:1mm !important; }
-            .invoice-number .date { color:#111 !important; font-size:9px !important; margin-top:1mm !important; }
-            .invoice-body { padding:2mm !important; }
-            .copy-label { display:inline-block !important; padding:1mm 2mm !important; border:1px solid #888 !important; background:#fff !important; color:#111 !important; font-size:8px !important; letter-spacing:.3px !important; border-radius:0 !important; }
-            .parties { display:block !important; margin-top:2mm !important; }
-            .info-card { padding:2mm 0 !important; border:0 !important; border-bottom:1px dashed #999 !important; border-radius:0 !important; margin:0 !important; }
-            .info-card .eyebrow { font-size:8px !important; margin-bottom:1mm !important; color:#333 !important; }
-            .client-name { font-size:10px !important; margin-bottom:1mm !important; color:#111 !important; }
-            .info-line { margin:1mm 0 !important; font-size:8.5px !important; color:#111 !important; overflow-wrap:anywhere !important; }
-            .info-line b { color:#111 !important; }
-            .section-title { margin:3mm 0 1mm !important; font-size:8px !important; letter-spacing:.3px !important; color:#111 !important; }
-            .table-wrap { width:100% !important; overflow:visible !important; margin-top:1mm !important; border:0 !important; border-radius:0 !important; }
-            table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-            th { padding:1.5mm .5mm !important; font-size:7px !important; letter-spacing:0 !important; color:#111 !important; background:#eee !important; border-bottom:1px solid #555 !important; overflow-wrap:anywhere !important; }
-            td { padding:1.5mm .5mm !important; font-size:8px !important; color:#111 !important; border-bottom:1px dotted #bbb !important; overflow-wrap:anywhere !important; }
-            th:first-child, td:first-child { width:43% !important; }
-            th:nth-child(2), td:nth-child(2) { width:13% !important; }
-            th:nth-child(3), td:nth-child(3) { width:22% !important; }
-            th:nth-child(4), td:nth-child(4) { width:22% !important; }
-            .num { white-space:normal !important; text-align:right !important; }
-            .product-name { font-weight:700 !important; }
-            .pill { display:inline-block !important; padding:.5mm 1mm !important; font-size:7px !important; border:1px solid #888 !important; background:#fff !important; color:#111 !important; border-radius:0 !important; }
-            .totals-row { display:block !important; margin-top:2mm !important; }
-            .totals { width:100% !important; max-width:none !important; padding:1.5mm 0 !important; border:0 !important; border-top:1px solid #333 !important; border-radius:0 !important; }
-            .total-line { padding:1mm 0 !important; gap:2mm !important; font-size:8.5px !important; color:#111 !important; }
-            .total-line strong { color:#111 !important; }
-            .grand-total { margin:1mm 0 0 !important; padding:2mm 1mm !important; background:#eee !important; color:#111 !important; border-top:1px solid #333 !important; border-bottom:1px solid #333 !important; border-radius:0 !important; font-size:10px !important; }
-            .grand-total strong { color:#111 !important; font-size:12px !important; }
-            .footer { display:block !important; margin-top:3mm !important; padding-top:2mm !important; border-top:1px dashed #888 !important; font-size:7px !important; color:#111 !important; }
-            .legal-note { max-width:none !important; }
-            .footer strong, .thanks { color:#111 !important; }
-            .thanks { margin-top:2mm !important; white-space:normal !important; }
-            .info-card, .payment-item, .totals, .table-wrap, tr { break-inside:avoid !important; page-break-inside:avoid !important; }
-            .invoice-header, .grand-total, thead { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+            html, body {
+                box-sizing: border-box !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                min-width: 0 !important;
+                background: #fff !important;
+                color: #111 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .toolbar, .cut-line { display: none !important; }
+            .invoice {
+                box-sizing: border-box !important;
+                box-shadow: none !important;
+                border: 0 !important;
+                border-radius: 0 !important;
+                overflow: visible !important;
+            }
+
+            /* MEDIA CARTA */
+            body.modo-media-carta {
+                width: 100% !important;
+                font-family: Arial, sans-serif !important;
+                font-size: 10px !important;
+                line-height: 1.3 !important;
+            }
+            body.modo-media-carta .invoice {
+                display: block !important;
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                break-after: page;
+                page-break-after: always;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            body.modo-media-carta .invoice:last-of-type {
+                break-after: auto !important;
+                page-break-after: auto !important;
+            }
+            body.modo-media-carta .invoice-header {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 5mm 0 4mm !important;
+                background: #fff !important;
+                color: #111 !important;
+                border-bottom: 1.5px solid #243b53 !important;
+            }
+            body.modo-media-carta .brand-mark { display: none !important; }
+            body.modo-media-carta .brand-name {
+                color: #102f50 !important;
+                font-size: 17px !important;
+                letter-spacing: .3px !important;
+            }
+            body.modo-media-carta .brand-subtitle,
+            body.modo-media-carta .invoice-kicker,
+            body.modo-media-carta .invoice-number .date { color: #333 !important; }
+            body.modo-media-carta .invoice-number { min-width: 0 !important; text-align: right !important; }
+            body.modo-media-carta .invoice-number strong { color: #102f50 !important; font-size: 20px !important; }
+            body.modo-media-carta .invoice-body { padding: 4mm 0 !important; }
+            body.modo-media-carta .parties {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 4mm !important;
+                margin-top: 4mm !important;
+            }
+            body.modo-media-carta .info-card {
+                padding: 3mm !important;
+                border: 1px solid #d1d5db !important;
+                border-radius: 5px !important;
+                break-inside: avoid;
+            }
+            body.modo-media-carta .info-card .eyebrow { font-size: 8px !important; }
+            body.modo-media-carta .client-name { font-size: 12px !important; }
+            body.modo-media-carta .info-line { font-size: 9px !important; }
+            body.modo-media-carta .section-title { margin: 5mm 0 2mm !important; font-size: 9px !important; }
+            body.modo-media-carta .table-wrap { overflow: visible !important; border-radius: 5px !important; }
+            body.modo-media-carta table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; }
+            body.modo-media-carta th { padding: 3mm 2mm !important; font-size: 8px !important; color: #102f50 !important; background: #edf2f7 !important; }
+            body.modo-media-carta td { padding: 3mm 2mm !important; font-size: 9px !important; overflow-wrap: anywhere !important; }
+            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width: 43% !important; }
+            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width: 13% !important; }
+            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width: 22% !important; }
+            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width: 22% !important; }
+            body.modo-media-carta .totals-row { margin-top: 5mm !important; }
+            body.modo-media-carta .totals { max-width: 95mm !important; padding: 3mm 4mm !important; }
+            body.modo-media-carta .total-line { padding: 2mm 0 !important; font-size: 9px !important; }
+            body.modo-media-carta .grand-total { padding: 3mm !important; background: #102f50 !important; color: #fff !important; }
+            body.modo-media-carta .grand-total strong { color: #fff !important; font-size: 15px !important; }
+            body.modo-media-carta .footer { margin-top: 7mm !important; padding-top: 3mm !important; font-size: 8px !important; }
+
+            /* TIRILLA: una sola copia, compacta y sin contenido después del agradecimiento. */
+            body.modo-tirilla {
+                width: 76mm !important;
+                max-width: 76mm !important;
+                font-family: "Courier New", monospace !important;
+                font-size: 9px !important;
+                line-height: 1.15 !important;
+            }
+            body.modo-tirilla .invoice {
+                display: block !important;
+                width: 76mm !important;
+                max-width: 76mm !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: 0 !important;
+                overflow: visible !important;
+                break: auto !important;
+                page-break-after: auto !important;
+                page-break-inside: auto !important;
+            }
+            body.modo-tirilla .invoice:nth-of-type(n+2),
+            body.modo-tirilla .cut-line { display: none !important; }
+            body.modo-tirilla .invoice-header {
+                display: block !important;
+                margin: 0 !important;
+                padding: 1mm 0 2mm !important;
+                text-align: center !important;
+                background: #fff !important;
+                color: #111 !important;
+                border-bottom: 1px dashed #111 !important;
+            }
+            body.modo-tirilla .brand { justify-content: center !important; }
+            body.modo-tirilla .brand-mark,
+            body.modo-tirilla .brand-subtitle,
+            body.modo-tirilla .invoice-kicker,
+            body.modo-tirilla .copy-label,
+            body.modo-tirilla .legal-note,
+            body.modo-tirilla .payment-strip { display: none !important; }
+            body.modo-tirilla .brand-name {
+                color: #111 !important;
+                font: bold 10px "Courier New", monospace !important;
+                letter-spacing: 0 !important;
+            }
+            body.modo-tirilla .invoice-number { margin-top: 1mm !important; text-align: left !important; }
+            body.modo-tirilla .invoice-number strong { color: #111 !important; font-size: 10px !important; }
+            body.modo-tirilla .invoice-number .date { color: #111 !important; font-size: 8px !important; }
+            body.modo-tirilla .invoice-body { margin: 0 !important; padding: 1mm 0 0 !important; }
+            body.modo-tirilla .parties { display: block !important; margin-top: 1mm !important; }
+            body.modo-tirilla .info-card {
+                margin: 0 !important;
+                padding: 1mm 0 !important;
+                border: 0 !important;
+                border-bottom: 1px dashed #111 !important;
+                border-radius: 0 !important;
+            }
+            body.modo-tirilla .info-card .eyebrow { margin-bottom: .5mm !important; font-size: 8px !important; }
+            body.modo-tirilla .client-name { margin-bottom: .5mm !important; font-size: 9px !important; }
+            body.modo-tirilla .info-line { margin: .5mm 0 !important; font-size: 8px !important; }
+            body.modo-tirilla .section-title { margin: 2mm 0 1mm !important; font-size: 8px !important; letter-spacing: 0 !important; }
+            body.modo-tirilla .table-wrap { margin-top: 1mm !important; border: 0 !important; border-radius: 0 !important; overflow: visible !important; }
+            body.modo-tirilla table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; font-family: "Courier New", monospace !important; }
+            body.modo-tirilla th, body.modo-tirilla td {
+                padding: 1mm .3mm !important;
+                font-size: 7.5px !important;
+                line-height: 1.15 !important;
+                color: #111 !important;
+                overflow-wrap: anywhere !important;
+                border-bottom: 1px dashed #aaa !important;
+            }
+            body.modo-tirilla th { background: #fff !important; }
+            body.modo-tirilla th:first-child, body.modo-tirilla td:first-child { width: 40% !important; }
+            body.modo-tirilla th:nth-child(2), body.modo-tirilla td:nth-child(2) { width: 14% !important; }
+            body.modo-tirilla th:nth-child(3), body.modo-tirilla td:nth-child(3) { width: 23% !important; }
+            body.modo-tirilla th:nth-child(4), body.modo-tirilla td:nth-child(4) { width: 23% !important; }
+            body.modo-tirilla .totals-row { display: block !important; margin-top: 2mm !important; }
+            body.modo-tirilla .totals {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 1mm 0 !important;
+                border: 0 !important;
+                border-top: 1px dashed #111 !important;
+                border-radius: 0 !important;
+            }
+            body.modo-tirilla .total-line { padding: .7mm 0 !important; gap: 2mm !important; font-size: 8px !important; }
+            body.modo-tirilla .grand-total {
+                margin: 1mm 0 0 !important;
+                padding: 1.5mm 0 !important;
+                background: #fff !important;
+                color: #111 !important;
+                border-top: 1px dashed #111 !important;
+                border-bottom: 1px dashed #111 !important;
+                border-radius: 0 !important;
+            }
+            body.modo-tirilla .grand-total strong { color: #111 !important; font-size: 10px !important; }
+            body.modo-tirilla .footer { display: block !important; margin: 1.5mm 0 0 !important; padding: 0 !important; border: 0 !important; font-size: 8px !important; }
+            body.modo-tirilla .thanks {
+                display: block !important;
+                margin: 0 !important;
+                padding: 1mm 0 0 !important;
+                text-align: center !important;
+                font-size: 8px !important;
+                font-weight: 700 !important;
+                white-space: normal !important;
+                color: #111 !important;
+            }
+            body.modo-tirilla .invoice::after,
+            body.modo-tirilla .invoice-body::after,
+            body.modo-tirilla .footer::after { content: none !important; display: none !important; }
         }
-    </style>
+</style>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+
 </head>
+
 <body>
+
 <div class="toolbar">
-    <div class="toolbar-note">Vista previa de factura · Puedes imprimirla o guardarla como PDF.</div>
+
+    <div class="toolbar-note">Elige el formato de impresión: media carta o tirilla térmica de 80 mm.</div>
+
     <div class="toolbar-actions">
+
         <a class="btn btn-secondary" href="/facturas">← Volver a facturas</a>
-        <button type="button" onclick="window.print()" class="btn btn-primary">▣ Imprimir / Guardar PDF</button>
+
+        <button type="button" onclick="imprimirFactura('tirilla')" class="btn btn-secondary">▤ Imprimir tirilla</button>
+
+        <button type="button" onclick="imprimirFactura('media-carta')" class="btn btn-primary">▣ Imprimir media carta</button>
+
     </div>
+
 </div>
 
+
+
 {% set saldo = (factura.total or 0) - (factura.abono or 0) %}
+
 {% set estado_factura = factura.estado or 'pendiente' %}
+
 {% set tipo_venta = factura.tipo_venta or 'contado' %}
+
 {% for copia in ['CLIENTE', 'ARCHIVO'] %}
+
 <section class="invoice">
+
     <header class="invoice-header">
+
         <div class="brand">
+
             <div class="brand-mark">ST</div>
+
             <div>
+
                 <div class="brand-name">ST GESTIÓN</div>
+
                 <div class="brand-subtitle">Control comercial</div>
+
             </div>
+
         </div>
+
         <div class="invoice-number">
+
             <div class="invoice-kicker">Factura / comprobante de venta</div>
+
             <strong>FS-{{ factura.id }}</strong>
+
             <span class="date">{{ factura.fecha|fecha_hora }}</span>
+
         </div>
+
     </header>
 
+
+
     <div class="invoice-body">
+
         <span class="copy-label">▤ Copia {{ copia|lower }}</span>
+
         <div class="parties">
+
             <div class="info-card">
+
                 <div class="eyebrow">Facturado a</div>
+
                 <div class="client-name">{{ factura.cliente or 'Cliente no especificado' }}</div>
+
                 {% if factura.direccion %}<div class="info-line"><b>Dirección:</b> {{ factura.direccion }}</div>{% endif %}
+
                 {% if factura.ciudad %}<div class="info-line"><b>Ciudad:</b> {{ factura.ciudad }}</div>{% endif %}
+
                 {% if factura.telefono %}<div class="info-line"><b>Teléfono:</b> {{ factura.telefono }}</div>{% endif %}
+
                 {% if factura.cliente == 'FACTURA EMPRESA' %}<div class="info-line">Comprobante generado para facturación por empresa.</div>{% endif %}
+
             </div>
+
             <div class="info-card">
+
                 <div class="eyebrow">Información de la venta</div>
+
                 <div class="info-line"><b>Número:</b> FS-{{ factura.id }}</div>
+
                 <div class="info-line"><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</div>
+
                 <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
+
                 {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
+
                 <div class="info-line"><b>Estado:</b>
+
                     {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>
+
                     {% elif estado_factura == 'parcial' %}<span class="pill pill-partial">Pago parcial</span>
+
                     {% else %}<span class="pill pill-paid">Pagado</span>{% endif %}
+
                 </div>
+
             </div>
+
         </div>
+
+
 
         <div class="section-title">Detalle de productos</div>
+
         <div class="table-wrap">
+
             <table>
+
                 <thead><tr><th>Descripción</th><th class="num">Unidades</th><th class="num">Precio unitario</th><th class="num">Subtotal</th></tr></thead>
+
                 <tbody>
+
                 {% for d in detalles %}
+
                     <tr>
+
                         <td class="product-name">{{ d.producto }}</td>
+
                         <td class="num">{{ d.cantidad }}</td>
+
                         <td class="num">${{ "{:,.0f}".format(d.precio_unitario or 0) }}</td>
+
                         <td class="num">${{ "{:,.0f}".format(d.subtotal or 0) }}</td>
+
                     </tr>
+
                 {% else %}
+
                     <tr><td colspan="4">No hay productos asociados a esta factura.</td></tr>
+
                 {% endfor %}
+
                 </tbody>
+
             </table>
+
         </div>
+
+
 
         <div class="totals-row">
+
             <div class="totals">
+
                 <div class="total-line"><span>Total de la venta</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
+
                 <div class="total-line"><span>Abonado</span><strong>${{ "{:,.0f}".format(factura.abono or 0) }}</strong></div>
+
                 <div class="total-line balance"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo) }}</strong></div>
+
                 <div class="grand-total"><span>TOTAL</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
+
             </div>
+
         </div>
 
+
+
         <footer class="footer">
+
             <div class="legal-note"><strong>Nota:</strong> Este documento es un comprobante interno de gestión comercial. No reemplaza la factura electrónica validada por la DIAN cuando esta sea exigible.</div>
+
             <div class="thanks">Gracias por tu compra.</div>
+
         </footer>
+
     </div>
+
 </section>
+
 {% if not loop.last %}<div class="cut-line"><span>COPIA CLIENTE · COPIA ARCHIVO</span></div>{% endif %}
+
 {% endfor %}
+
+
+
+<script>
+(function () {
+    let restauracionPendiente = false;
+
+    window.imprimirFactura = function (modo) {
+        const esTirilla = modo === 'tirilla';
+        document.body.classList.remove('modo-tirilla', 'modo-media-carta');
+        document.body.classList.add(esTirilla ? 'modo-tirilla' : 'modo-media-carta');
+
+        let estilo = document.getElementById('st-print-page-size');
+        if (!estilo) {
+            estilo = document.createElement('style');
+            estilo.id = 'st-print-page-size';
+            document.head.appendChild(estilo);
+        }
+        estilo.textContent = esTirilla
+            ? '@page { size: 80mm auto; margin: 1.5mm; }'
+            : '@page { size: 5.5in 8.5in; margin: 8mm; }';
+
+        restauracionPendiente = true;
+        window.setTimeout(function () {
+            window.print();
+        }, 150);
+    };
+
+    window.addEventListener('afterprint', function () {
+        if (!restauracionPendiente) return;
+        document.body.classList.remove('modo-tirilla', 'modo-media-carta');
+        const estilo = document.getElementById('st-print-page-size');
+        if (estilo) estilo.textContent = '';
+        restauracionPendiente = false;
+    });
+})();
+</script>
+
+
+
 </body>
+
 </html>
