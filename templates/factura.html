@@ -241,11 +241,19 @@
             body.modo-media-carta thead { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
         }
 
-        /* Tirilla: una copia por página/segmento del rollo, sin juntar ambas copias. */
-        body.modo-tirilla .invoice { page: tirilla; }
-        @page tirilla { size: 80mm auto; margin: 2mm; }
+        /* Tirilla: contenido compacto y ancho real de rollo. El controlador Epson
+           define el largo del recibo; no forzar páginas altas desde el navegador. */
+        body.modo-tirilla .invoice { page: auto !important; }
+        @page tirilla { margin: 0; }
         @media print {
-            body.modo-tirilla { width:76mm !important; min-width:0 !important; }
+            html:has(body.modo-tirilla),
+            body.modo-tirilla {
+                width:76mm !important;
+                min-width:0 !important;
+                max-width:76mm !important;
+                margin:0 !important;
+                padding:0 !important;
+            }
             body.modo-tirilla .invoice {
                 display:block !important;
                 width:76mm !important;
@@ -255,14 +263,17 @@
                 min-height:0 !important;
                 max-height:none !important;
                 margin:0 !important;
+                padding:0 !important;
                 border:0 !important;
                 border-radius:0 !important;
                 box-shadow:none !important;
                 overflow:visible !important;
-                break-after:page !important;
-                page-break-after:always !important;
                 break-inside:avoid !important;
                 page-break-inside:avoid !important;
+            }
+            body.modo-tirilla .invoice + .invoice {
+                break-before:page !important;
+                page-break-before:always !important;
             }
             body.modo-tirilla .invoice:last-of-type {
                 break-after:auto !important;
@@ -438,7 +449,7 @@ function imprimirFactura(modo) {
     if (modo === 'tirilla') {
         document.documentElement.style.width = '76mm';
         document.body.style.width = '76mm';
-        estilo.textContent = '@page { size: 80mm auto; margin: 2mm; }';
+        estilo.textContent = '@page { margin: 0; }';
     } else {
         document.documentElement.style.width = 'auto';
         document.body.style.width = 'auto';
