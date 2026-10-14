@@ -150,289 +150,83 @@
             body.modo-media-carta .thanks { margin:0 !important; color:#111 !important; }
         }
 
-        /* TIRILLA: no imponer una altura fija; cada copia comienza como recibo independiente. */
-        
-        /* TIRILLA TÉRMICA DE 58 MM: una sola copia y sin espacio final. */
+        /* TIRILLA EPSON 58 MM: una copia, contenido compacto y sin relleno final. */
         @media print {
-            @page {
-                size: 58mm auto;
-                margin: 0;
-            }
+            @page { size: 58mm auto; margin: 0; }
 
-            html:has(body.modo-tirilla),
-            body.modo-tirilla {
-                width: 58mm !important;
-                min-width: 0 !important;
-                max-width: 58mm !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #fff !important;
-                font-size: 9px !important;
-                line-height: 1.15 !important;
-                overflow: visible !important;
+            html:has(body.modo-tirilla), body.modo-tirilla {
+                width:58mm !important; min-width:0 !important; max-width:58mm !important;
+                margin:0 !important; padding:0 !important; background:#fff !important;
+                font-size:9px !important; line-height:1.15 !important;
             }
-
             body.modo-tirilla .toolbar,
             body.modo-tirilla .cut-line,
-            body.modo-tirilla .invoice:nth-of-type(2) {
-                display: none !important;
-            }
+            body.modo-tirilla section.invoice:nth-of-type(2) { display:none !important; }
 
             body.modo-tirilla .invoice {
-                display: block !important;
-                width: 58mm !important;
-                min-width: 0 !important;
-                max-width: 58mm !important;
-                height: auto !important;
-                min-height: 0 !important;
-                max-height: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
-                overflow: visible !important;
-                break-inside: auto !important;
-                page-break-inside: auto !important;
-                break-after: auto !important;
-                page-break-after: auto !important;
+                display:block !important; width:58mm !important; min-width:0 !important; max-width:58mm !important;
+                height:auto !important; min-height:0 !important; max-height:none !important;
+                margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important;
+                box-shadow:none !important; overflow:visible !important;
+                break-inside:auto !important; page-break-inside:auto !important;
+                break-after:auto !important; page-break-after:auto !important;
             }
-
             body.modo-tirilla .invoice-header {
-                display: flex !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                gap: 2mm !important;
-                padding: 2mm 1.5mm !important;
-                background: #fff !important;
-                color: #111 !important;
-                border-bottom: 1px solid #777 !important;
+                display:flex !important; justify-content:space-between !important; align-items:center !important;
+                gap:2mm !important; padding:2mm 1.5mm !important;
+                background:#fff !important; color:#111 !important; border-bottom:1px solid #777 !important;
             }
-
-            body.modo-tirilla .brand {
-                gap: 1mm !important;
-            }
-
-            body.modo-tirilla .brand-mark {
-                display: none !important;
-            }
-
-            body.modo-tirilla .brand-name {
-                color: #111 !important;
-                font-size: 11px !important;
-                letter-spacing: 0 !important;
-            }
-
-            body.modo-tirilla .brand-subtitle {
-                color: #333 !important;
-                font-size: 7px !important;
-                letter-spacing: 0 !important;
-            }
-
-            body.modo-tirilla .invoice-number {
-                min-width: 0 !important;
-                text-align: right !important;
-            }
-
-            body.modo-tirilla .invoice-kicker {
-                color: #333 !important;
-                font-size: 6px !important;
-                letter-spacing: 0 !important;
-            }
-
-            body.modo-tirilla .invoice-number strong {
-                color: #111 !important;
-                font-size: 12px !important;
-            }
-
-            body.modo-tirilla .invoice-number .date {
-                color: #111 !important;
-                font-size: 7px !important;
-                margin-top: 1mm !important;
-            }
-
-            body.modo-tirilla .invoice-body {
-                padding: 1mm 1.5mm 0 !important;
-                margin: 0 !important;
-            }
-
+            body.modo-tirilla .brand { gap:1mm !important; }
+            body.modo-tirilla .brand-mark { display:none !important; }
+            body.modo-tirilla .brand-name { color:#111 !important; font-size:11px !important; letter-spacing:0 !important; }
+            body.modo-tirilla .brand-subtitle { color:#333 !important; font-size:7px !important; letter-spacing:0 !important; }
+            body.modo-tirilla .invoice-number { min-width:0 !important; text-align:right !important; }
+            body.modo-tirilla .invoice-kicker { color:#333 !important; font-size:6px !important; letter-spacing:0 !important; }
+            body.modo-tirilla .invoice-number strong { color:#111 !important; font-size:12px !important; }
+            body.modo-tirilla .invoice-number .date { color:#111 !important; font-size:7px !important; margin-top:1mm !important; }
+            body.modo-tirilla .invoice-body { margin:0 !important; padding:1mm 1.5mm 0 !important; }
             body.modo-tirilla .copy-label {
-                padding: 0 !important;
-                margin: 0 0 1mm !important;
-                background: transparent !important;
-                color: #111 !important;
-                font-size: 7px !important;
-                letter-spacing: 0 !important;
+                padding:0 !important; margin:0 0 1mm !important; background:transparent !important;
+                color:#111 !important; font-size:7px !important; letter-spacing:0 !important;
             }
-
-            body.modo-tirilla .parties {
-                display: block !important;
-                margin: 0 !important;
-                gap: 0 !important;
-            }
-
+            body.modo-tirilla .parties { display:block !important; margin:0 !important; gap:0 !important; }
             body.modo-tirilla .info-card {
-                padding: 1mm 0 !important;
-                margin: 0 !important;
-                border: 0 !important;
-                border-bottom: 1px dashed #aaa !important;
-                border-radius: 0 !important;
+                padding:1mm 0 !important; margin:0 !important; border:0 !important;
+                border-bottom:1px dashed #aaa !important; border-radius:0 !important;
             }
-
-            body.modo-tirilla .info-card .eyebrow {
-                margin: 0 0 .5mm !important;
-                font-size: 7px !important;
-            }
-
-            body.modo-tirilla .client-name {
-                margin: 0 0 .5mm !important;
-                font-size: 9px !important;
-            }
-
-            body.modo-tirilla .info-line {
-                margin: .5mm 0 !important;
-                font-size: 8px !important;
-                line-height: 1.15 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla .pill {
-                padding: 0 !important;
-                background: transparent !important;
-                color: #111 !important;
-                font-size: 8px !important;
-            }
-
-            body.modo-tirilla .section-title {
-                margin: 1.5mm 0 1mm !important;
-                font-size: 8px !important;
-                letter-spacing: 0 !important;
-            }
-
-            body.modo-tirilla .table-wrap {
-                width: 100% !important;
-                margin: 0 !important;
-                overflow: visible !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-            }
-
-            body.modo-tirilla table {
-                width: 100% !important;
-                min-width: 0 !important;
-                table-layout: fixed !important;
-                border-collapse: collapse !important;
-            }
-
-            body.modo-tirilla th {
-                padding: 1mm .5mm !important;
-                font-size: 6.5px !important;
-                color: #111 !important;
-                background: #eee !important;
-                letter-spacing: 0 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla td {
-                padding: 1mm .5mm !important;
-                font-size: 7.5px !important;
-                line-height: 1.15 !important;
-                color: #111 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla th:first-child,
-            body.modo-tirilla td:first-child {
-                width: 40% !important;
-            }
-
-            body.modo-tirilla th:nth-child(2),
-            body.modo-tirilla td:nth-child(2) {
-                width: 13% !important;
-            }
-
-            body.modo-tirilla th:nth-child(3),
-            body.modo-tirilla td:nth-child(3) {
-                width: 24% !important;
-            }
-
-            body.modo-tirilla th:nth-child(4),
-            body.modo-tirilla td:nth-child(4) {
-                width: 23% !important;
-            }
-
-            body.modo-tirilla .num {
-                white-space: normal !important;
-                overflow-wrap: anywhere !important;
-                text-align: right !important;
-            }
-
-            body.modo-tirilla .totals-row {
-                display: flex !important;
-                justify-content: flex-end !important;
-                margin: 1mm 0 0 !important;
-            }
-
-            body.modo-tirilla .totals {
-                width: 100% !important;
-                max-width: none !important;
-                padding: 1mm 0 !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-            }
-
-            body.modo-tirilla .total-line {
-                padding: .7mm 0 !important;
-                font-size: 8px !important;
-            }
-
+            body.modo-tirilla .info-card .eyebrow { margin:0 0 .5mm !important; font-size:7px !important; }
+            body.modo-tirilla .client-name { margin:0 0 .5mm !important; font-size:9px !important; }
+            body.modo-tirilla .info-line { margin:.5mm 0 !important; font-size:8px !important; line-height:1.15 !important; overflow-wrap:anywhere !important; }
+            body.modo-tirilla .pill { padding:0 !important; background:transparent !important; color:#111 !important; font-size:8px !important; }
+            body.modo-tirilla .section-title { margin:1.5mm 0 1mm !important; font-size:8px !important; letter-spacing:0 !important; }
+            body.modo-tirilla .table-wrap { width:100% !important; margin:0 !important; overflow:visible !important; border:0 !important; border-radius:0 !important; }
+            body.modo-tirilla table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
+            body.modo-tirilla th { padding:1mm .5mm !important; font-size:6.5px !important; color:#111 !important; background:#eee !important; letter-spacing:0 !important; overflow-wrap:anywhere !important; }
+            body.modo-tirilla td { padding:1mm .5mm !important; font-size:7.5px !important; line-height:1.15 !important; color:#111 !important; overflow-wrap:anywhere !important; }
+            body.modo-tirilla th:first-child, body.modo-tirilla td:first-child { width:40% !important; }
+            body.modo-tirilla th:nth-child(2), body.modo-tirilla td:nth-child(2) { width:13% !important; }
+            body.modo-tirilla th:nth-child(3), body.modo-tirilla td:nth-child(3) { width:24% !important; }
+            body.modo-tirilla th:nth-child(4), body.modo-tirilla td:nth-child(4) { width:23% !important; }
+            body.modo-tirilla .num { white-space:normal !important; overflow-wrap:anywhere !important; text-align:right !important; }
+            body.modo-tirilla .totals-row { display:flex !important; justify-content:flex-end !important; margin:1mm 0 0 !important; }
+            body.modo-tirilla .totals { width:100% !important; max-width:none !important; padding:1mm 0 0 !important; border:0 !important; border-radius:0 !important; }
+            body.modo-tirilla .total-line { padding:.7mm 0 !important; font-size:8px !important; }
             body.modo-tirilla .grand-total {
-                margin: 1mm 0 0 !important;
-                padding: 1.5mm 0 !important;
-                background: #fff !important;
-                color: #111 !important;
-                border-top: 1px dashed #777 !important;
-                border-bottom: 1px dashed #777 !important;
-                border-radius: 0 !important;
-                font-size: 9px !important;
+                margin:1mm 0 0 !important; padding:1.5mm 0 !important; background:#fff !important; color:#111 !important;
+                border-top:1px dashed #777 !important; border-bottom:1px dashed #777 !important; border-radius:0 !important; font-size:9px !important;
             }
-
-            body.modo-tirilla .grand-total strong {
-                color: #111 !important;
-                font-size: 11px !important;
-            }
-
+            body.modo-tirilla .grand-total strong { color:#111 !important; font-size:11px !important; }
             body.modo-tirilla .footer {
-                display: block !important;
-                margin: 1.5mm 0 0 !important;
-                padding: 0 0 1mm !important;
-                border: 0 !important;
-                font-size: 7px !important;
-                line-height: 1.15 !important;
-                color: #111 !important;
+                display:block !important; margin:1.5mm 0 0 !important; padding:0 !important; border:0 !important;
+                font-size:7px !important; line-height:1.15 !important; color:#111 !important;
             }
-
-            body.modo-tirilla .legal-note {
-                max-width: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-
+            body.modo-tirilla .legal-note { max-width:none !important; margin:0 !important; padding:0 !important; }
             body.modo-tirilla .thanks {
-                display: block !important;
-                margin: 1mm 0 0 !important;
-                padding: 0 !important;
-                color: #111 !important;
-                white-space: normal !important;
-                font-size: 8px !important;
-                font-weight: 800 !important;
+                display:block !important; margin:1mm 0 0 !important; padding:0 !important; color:#111 !important;
+                white-space:normal !important; font-size:8px !important; font-weight:800 !important;
             }
-
-            body.modo-tirilla .invoice-body,
-            body.modo-tirilla .footer,
-            body.modo-tirilla .thanks {
-                break-after: auto !important;
-                page-break-after: auto !important;
+            body.modo-tirilla .invoice-body, body.modo-tirilla .footer, body.modo-tirilla .thanks {
+                break-after:auto !important; page-break-after:auto !important;
             }
         }
     </style>
@@ -532,15 +326,11 @@
 {% endfor %}
 
 <script>
-
 function imprimirFactura(modo) {
     document.body.classList.remove('modo-tirilla', 'modo-media-carta');
-    document.body.classList.add(
-        modo === 'tirilla' ? 'modo-tirilla' : 'modo-media-carta'
-    );
+    document.body.classList.add(modo === 'tirilla' ? 'modo-tirilla' : 'modo-media-carta');
 
     let estilo = document.getElementById('st-print-page-size');
-
     if (!estilo) {
         estilo = document.createElement('style');
         estilo.id = 'st-print-page-size';
@@ -550,15 +340,11 @@ function imprimirFactura(modo) {
     if (modo === 'tirilla') {
         document.documentElement.style.width = '58mm';
         document.body.style.width = '58mm';
-
-        estilo.textContent =
-            '@page { size: 58mm auto; margin: 0; }';
+        estilo.textContent = '@page { size: 58mm auto; margin: 0; }';
     } else {
         document.documentElement.style.width = '';
         document.body.style.width = '';
-
-        estilo.textContent =
-            '@page { size: letter portrait; margin: 4mm; }';
+        estilo.textContent = '@page { size: letter portrait; margin: 4mm; }';
     }
 
     window.setTimeout(function () {
