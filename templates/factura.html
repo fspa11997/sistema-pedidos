@@ -345,7 +345,9 @@ function imprimirFactura(modo) {
     if (modo === 'tirilla') {
         document.documentElement.style.width = '58mm';
         document.body.style.width = '58mm';
-        estilo.textContent = '@page { size: 58mm 200mm; margin: 0; }';
+        document.documentElement.style.height = 'auto';
+        document.body.style.height = 'auto';
+        estilo.textContent = '@page { size: 58mm auto; margin: 0; }';
     } else {
         document.documentElement.style.width = '';
         document.body.style.width = '';
@@ -354,14 +356,20 @@ function imprimirFactura(modo) {
 
     window.setTimeout(function () {
         if (modo === 'tirilla') {
-            // Crear una página del alto real del contenido para evitar el tramo de papel en blanco.
+            // Forzar el recálculo con los estilos de tirilla ya aplicados.
+            // Medir el contenido real (no una altura fija de página) y añadir solo un pequeño margen de corte.
             const primera = document.querySelector('body.modo-tirilla section.invoice');
             if (primera) {
-                const altoPx = primera.getBoundingClientRect().height;
+                primera.style.setProperty('height', 'auto', 'important');
+                primera.style.setProperty('min-height', '0', 'important');
+                primera.style.setProperty('max-height', 'none', 'important');
+                primera.style.setProperty('overflow', 'visible', 'important');
+                void primera.offsetHeight;
+                const altoPx = Math.max(primera.scrollHeight, primera.getBoundingClientRect().height);
                 const altoMm = Math.max(35, Math.ceil(altoPx * 25.4 / 96 + 2));
-                estilo.textContent = '@page { size: 58mm ' + altoMm + 'mm; margin: 0; }';
-                document.documentElement.style.height = altoMm + 'mm';
-                document.body.style.height = altoMm + 'mm';
+                estilo.textContent = '@page { size: 58mm ' + altoMm + 'mm; margin: 0 !important; }';
+                document.documentElement.style.setProperty('height', altoMm + 'mm', 'important');
+                document.body.style.setProperty('height', altoMm + 'mm', 'important');
             }
         }
         window.print();
