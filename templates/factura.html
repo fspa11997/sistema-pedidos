@@ -102,52 +102,64 @@
             .invoice { box-sizing:border-box !important; box-shadow:none !important; border-radius:0 !important; }
         }
 
-        /* MEDIA CARTA: hoja carta con dos comprobantes, uno en cada mitad. */
+        /* CARTA: factura profesional; cada copia ocupa una página completa. */
         @media print {
+            @page { size: letter portrait; margin: 10mm; }
             html:has(body.modo-media-carta), body.modo-media-carta {
-                width:auto !important; min-width:0 !important; max-width:none !important;
-                margin:0 !important; padding:0 !important; font-size:8px !important; line-height:1.12 !important;
+                width: auto !important; min-width: 0 !important; max-width: none !important;
+                margin: 0 !important; padding: 0 !important; background: #fff !important;
+                color: #172b43 !important; font-size: 10pt !important; line-height: 1.35 !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
             body.modo-media-carta .invoice {
-                display:block !important; width:100% !important; max-width:none !important; min-width:0 !important;
-                height:133mm !important; min-height:133mm !important; max-height:133mm !important;
-                margin:0 !important; padding:0 !important; overflow:hidden !important; border:0 !important;
-                border-bottom:1px dashed #888 !important; break-inside:avoid !important; page-break-inside:avoid !important;
-                break-after:avoid !important; page-break-after:avoid !important;
+                display: flex !important; flex-direction: column !important;
+                width: 100% !important; max-width: none !important; min-width: 0 !important;
+                min-height: 0 !important; height: auto !important; max-height: none !important;
+                margin: 0 !important; padding: 0 !important; overflow: visible !important;
+                border: 1px solid #d7e1ec !important; border-radius: 4mm !important;
+                box-shadow: none !important; break-inside: avoid !important; page-break-inside: avoid !important;
+                break-after: page !important; page-break-after: always !important;
             }
-            body.modo-media-carta .invoice-header { display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:space-between !important; padding:2mm 4mm !important; background:#fff !important; color:#111 !important; border-bottom:1px solid #333 !important; }
-            body.modo-media-carta .brand { display:flex !important; gap:2mm !important; }
-            body.modo-media-carta .brand-mark { display:none !important; }
-            body.modo-media-carta .brand-name { color:#111 !important; font-size:12px !important; }
-            body.modo-media-carta .brand-subtitle { color:#333 !important; font-size:7px !important; }
-            body.modo-media-carta .invoice-number { min-width:0 !important; margin:0 !important; text-align:right !important; }
-            body.modo-media-carta .invoice-kicker { color:#333 !important; font-size:7px !important; }
-            body.modo-media-carta .invoice-number strong { color:#111 !important; font-size:13px !important; }
-            body.modo-media-carta .invoice-number .date { color:#111 !important; font-size:7px !important; }
-            body.modo-media-carta .invoice-body { padding:1.5mm 4mm !important; }
-            body.modo-media-carta .copy-label { padding:.5mm 1.5mm !important; font-size:7px !important; }
-            body.modo-media-carta .parties { display:grid !important; grid-template-columns:1fr 1fr !important; gap:3mm !important; margin-top:1mm !important; }
-            body.modo-media-carta .info-card { padding:1mm 2mm !important; margin:0 !important; border:1px solid #bbb !important; border-radius:0 !important; }
-            body.modo-media-carta .info-card .eyebrow { font-size:6px !important; margin-bottom:.5mm !important; }
-            body.modo-media-carta .client-name { font-size:8px !important; margin-bottom:.5mm !important; }
-            body.modo-media-carta .info-line { margin:.3mm 0 !important; font-size:6.5px !important; line-height:1.1 !important; }
-            body.modo-media-carta .section-title { margin:1mm 0 .5mm !important; font-size:7px !important; }
-            body.modo-media-carta .table-wrap { width:100% !important; margin-top:.5mm !important; overflow:visible !important; border:0 !important; }
+            body.modo-media-carta .invoice:last-of-type { break-after: auto !important; page-break-after: auto !important; }
+            body.modo-media-carta .invoice-header {
+                display:flex !important; flex-direction:row !important; align-items:center !important;
+                justify-content:space-between !important; gap:8mm !important; padding:10mm 11mm !important;
+                background:linear-gradient(125deg,#102f50,#1c5688) !important; color:#fff !important;
+                border:0 !important; border-radius:3mm 3mm 0 0 !important;
+            }
+            body.modo-media-carta .brand { display:flex !important; gap:4mm !important; }
+            body.modo-media-carta .brand-mark { display:grid !important; width:14mm !important; height:14mm !important; flex:0 0 14mm !important; border-radius:3mm !important; font-size:15pt !important; }
+            body.modo-media-carta .brand-name { color:#fff !important; font-size:19pt !important; }
+            body.modo-media-carta .brand-subtitle { color:#d7e7f7 !important; font-size:8pt !important; }
+            body.modo-media-carta .invoice-number { min-width:48mm !important; margin:0 !important; text-align:right !important; }
+            body.modo-media-carta .invoice-kicker { color:#d7e7f7 !important; font-size:8pt !important; letter-spacing:1pt !important; }
+            body.modo-media-carta .invoice-number strong { color:#fff !important; font-size:23pt !important; }
+            body.modo-media-carta .invoice-number .date { color:#e2edf8 !important; font-size:9pt !important; }
+            body.modo-media-carta .invoice-body { padding:9mm 11mm 10mm !important; }
+            body.modo-media-carta .copy-label { padding:2mm 3mm !important; font-size:8pt !important; border-radius:2mm !important; }
+            body.modo-media-carta .parties { display:grid !important; grid-template-columns:1fr 1fr !important; gap:5mm !important; margin-top:5mm !important; }
+            body.modo-media-carta .info-card { padding:5mm !important; margin:0 !important; border:1px solid #dce5ef !important; border-radius:3mm !important; }
+            body.modo-media-carta .info-card .eyebrow { font-size:8pt !important; margin-bottom:2mm !important; color:#64748b !important; }
+            body.modo-media-carta .client-name { font-size:12pt !important; margin-bottom:2mm !important; color:#102f50 !important; }
+            body.modo-media-carta .info-line { margin:1.2mm 0 !important; font-size:9pt !important; line-height:1.35 !important; }
+            body.modo-media-carta .section-title { margin:8mm 0 3mm !important; font-size:9pt !important; letter-spacing:1pt !important; }
+            body.modo-media-carta .table-wrap { width:100% !important; margin-top:2mm !important; overflow:visible !important; border:1px solid #dce5ef !important; border-radius:2mm !important; }
             body.modo-media-carta table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-            body.modo-media-carta th { padding:.8mm !important; font-size:6px !important; color:#111 !important; background:#eee !important; }
-            body.modo-media-carta td { padding:.6mm .8mm !important; font-size:6.5px !important; line-height:1.05 !important; color:#111 !important; }
-            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width:43% !important; }
-            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width:13% !important; }
-            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width:22% !important; }
-            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width:22% !important; }
-            body.modo-media-carta .totals-row { display:flex !important; justify-content:flex-end !important; margin-top:.8mm !important; }
-            body.modo-media-carta .totals { width:55% !important; max-width:none !important; padding:.8mm 1.5mm !important; border:1px solid #aaa !important; border-radius:0 !important; }
-            body.modo-media-carta .total-line { padding:.4mm 0 !important; font-size:6.5px !important; }
-            body.modo-media-carta .grand-total { margin:.5mm 0 0 !important; padding:.8mm !important; font-size:8px !important; background:#eee !important; color:#111 !important; border-radius:0 !important; }
-            body.modo-media-carta .grand-total strong { font-size:9px !important; color:#111 !important; }
-            body.modo-media-carta .footer { display:flex !important; flex-direction:row !important; gap:3mm !important; margin-top:.8mm !important; padding-top:.8mm !important; font-size:5.5px !important; line-height:1.05 !important; color:#111 !important; }
-            body.modo-media-carta .legal-note { max-width:75% !important; }
-            body.modo-media-carta .thanks { margin:0 !important; color:#111 !important; }
+            body.modo-media-carta th { padding:3mm 2.5mm !important; font-size:8pt !important; color:#fff !important; background:#173b63 !important; border-bottom:0 !important; }
+            body.modo-media-carta td { padding:3mm 2.5mm !important; font-size:9pt !important; line-height:1.3 !important; color:#334155 !important; border-bottom:1px solid #e8eef5 !important; }
+            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width:40% !important; }
+            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width:14% !important; }
+            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width:23% !important; }
+            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width:23% !important; }
+            body.modo-media-carta .totals-row { display:flex !important; justify-content:flex-end !important; margin-top:7mm !important; }
+            body.modo-media-carta .totals { width:78mm !important; max-width:none !important; padding:4mm 5mm !important; border:1px solid #dce5ef !important; border-radius:3mm !important; }
+            body.modo-media-carta .total-line { padding:2mm 0 !important; font-size:9pt !important; }
+            body.modo-media-carta .grand-total { margin:3mm -5mm -4mm !important; padding:4mm 5mm !important; font-size:11pt !important; background:#102f50 !important; color:#fff !important; border-radius:0 0 3mm 3mm !important; }
+            body.modo-media-carta .grand-total strong { font-size:16pt !important; color:#fff !important; }
+            body.modo-media-carta .footer { display:flex !important; flex-direction:row !important; justify-content:space-between !important; gap:8mm !important; margin-top:10mm !important; padding-top:4mm !important; font-size:8pt !important; line-height:1.35 !important; color:#64748b !important; border-top:1px solid #dce5ef !important; }
+            body.modo-media-carta .legal-note { max-width:120mm !important; }
+            body.modo-media-carta .thanks { margin:0 !important; color:#2364aa !important; font-size:10pt !important; }
+            body.modo-media-carta .cut-line { display:none !important; }
         }
 
         /* TIRILLA EPSON 58 MM: una copia, contenido compacto y sin relleno final. */
@@ -240,11 +252,11 @@
 </head>
 <body>
 <div class="toolbar">
-    <div class="toolbar-note">Elige el formato de impresión. Tirilla imprime cada copia por separado; media carta coloca las dos copias en una hoja tamaño carta.</div>
+    <div class="toolbar-note">Elige el formato de impresión. La tirilla imprime una copia compacta; el formato carta imprime cada copia en una página completa.</div>
     <div class="toolbar-actions">
         <a class="btn btn-secondary" href="/facturas">← Volver a facturas</a>
         <button type="button" onclick="imprimirFactura('tirilla')" class="btn btn-secondary">▤ Imprimir tirilla</button>
-        <button type="button" onclick="imprimirFactura('media-carta')" class="btn btn-primary">▣ Media carta · 2 por hoja</button>
+        <button type="button" onclick="imprimirFactura('media-carta')" class="btn btn-primary">▣ Imprimir carta</button>
     </div>
 </div>
 
@@ -351,7 +363,7 @@ function imprimirFactura(modo) {
     } else {
         document.documentElement.style.width = '';
         document.body.style.width = '';
-        estilo.textContent = '@page { size: letter portrait; margin: 4mm; }';
+        estilo.textContent = '@page { size: letter portrait; margin: 10mm; }';
     }
 
     window.setTimeout(function () {
