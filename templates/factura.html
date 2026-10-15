@@ -156,8 +156,9 @@
 
             html:has(body.modo-tirilla), body.modo-tirilla {
                 width:58mm !important; min-width:0 !important; max-width:58mm !important;
-                margin:0 !important; padding:0 !important; background:#fff !important;
-                font-size:9px !important; line-height:1.15 !important;
+                height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important;
+                background:#fff !important; font-size:9px !important; line-height:1.15 !important;
+                overflow:visible !important;
             }
             body.modo-tirilla .toolbar,
             body.modo-tirilla .cut-line,
@@ -228,6 +229,10 @@
             body.modo-tirilla .invoice-body, body.modo-tirilla .footer, body.modo-tirilla .thanks {
                 break-after:auto !important; page-break-after:auto !important;
             }
+            body.modo-tirilla .invoice-body { height:auto !important; min-height:0 !important; }
+            body.modo-tirilla .footer { height:auto !important; min-height:0 !important; }
+            body.modo-tirilla .invoice:last-of-type { display:none !important; }
+            body.modo-tirilla * { animation:none !important; transition:none !important; }
         }
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
@@ -340,7 +345,7 @@ function imprimirFactura(modo) {
     if (modo === 'tirilla') {
         document.documentElement.style.width = '58mm';
         document.body.style.width = '58mm';
-        estilo.textContent = '@page { size: 58mm auto; margin: 0; }';
+        estilo.textContent = '@page { size: 58mm 200mm; margin: 0; }';
     } else {
         document.documentElement.style.width = '';
         document.body.style.width = '';
@@ -348,14 +353,27 @@ function imprimirFactura(modo) {
     }
 
     window.setTimeout(function () {
+        if (modo === 'tirilla') {
+            // Crear una página del alto real del contenido para evitar el tramo de papel en blanco.
+            const primera = document.querySelector('body.modo-tirilla section.invoice');
+            if (primera) {
+                const altoPx = primera.getBoundingClientRect().height;
+                const altoMm = Math.max(35, Math.ceil(altoPx * 25.4 / 96 + 2));
+                estilo.textContent = '@page { size: 58mm ' + altoMm + 'mm; margin: 0; }';
+                document.documentElement.style.height = altoMm + 'mm';
+                document.body.style.height = altoMm + 'mm';
+            }
+        }
         window.print();
-    }, 120);
+    }, 250);
 }
 
 window.addEventListener('afterprint', function () {
     document.body.classList.remove('modo-tirilla', 'modo-media-carta');
     document.documentElement.style.width = '';
     document.body.style.width = '';
+    document.documentElement.style.height = '';
+    document.body.style.height = '';
 });
 </script>
 

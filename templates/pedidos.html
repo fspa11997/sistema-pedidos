@@ -20,7 +20,7 @@
             padding: 30px;
             color: #333;
         }
-        .container { max-width: 1400px; margin: auto; }
+        .container { width:100%; max-width:none; margin:0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
@@ -100,7 +100,26 @@
             box-shadow: 0 2px 10px rgba(0,0,0,.08);
             border: 1px solid #e5e7eb;
         }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        /* En PC, repartir las 13 columnas dentro del ancho disponible. */
+        table { width:100%; min-width:0; table-layout:fixed; border-collapse:collapse; }
+        th, td { padding:8px 5px; text-align:left; white-space:normal; overflow-wrap:anywhere; word-break:normal; }
+        th { font-size:10px; letter-spacing:0; }
+        td { font-size:11px; }
+        th:nth-child(1), td:nth-child(1) { width:4%; }
+        th:nth-child(2), td:nth-child(2) { width:9%; }
+        th:nth-child(3), td:nth-child(3) { width:10%; }
+        th:nth-child(4), td:nth-child(4) { width:11%; }
+        th:nth-child(5), td:nth-child(5) { width:7%; }
+        th:nth-child(6), td:nth-child(6) { width:7%; }
+        th:nth-child(7), td:nth-child(7) { width:8%; }
+        th:nth-child(8), td:nth-child(8) { width:4%; }
+        th:nth-child(9), td:nth-child(9) { width:7%; }
+        th:nth-child(10), td:nth-child(10) { width:8%; }
+        th:nth-child(11), td:nth-child(11) { width:8%; }
+        th:nth-child(12), td:nth-child(12) { width:8%; }
+        th:nth-child(13), td:nth-child(13) { width:9%; }
+        .acciones { display:flex; flex-wrap:wrap; gap:4px; align-items:center; }
+        .acciones button { padding:6px 7px; }
         thead { background: #2563eb; color: white; }
         th, td { padding: 13px 14px; text-align: left; white-space: nowrap; }
         th { font-size: 12px; letter-spacing: .2px; }
@@ -150,7 +169,9 @@
             .filters { grid-template-columns:1fr; }
             .filter-tabs { display:grid; grid-template-columns:1fr 1fr; }
             .filter-tab { width:100%; }
-            table { min-width:760px; }
+            table { min-width:0; table-layout:auto; }
+            th, td { white-space:nowrap; }
+            .table-container { overflow-x:auto; }
         }
 </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
