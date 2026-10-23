@@ -9,7 +9,7 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 <h2>Crear Usuario</h2>
 
-<form method="POST">
+<form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="text" name="usuario" placeholder="Usuario" required><br><br>
     <input type="password" name="password" placeholder="Contraseña" required><br><br>
 

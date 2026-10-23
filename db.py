@@ -642,7 +642,7 @@ def obtener_pedidos_eliminados(empresa_id, conn=None):
         conn.close()
     return data
 
-def cambiar_estado(id, estado):
+def cambiar_estado(id, estado, empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
@@ -655,35 +655,35 @@ def cambiar_estado(id, estado):
     cursor.execute("""
         UPDATE pedidos
         SET estado=%s, fecha_entrega=%s
-        WHERE id=%s
-    """, (estado, fecha_entrega, id))
+        WHERE id=%s AND empresa_id=%s
+    """, (estado, fecha_entrega, id, empresa_id))
 
     conn.commit()
     conn.close()
 
 
-def eliminar_pedido(id):
+def eliminar_pedido(id, empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE pedidos
         SET eliminado=1
-        WHERE id=%s
-    """, (id,))
+        WHERE id=%s AND empresa_id=%s
+    """, (id, empresa_id))
 
     conn.commit()
     conn.close()
 
-def recuperar_pedido(id):
+def recuperar_pedido(id, empresa_id):
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE pedidos
         SET eliminado=0
-        WHERE id=%s
-    """, (id,))
+        WHERE id=%s AND empresa_id=%s
+    """, (id, empresa_id))
 
     conn.commit()
     conn.close()

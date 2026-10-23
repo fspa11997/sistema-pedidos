@@ -1,5 +1,7 @@
-import pytz #ddddddddddddddddddd#
+import pytz
 import os
+import hmac
+import secrets
 import gzip
 import psycopg2
 from datetime import datetime
@@ -51,8 +53,15 @@ def seed():
 
         import bcrypt
 
+        # La clave inicial viene de SUPERADMIN_PASSWORD; si no existe se genera
+        # una aleatoria que se imprime una sola vez en los logs.
+        clave_inicial = os.environ.get("SUPERADMIN_PASSWORD")
+        if not clave_inicial:
+            clave_inicial = secrets.token_urlsafe(12)
+            print(f"🔑 Clave inicial de superadmin (cámbiala): {clave_inicial}")
+
         hash_password = bcrypt.hashpw(
-            "1234".encode(),
+            clave_inicial.encode(),
             bcrypt.gensalt()
         ).decode("utf-8")
 
@@ -153,7 +162,37 @@ def formato_fecha_pedido(valor):
 
 app.jinja_env.filters["fecha_pedido"] = formato_fecha_pedido
 
-app.secret_key = "secreto"
+_secret = os.environ.get("SECRET_KEY")
+if not _secret:
+    raise RuntimeError(
+        "Falta la variable de entorno SECRET_KEY. Genera una con: "
+        "python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+app.secret_key = _secret
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("RAILWAY_ENVIRONMENT"))
+
+
+# =========================
+# PROTECCIÓN CSRF
+# =========================
+def generar_csrf_token():
+    if "_csrf" not in session:
+        session["_csrf"] = secrets.token_hex(16)
+    return session["_csrf"]
+
+
+app.jinja_env.globals["csrf_token"] = generar_csrf_token
+
+
+@app.before_request
+def verificar_csrf():
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        enviado = request.form.get("csrf_token") or request.headers.get("X-CSRF-Token", "")
+        esperado = session.get("_csrf", "")
+        if not esperado or not hmac.compare_digest(esperado, enviado):
+            return "Sesión expirada o solicitud no válida. Recarga la página e inténtalo de nuevo.", 403
 
 zona_colombia = pytz.timezone("America/Bogota")
 fecha_entrega = datetime.now(zona_colombia)
@@ -308,15 +347,19 @@ def dashboard():
         usuarios=usuarios
     )
 
-@app.route("/entregar/<int:id>")
+@app.route("/entregar/<int:id>", methods=["POST"])
 def entregar(id):
-    cambiar_estado(id, "entregado")
+    if "usuario" not in session:
+        return redirect("/")
+    cambiar_estado(id, "entregado", session["empresa_id"])
     return redirect("/pedidos")
 
 
-@app.route("/recuperar/<int:id>")
+@app.route("/recuperar/<int:id>", methods=["POST"])
 def recuperar(id):
-    recuperar_pedido(id)
+    if "usuario" not in session:
+        return redirect("/")
+    recuperar_pedido(id, session["empresa_id"])
     return redirect("/pedidos")
 
 
@@ -488,7 +531,7 @@ def crear_empresa():
     return redirect("/dashboard")
 
 #ELIMINAR EMPRESA
-@app.route("/eliminar_empresa/<int:id>")
+@app.route("/eliminar_empresa/<int:id>", methods=["POST"])
 def eliminar_empresa(id):
 
     if "rol" not in session or session["rol"] != "owner_global":
@@ -498,9 +541,17 @@ def eliminar_empresa(id):
     cursor = conn.cursor()
 
     # 🔴 BORRAR PRIMERO DATOS RELACIONADOS
-    cursor.execute("DELETE FROM usuarios WHERE empresa_id=%s", (id,))
-    cursor.execute("DELETE FROM pedidos WHERE empresa_id=%s", (id,))
-    cursor.execute("DELETE FROM productos WHERE empresa_id=%s", (id,))
+    # detalle_factura no tiene empresa_id: se borra a través de sus facturas
+    cursor.execute("""
+        DELETE FROM detalle_factura
+        WHERE factura_id IN (SELECT id FROM facturas WHERE empresa_id=%s)
+    """, (id,))
+    for tabla in (
+        "recibos_abono", "pagos_credito", "creditos", "facturas",
+        "movimientos_inventario", "inventario", "mensajeros", "clientes",
+        "usuarios", "pedidos", "productos",
+    ):
+        cursor.execute(f"DELETE FROM {tabla} WHERE empresa_id=%s", (id,))
 
     # 🔥 BORRAR EMPRESA
     cursor.execute("DELETE FROM empresas WHERE id=%s", (id,))
@@ -513,24 +564,24 @@ def eliminar_empresa(id):
 # =========================
 # CAMBIAR ESTADO
 # =========================
-@app.route("/estado/<int:id>")
+@app.route("/estado/<int:id>", methods=["POST"])
 def estado(id):
     if "usuario" not in session:
         return redirect("/")
 
-    cambiar_estado(id)
+    cambiar_estado(id, "entregado", session["empresa_id"])
     return redirect("/dashboard")
 
 
 # =========================
 # ELIMINAR
 # =========================
-@app.route("/eliminar/<int:id>")
+@app.route("/eliminar/<int:id>", methods=["POST"])
 def eliminar(id):
     if "usuario" not in session:
         return redirect("/")
 
-    eliminar_pedido(id)
+    eliminar_pedido(id, session["empresa_id"])
     return redirect("/pedidos")
 
 
@@ -1139,7 +1190,7 @@ def buscar_producto_codigo():
     return {"ok": True, "producto": dict(producto)}
 
 
-@app.route("/eliminar_producto/<int:id>")
+@app.route("/eliminar_producto/<int:id>", methods=["POST"])
 def eliminar_producto(id):
 
     if "usuario" not in session:

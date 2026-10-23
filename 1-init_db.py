@@ -24,7 +24,9 @@ cursor = conn.cursor()
 cursor.execute("SELECT 1 FROM usuarios WHERE usuario=%s", ("superadmin",))
 if not cursor.fetchone():
 
-    password = "1234"
+    import os, secrets
+    password = os.environ.get("SUPERADMIN_PASSWORD") or secrets.token_urlsafe(12)
+    print(f"Clave inicial de superadmin: {password}")
     hash_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     cursor.execute("""

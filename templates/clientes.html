@@ -169,7 +169,7 @@
     <div class="card">
         <h3 class="card-title">➕ Nuevo cliente</h3>
         <p class="section-note">Registra los datos básicos del cliente para utilizarlo en ventas y pedidos.</p>
-        <form method="POST" action="/crear_cliente" class="form-grid">
+        <form method="POST" action="/crear_cliente" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="nombre" placeholder="👤 Nombre" required>
             <input type="text" name="direccion" placeholder="📍 Dirección">
             <input type="text" name="ciudad" placeholder="🏙 Ciudad">

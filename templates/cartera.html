@@ -213,7 +213,7 @@
     <div id="modalAbono" onclick="if(event.target===this) cerrarAbono()">
         <div class="modal-card">
             <h3>💰 Registrar abono</h3>
-            <form method="POST" action="/abonar_credito">
+            <form method="POST" action="/abonar_credito"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="factura_id" id="facturaIdInput">
                 <input type="number" step="0.01" name="abono" placeholder="Valor del abono" required>
                 <input type="text" name="observacion" placeholder="Observación">

@@ -319,10 +319,10 @@
                     <td>{% if p["estado"] == 'pendiente' %}<span class="badge badge-pendiente">⏳ Pendiente</span>{% else %}<span class="badge badge-entregado">✅ Entregado</span>{% endif %}</td>
                     <td class="acciones">
                         {% if p["eliminado"] == 0 %}
-                            <form action="/entregar/{{ p['id'] }}"><button class="btn-green" title="Marcar como entregado">✔</button></form>
-                            <form action="/eliminar/{{ p['id'] }}"><button class="btn-red" title="Eliminar pedido">🗑</button></form>
+                            <form action="/entregar/{{ p['id'] }}" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-green" title="Marcar como entregado">✔</button></form>
+                            <form action="/eliminar/{{ p['id'] }}" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-red" title="Eliminar pedido">🗑</button></form>
                         {% else %}
-                            <form action="/recuperar/{{ p['id'] }}"><button class="btn-blue" title="Recuperar pedido">♻</button></form>
+                            <form action="/recuperar/{{ p['id'] }}" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-blue" title="Recuperar pedido">♻</button></form>
                         {% endif %}
                     </td>
                 </tr>

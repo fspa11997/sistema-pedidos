@@ -100,7 +100,7 @@
 
     <h2>✏️ Editar Cliente</h2>
 
-    <form method="POST" action="/actualizar_cliente/{{ cliente.id }}">
+    <form method="POST" action="/actualizar_cliente/{{ cliente.id }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <!-- 👤 NOMBRE -->
         <div class="field">

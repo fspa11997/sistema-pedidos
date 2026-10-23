@@ -20,6 +20,14 @@ El proyecto ya no usa SQLite. La aplicación obtiene la conexión desde la varia
 
 En Railway, al agregar un servicio PostgreSQL y conectarlo con el servicio web, Railway proporciona esta variable automáticamente.
 
+## Variables de entorno
+
+| Variable | Obligatoria | Uso |
+|---|---|---|
+| `DATABASE_URL` | Sí | Conexión a PostgreSQL (Railway la da sola). |
+| `SECRET_KEY` | Sí | Firma las sesiones. Genera una con `python -c "import secrets; print(secrets.token_hex(32))"`. La app no arranca sin ella. |
+| `SUPERADMIN_PASSWORD` | Recomendada | Clave inicial del usuario `superadmin`. Si no se define, se genera una aleatoria y se imprime una vez en los logs. Cámbiala después de entrar. |
+
 ## Ejecutar localmente
 
 1. Instalar dependencias:
