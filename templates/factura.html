@@ -296,6 +296,7 @@
                 <div class="info-line"><b>Número:</b> FS-{{ factura.id }}</div>
                 <div class="info-line"><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</div>
                 <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
+                {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
                 {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
                 <div class="info-line"><b>Estado:</b>
                     {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>

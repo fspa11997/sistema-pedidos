@@ -39,6 +39,7 @@ from db import (
     crear_cliente,
     obtener_clientes,
     registrar_abono,
+    METODOS_PAGO,
     segundos_bloqueo_login,
     registrar_fallo_login,
     limpiar_intentos_login
@@ -685,6 +686,7 @@ def crear_factura_route():
 
     plazo_pago = request.form.get("plazo_pago", "").strip()
     abono_raw = request.form.get("abono", "").strip()
+    metodo_pago = request.form.get("metodo_pago", "").strip().lower()
 
     # =========================
     # VALIDACIONES CLIENTE
@@ -759,6 +761,19 @@ def crear_factura_route():
         flash("⚠️ El abono no es válido", "error")
         return redirect("/dashboard")
 
+    if abono < 0:
+        flash("⚠️ El abono no puede ser negativo", "error")
+        return redirect("/dashboard")
+
+    # =========================
+    # MÉTODO DE PAGO
+    # =========================
+    # Obligatorio en ventas de contado y en crédito con abono inicial.
+    if tipo_venta != "credito" or abono > 0:
+        if metodo_pago not in METODOS_PAGO:
+            flash("⚠️ Selecciona el método de pago (efectivo, tarjeta o nequi)", "error")
+            return redirect("/dashboard")
+
     # =========================
     # DB PRODUCTOS
     # =========================
@@ -819,7 +834,8 @@ def crear_factura_route():
         tipo_venta=tipo_venta,
         plazo_pago=plazo_pago,
         abono=abono,
-        domiciliario=domiciliario
+        domiciliario=domiciliario,
+        metodo_pago=metodo_pago
     )
 
     # =========================
@@ -1731,7 +1747,8 @@ def abonar_credito_route():
             factura_id=factura_id,
             abono=request.form.get("abono", ""),
             observacion=request.form.get("observacion", "")[:300],
-            empresa_id=session["empresa_id"]
+            empresa_id=session["empresa_id"],
+            metodo_pago=request.form.get("metodo_pago", "")
         )
     except ValueError as e:
         flash("⚠️ " + str(e), "error")
@@ -1749,7 +1766,8 @@ def abonar_factura(factura_id):
             factura_id=factura_id,
             abono=request.form.get("abono", ""),
             observacion=request.form.get("observacion", "")[:300],
-            empresa_id=session["empresa_id"]
+            empresa_id=session["empresa_id"],
+            metodo_pago=request.form.get("metodo_pago", "")
         )
     except ValueError as e:
         flash("⚠️ " + str(e), "error")

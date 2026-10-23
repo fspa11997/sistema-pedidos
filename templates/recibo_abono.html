@@ -88,6 +88,11 @@
     </div>
 
     <div class="linea">
+        <b>Método de pago:</b>
+        {{ (recibo.metodo_pago or "-")|capitalize }}
+    </div>
+
+    <div class="linea">
         <b>Saldo restante:</b>
         ${{ "{:,.0f}".format(recibo.saldo_nuevo) }}
     </div>

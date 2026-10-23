@@ -1228,6 +1228,17 @@ button,input,select{font-family:inherit}
 
                     </select>
 
+                    <!-- 💳 MÉTODO DE PAGO -->
+                    <label for="metodoPago">
+                        💳 Método de pago
+                    </label>
+                    <select name="metodo_pago" id="metodoPago">
+                        <option value="">Seleccionar método</option>
+                        <option value="efectivo">💵 Efectivo</option>
+                        <option value="tarjeta">💳 Tarjeta</option>
+                        <option value="nequi">📱 Nequi</option>
+                    </select>
+
                     <input type="text" name="direccion" placeholder="Dirección">
                     <input type="text" name="ciudad" placeholder="Ciudad">
                     <input type="text" name="telefono" placeholder="Teléfono">
@@ -1432,8 +1443,16 @@ function togglePedidos() {
 const tipoPago = document.getElementById("tipoVenta");
 const fechaLimite = document.getElementById("fechaLimite");
 const abonadoInput = document.getElementById("abonoInput");
+const metodoPago = document.getElementById("metodoPago");
+
+function actualizarMetodoPago() {
+    // Obligatorio en contado y en crédito con abono inicial.
+    const abono = parseFloat(abonadoInput.value) || 0;
+    metodoPago.required = tipoPago.value !== "credito" || abono > 0;
+}
 
 function actualizarPago() {
+    actualizarMetodoPago();
     if (tipoPago.value === "credito") {
         fechaLimite.style.display = "block";
         fechaLimite.required = true;
@@ -1446,6 +1465,7 @@ function actualizarPago() {
 }
 
 tipoPago.addEventListener("change", actualizarPago);
+abonadoInput.addEventListener("input", actualizarMetodoPago);
 
 actualizarPago();
 

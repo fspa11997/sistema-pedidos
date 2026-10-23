@@ -16,6 +16,9 @@ if not DATABASE_URL:
 
 DB = DATABASE_URL
 
+# Métodos de pago aceptados (clave guardada en BD -> texto para mostrar)
+METODOS_PAGO = {"efectivo": "Efectivo", "tarjeta": "Tarjeta", "nequi": "Nequi"}
+
 # Pool de conexiones: evita abrir una conexión TCP nueva a PostgreSQL
 # en cada consulta. Esto reduce bastante la latencia en Railway.
 _POOL_MIN = 1
@@ -109,6 +112,9 @@ def inicializar_db():
     )
     """)
 
+    cursor.execute("ALTER TABLE facturas ADD COLUMN IF NOT EXISTS metodo_pago TEXT")
+    cursor.execute("ALTER TABLE pagos_credito ADD COLUMN IF NOT EXISTS metodo_pago TEXT")
+    cursor.execute("ALTER TABLE recibos_abono ADD COLUMN IF NOT EXISTS metodo_pago TEXT")
     cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto BYTEA")
     cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto_mimetype TEXT")
 
@@ -929,7 +935,8 @@ def crear_factura(
     tipo_venta,
     plazo_pago=None,
     abono=0,
-    domiciliario=""
+    domiciliario="",
+    metodo_pago=None
 ):
 
     import os
@@ -984,6 +991,11 @@ def crear_factura(
         abono = total
         saldo = 0
 
+    # Método de pago: en contado es el pago completo; en crédito es el del
+    # abono inicial (si no hubo abono, queda vacío).
+    if metodo_pago not in METODOS_PAGO or abono <= 0:
+        metodo_pago = None
+
     # =========================
     # INSERT FACTURA
     # =========================
@@ -1001,9 +1013,10 @@ def crear_factura(
             plazo_pago,
             abono,
             domiciliario,
+            metodo_pago,
             empresa_id
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
     """, (
         cliente,
@@ -1018,6 +1031,7 @@ def crear_factura(
         plazo_pago,
         abono,
         domiciliario,
+        metodo_pago,
         empresa_id
     ))
 
@@ -1413,7 +1427,7 @@ def crear_credito(cliente, factura_id, total, empresa_id):
     conn.close()
 
 
-def registrar_abono(factura_id, abono, observacion, empresa_id):
+def registrar_abono(factura_id, abono, observacion, empresa_id, metodo_pago=None):
     """Registra un abono. Lanza ValueError con un mensaje legible si no es válido."""
     import math
     from datetime import datetime
@@ -1424,6 +1438,10 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
         raise ValueError("El valor del abono no es un número válido.")
     if not math.isfinite(abono) or abono <= 0:
         raise ValueError("El abono debe ser mayor que cero.")
+
+    metodo_pago = (metodo_pago or "").strip().lower()
+    if metodo_pago not in METODOS_PAGO:
+        raise ValueError("Selecciona un método de pago válido (efectivo, tarjeta o nequi).")
 
     conn = conectar()
     try:
@@ -1484,21 +1502,21 @@ def registrar_abono(factura_id, abono, observacion, empresa_id):
 
         cursor.execute("""
             INSERT INTO pagos_credito (
-                factura_id, cliente, abono, fecha, observacion, empresa_id
+                factura_id, cliente, abono, fecha, observacion, metodo_pago, empresa_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (factura_id, factura["cliente"], abono, fecha, observacion, empresa_id))
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (factura_id, factura["cliente"], abono, fecha, observacion, metodo_pago, empresa_id))
 
         cursor.execute("""
             INSERT INTO recibos_abono (
                 factura_id, cliente, valor_abono, saldo_anterior,
-                saldo_nuevo, fecha, empresa_id
+                saldo_nuevo, fecha, metodo_pago, empresa_id
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
         """, (
             factura_id, factura["cliente"], abono, saldo_anterior,
-            saldo, fecha, empresa_id
+            saldo, fecha, metodo_pago, empresa_id
         ))
 
         recibo_id = cursor.fetchone()[0]

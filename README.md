@@ -33,6 +33,7 @@ En Railway, al agregar un servicio PostgreSQL y conectarlo con el servicio web, 
 - Contraseñas nuevas: mínimo 8 caracteres, combinando letras y números (máximo 72 bytes).
 - Inicio de sesión: tras 5 intentos fallidos desde la misma IP para un usuario, se bloquea 15 minutos.
 - Abonos: deben ser mayores que cero y no pueden superar el saldo pendiente de la factura.
+- Métodos de pago: efectivo, tarjeta o nequi. Obligatorio en ventas de contado, en crédito con abono inicial y en cada abono de cartera.
 - Roles permitidos al crear usuarios: `admin` y `vendedor`.
 
 ## Ejecutar localmente

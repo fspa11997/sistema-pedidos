@@ -222,6 +222,12 @@
             <form method="POST" action="/abonar_credito"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="factura_id" id="facturaIdInput">
                 <input type="number" step="0.01" name="abono" placeholder="Valor del abono" required>
+                <select name="metodo_pago" required>
+                    <option value="">Método de pago</option>
+                    <option value="efectivo">💵 Efectivo</option>
+                    <option value="tarjeta">💳 Tarjeta</option>
+                    <option value="nequi">📱 Nequi</option>
+                </select>
                 <input type="text" name="observacion" placeholder="Observación">
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="cerrarAbono()">Cancelar</button>
