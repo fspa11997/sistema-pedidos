@@ -28,6 +28,13 @@ En Railway, al agregar un servicio PostgreSQL y conectarlo con el servicio web, 
 | `SECRET_KEY` | Sí | Firma las sesiones. Genera una con `python -c "import secrets; print(secrets.token_hex(32))"`. La app no arranca sin ella. |
 | `SUPERADMIN_PASSWORD` | Recomendada | Clave inicial del usuario `superadmin`. Si no se define, se genera una aleatoria y se imprime una vez en los logs. Cámbiala después de entrar. |
 
+## Reglas de seguridad
+
+- Contraseñas nuevas: mínimo 8 caracteres, combinando letras y números (máximo 72 bytes).
+- Inicio de sesión: tras 5 intentos fallidos desde la misma IP para un usuario, se bloquea 15 minutos.
+- Abonos: deben ser mayores que cero y no pueden superar el saldo pendiente de la factura.
+- Roles permitidos al crear usuarios: `admin` y `vendedor`.
+
 ## Ejecutar localmente
 
 1. Instalar dependencias:

@@ -1089,7 +1089,7 @@ button,input,select{font-family:inherit}
 
                     </form>
                     <form action="/cambiar_password/{{ u['id'] }}" method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="password" name="password" placeholder="Nueva contraseña" required>
+                        <input type="password" name="password" placeholder="Nueva contraseña" minlength="8" maxlength="72" required>
                         <button class="btn-blue">🔐 Cambiar</button>
                     </form>
 
@@ -1109,7 +1109,7 @@ button,input,select{font-family:inherit}
 
         <input type="text" name="usuario" placeholder="Usuario" required><br><br>
 
-        <input type="password" name="password" placeholder="Contraseña" required><br><br>
+        <input type="password" name="password" placeholder="Contraseña (mín. 8, letras y números)" minlength="8" maxlength="72" required><br><br>
 
         <select name="rol">
             <option value="admin">Admin</option>

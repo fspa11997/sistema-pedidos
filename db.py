@@ -271,6 +271,15 @@ def inicializar_db():
     
     # Índices para las consultas que más se repiten en la aplicación.
     # IF NOT EXISTS permite ejecutar la inicialización varias veces sin cambiar datos.
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS login_intentos (
+        clave TEXT PRIMARY KEY,
+        intentos INTEGER NOT NULL DEFAULT 0,
+        primer_intento TIMESTAMPTZ NOT NULL DEFAULT now(),
+        bloqueado_hasta TIMESTAMPTZ
+    )
+    """)
+
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_activo ON productos (empresa_id, activo, id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_codigo ON productos (empresa_id, codigo_barras)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_productos_empresa_nombre ON productos (empresa_id, nombre)")
@@ -341,6 +350,69 @@ def crear_usuario(usuario, password, rol, empresa_id):
 
     return True
     
+MAX_INTENTOS_LOGIN = 5
+VENTANA_LOGIN_MIN = 15
+
+
+def segundos_bloqueo_login(clave):
+    """Segundos que faltan para poder volver a intentar (0 = sin bloqueo)."""
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT CEIL(EXTRACT(EPOCH FROM (bloqueado_hasta - now())))
+        FROM login_intentos
+        WHERE clave = %s AND bloqueado_hasta > now()
+    """, (clave,))
+    fila = cursor.fetchone()
+    conn.close()
+    return int(fila[0]) if fila and fila[0] else 0
+
+
+def registrar_fallo_login(clave):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO login_intentos (clave, intentos, primer_intento)
+        VALUES (%s, 0, now())
+        ON CONFLICT (clave) DO NOTHING
+    """, (clave,))
+    cursor.execute("""
+        SELECT intentos,
+               primer_intento < now() - make_interval(mins => %s) AS vencido
+        FROM login_intentos
+        WHERE clave = %s
+        FOR UPDATE
+    """, (VENTANA_LOGIN_MIN, clave))
+    fila = cursor.fetchone()
+    intentos = 1 if fila["vencido"] else fila["intentos"] + 1
+    if intentos >= MAX_INTENTOS_LOGIN:
+        cursor.execute("""
+            UPDATE login_intentos
+            SET intentos = %s,
+                primer_intento = CASE WHEN %s THEN now() ELSE primer_intento END,
+                bloqueado_hasta = now() + make_interval(mins => %s)
+            WHERE clave = %s
+        """, (intentos, fila["vencido"], VENTANA_LOGIN_MIN, clave))
+    else:
+        cursor.execute("""
+            UPDATE login_intentos
+            SET intentos = %s,
+                primer_intento = CASE WHEN %s THEN now() ELSE primer_intento END,
+                bloqueado_hasta = NULL
+            WHERE clave = %s
+        """, (intentos, fila["vencido"], clave))
+    conn.commit()
+    conn.close()
+
+
+def limpiar_intentos_login(clave):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM login_intentos WHERE clave = %s", (clave,))
+    conn.commit()
+    conn.close()
+
+
 def validar_usuario(usuario, password):
     conn = conectar()
     cursor = conn.cursor()
@@ -359,10 +431,15 @@ def validar_usuario(usuario, password):
         return None
 
     # Verificar contraseña
-    if not bcrypt.checkpw(
-        password.encode("utf-8"),
-        resultado["password"].encode("utf-8")
-    ):
+    try:
+        clave_ok = bcrypt.checkpw(
+            password.encode("utf-8"),
+            resultado["password"].encode("utf-8")
+        )
+    except ValueError:
+        clave_ok = False
+
+    if not clave_ok:
         return None
 
     return resultado
@@ -1335,181 +1412,103 @@ def crear_credito(cliente, factura_id, total, empresa_id):
     conn.commit()
     conn.close()
 
-def abonar_credito(credito_id, valor):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT saldo, abonado FROM creditos WHERE id=%s
-    """, (credito_id,))
-
-    c = cursor.fetchone()
-
-    nuevo_abono = c["abonado"] + valor
-    nuevo_saldo = c["saldo"] - valor
-
-    estado = "pagado" if nuevo_saldo <= 0 else "pendiente"
-
-    cursor.execute("""
-        UPDATE creditos
-        SET abonado=%s, saldo=%s, estado=%s
-        WHERE id=%s
-    """, (
-        nuevo_abono,
-        nuevo_saldo,
-        estado,
-        credito_id
-    ))
-
-    conn.commit()
-    conn.close()
-
-def obtener_creditos(empresa_id):
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT * FROM creditos
-        WHERE empresa_id=%s
-        ORDER BY id DESC
-    """, (empresa_id,))
-
-    data = cursor.fetchall()
-
-    conn.close()
-    return data
 
 def registrar_abono(factura_id, abono, observacion, empresa_id):
-
-    import os
+    """Registra un abono. Lanza ValueError con un mensaje legible si no es válido."""
+    import math
     from datetime import datetime
 
+    try:
+        abono = round(float(abono), 2)
+    except (TypeError, ValueError):
+        raise ValueError("El valor del abono no es un número válido.")
+    if not math.isfinite(abono) or abono <= 0:
+        raise ValueError("El abono debe ser mayor que cero.")
+
     conn = conectar()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    # =========================
-    # FACTURA
-    # =========================
-    cursor.execute("""
-        SELECT *
-        FROM facturas
-        WHERE id=%s
-        AND empresa_id=%s
-    """, (factura_id, empresa_id))
+        # Bloquea la fila: dos abonos simultáneos no se pisan.
+        cursor.execute("""
+            SELECT *
+            FROM facturas
+            WHERE id=%s
+            AND empresa_id=%s
+            FOR UPDATE
+        """, (factura_id, empresa_id))
 
-    factura = cursor.fetchone()
+        factura = cursor.fetchone()
 
-    if not factura:
+        if not factura:
+            raise ValueError("Factura no encontrada.")
+
+        total = float(factura["total"] or 0)
+        abono_actual = float(factura["abono"] or 0)
+        saldo_anterior = round(total - abono_actual, 2)
+
+        if saldo_anterior <= 0:
+            raise ValueError("Esta factura ya está pagada.")
+        if abono > saldo_anterior + 0.005:
+            raise ValueError(
+                f"El abono no puede superar el saldo pendiente (${saldo_anterior:,.0f})."
+            )
+
+        nuevo_abono = round(abono_actual + abono, 2)
+        saldo = round(total - nuevo_abono, 2)
+
+        if saldo <= 0:
+            estado = "pagado"
+            saldo = 0
+        else:
+            estado = "parcial"
+
+        cursor.execute("""
+            UPDATE facturas
+            SET abono=%s,
+                estado=%s
+            WHERE id=%s
+            AND empresa_id=%s
+        """, (nuevo_abono, estado, factura_id, empresa_id))
+
+        cursor.execute("""
+            UPDATE creditos
+            SET abonado=%s,
+                saldo=%s,
+                estado=%s
+            WHERE factura_id=%s
+            AND empresa_id=%s
+        """, (nuevo_abono, saldo, estado, factura_id, empresa_id))
+
+        fecha = ahora()
+
+        cursor.execute("""
+            INSERT INTO pagos_credito (
+                factura_id, cliente, abono, fecha, observacion, empresa_id
+            )
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (factura_id, factura["cliente"], abono, fecha, observacion, empresa_id))
+
+        cursor.execute("""
+            INSERT INTO recibos_abono (
+                factura_id, cliente, valor_abono, saldo_anterior,
+                saldo_nuevo, fecha, empresa_id
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, (
+            factura_id, factura["cliente"], abono, saldo_anterior,
+            saldo, fecha, empresa_id
+        ))
+
+        recibo_id = cursor.fetchone()[0]
+        conn.commit()
+        return recibo_id
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
         conn.close()
-        return
-
-    nuevo_abono = (factura["abono"] or 0) + abono
-
-    saldo = factura["total"] - nuevo_abono
-
-    saldo_anterior = factura["total"] - (factura["abono"] or 0)
-
-    # =========================
-    # ESTADO
-    # =========================
-    if saldo <= 0:
-        estado = "pagado"
-        saldo = 0
-
-    elif nuevo_abono > 0:
-        estado = "parcial"
-
-    else:
-        estado = "pendiente"
-
-    # =========================
-    # ACTUALIZAR FACTURA
-    # =========================
-    cursor.execute("""
-        UPDATE facturas
-        SET abono=%s,
-            estado=%s
-        WHERE id=%s
-    """, (
-        nuevo_abono,
-        estado,
-        factura_id
-    ))
-
-    # =========================
-    # ACTUALIZAR CREDITO
-    # =========================
-    cursor.execute("""
-        UPDATE creditos
-        SET abonado=%s,
-            saldo=%s,
-            estado=%s
-        WHERE factura_id=%s
-    """, (
-        nuevo_abono,
-        saldo,
-        estado,
-        factura_id
-    ))
-
-    # =========================
-    # HISTORIAL
-    # =========================
-    from db import ahora
-    fecha = ahora()
-
-    cursor.execute("""
-        INSERT INTO pagos_credito (
-            factura_id,
-            cliente,
-            abono,
-            fecha,
-            observacion,
-            empresa_id
-        )
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (
-        factura_id,
-        factura["cliente"],
-        abono,
-        fecha,
-        observacion,
-        empresa_id
-    ))
-
-    # =========================
-    # RECIBO DE ABONO
-    # =========================
-    cursor.execute("""
-        INSERT INTO recibos_abono (
-            factura_id,
-            cliente,
-            valor_abono,
-            saldo_anterior,
-            saldo_nuevo,
-            fecha,
-            empresa_id
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        RETURNING id
-    """, (
-        factura_id,
-        factura["cliente"],
-        abono,
-        saldo_anterior,
-        saldo,
-        fecha,
-        empresa_id
-    ))
-
-    recibo_id = cursor.fetchone()[0]
-
-    conn.commit()
-    conn.close()
-
-    return recibo_id
 
 def obtener_historial_abonos(factura_id, empresa_id):
 

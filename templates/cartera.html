@@ -166,6 +166,12 @@
         <a href="/dashboard" class="btn-back">⬅ Volver</a>
     </div>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:13px;font-weight:700">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
     <div class="card">
         <h3 class="card-title">🔎 Buscar y filtrar cartera</h3>
         <form method="GET" action="/cartera" class="filters">

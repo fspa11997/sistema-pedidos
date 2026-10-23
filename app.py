@@ -38,7 +38,10 @@ from db import (
     conectar,
     crear_cliente,
     obtener_clientes,
-    registrar_abono
+    registrar_abono,
+    segundos_bloqueo_login,
+    registrar_fallo_login,
+    limpiar_intentos_login
 )
 
 
@@ -196,6 +199,30 @@ def verificar_csrf():
 
 zona_colombia = pytz.timezone("America/Bogota")
 fecha_entrega = datetime.now(zona_colombia)
+ROLES_PERMITIDOS = {"admin", "vendedor"}
+PASSWORD_MIN = 8
+
+
+def error_password(password):
+    """Devuelve un mensaje si la contraseña no cumple la política, o None."""
+    if len(password) < PASSWORD_MIN:
+        return f"La contraseña debe tener al menos {PASSWORD_MIN} caracteres."
+    if len(password.encode("utf-8")) > 72:
+        return "La contraseña es demasiado larga (máximo 72 bytes)."
+    if password.isdigit() or password.isalpha():
+        return "La contraseña debe combinar letras y números."
+    return None
+
+
+def ip_cliente():
+    # Railway agrega la IP real al final de X-Forwarded-For; el resto lo
+    # puede escribir el cliente, así que se toma el último valor.
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[-1].strip()
+    return request.remote_addr or "desconocida"
+
+
 # =========================
 # LOGIN
 # =========================
@@ -206,11 +233,20 @@ def login():
     if request.method == "POST":
         user = request.form["usuario"]
         pwd = request.form["password"]
-        
+
+        clave_intentos = f"{user.strip().lower()[:100]}|{ip_cliente()}"
+        espera = segundos_bloqueo_login(clave_intentos)
+        if espera:
+            minutos = (espera + 59) // 60
+            return render_template(
+                "login.html", empresas=empresas,
+                error=f"Demasiados intentos fallidos. Intenta de nuevo en {minutos} min."
+            ), 429
 
         usuario = validar_usuario(user, pwd)
 
         if usuario:
+            limpiar_intentos_login(clave_intentos)
 
             session["usuario"] = usuario["usuario"]
             session["rol"] = usuario["rol"]
@@ -218,6 +254,7 @@ def login():
 
             return redirect("/dashboard")
 
+        registrar_fallo_login(clave_intentos)
         return render_template("login.html", empresas=empresas, error="Credenciales inválidas")
 
     return render_template("login.html", empresas=empresas)
@@ -369,16 +406,39 @@ def crear_usuario():
     if "rol" not in session or session["rol"] != "owner_global":
         return "No autorizado", 403
 
-    usuario = request.form["usuario"]
+    usuario = request.form["usuario"].strip()
     password = request.form["password"]
     rol = request.form["rol"]
-    empresa_id = request.form["empresa_id"]
-    
+
+    if not usuario or len(usuario) > 100:
+        flash("⚠️ El nombre de usuario es obligatorio (máximo 100 caracteres).", "error")
+        return redirect("/dashboard")
+
+    if rol not in ROLES_PERMITIDOS:
+        flash("⚠️ Rol no válido.", "error")
+        return redirect("/dashboard")
+
+    try:
+        empresa_id = int(request.form["empresa_id"])
+    except (KeyError, ValueError):
+        flash("⚠️ Empresa no válida.", "error")
+        return redirect("/dashboard")
+
+    problema = error_password(password)
+    if problema:
+        flash("⚠️ " + problema, "error")
+        return redirect("/dashboard")
 
     import bcrypt
     
     conn = conectar()
     cursor = conn.cursor()
+
+    cursor.execute("SELECT 1 FROM empresas WHERE id = %s", (empresa_id,))
+    if not cursor.fetchone():
+        conn.close()
+        flash("⚠️ La empresa seleccionada no existe.", "error")
+        return redirect("/dashboard")
 
     # 🔍 VERIFICAR SI YA EXISTE
     cursor.execute("""
@@ -389,7 +449,8 @@ def crear_usuario():
 
     if existe:
         conn.close()
-        return "❌ El usuario ya existe", 400
+        flash("⚠️ El usuario ya existe.", "error")
+        return redirect("/dashboard")
 
     hash_password = bcrypt.hashpw(
         password.encode('utf-8'),
@@ -437,6 +498,11 @@ def cambiar_password(user_id):
         return "No autorizado", 403
 
     nueva_password = request.form["password"]
+
+    problema = error_password(nueva_password)
+    if problema:
+        flash("⚠️ " + problema, "error")
+        return redirect("/dashboard")
 
     import bcrypt
     
@@ -1654,19 +1720,21 @@ def abonar_credito_route():
     if "usuario" not in session:
         return redirect("/")
 
-    factura_id = request.form.get("factura_id")
-    abono = request.form.get("abono")
-    observacion = request.form.get("observacion", "")
+    try:
+        factura_id = int(request.form.get("factura_id", ""))
+    except ValueError:
+        flash("⚠️ Factura no válida.", "error")
+        return redirect("/cartera")
 
-    if not factura_id or not abono:
-        return "Datos incompletos", 400
-
-    registrar_abono(
-        factura_id=int(factura_id),
-        abono=float(abono),
-        observacion=observacion,
-        empresa_id=session["empresa_id"]
-    )
+    try:
+        registrar_abono(
+            factura_id=factura_id,
+            abono=request.form.get("abono", ""),
+            observacion=request.form.get("observacion", "")[:300],
+            empresa_id=session["empresa_id"]
+        )
+    except ValueError as e:
+        flash("⚠️ " + str(e), "error")
 
     return redirect("/cartera")
 
@@ -1676,65 +1744,15 @@ def abonar_factura(factura_id):
     if "usuario" not in session:
         return redirect("/")
 
-    empresa_id = session["empresa_id"]
-
-    abono_nuevo = float(request.form["abono"])
-    observacion = request.form.get("observacion", "")
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    # 🔎 traer factura
-    cursor.execute("""
-        SELECT * FROM facturas
-        WHERE id=%s AND empresa_id=%s
-    """, (factura_id, empresa_id))
-
-    factura = cursor.fetchone()
-
-    if not factura:
-        return "Factura no existe"
-
-    total = factura["total"]
-    abono_actual = factura["abono"] or 0
-
-    nuevo_abono = abono_actual + abono_nuevo
-    saldo = total - nuevo_abono
-
-    if saldo <= 0:
-        estado = "pagado"
-        saldo = 0
-    else:
-        estado = "parcial"
-
-    # 💰 actualizar factura
-    cursor.execute("""
-        UPDATE facturas
-        SET abono=%s, estado=%s
-        WHERE id=%s AND empresa_id=%s
-    """, (nuevo_abono, estado, factura_id, empresa_id))
-
-    # 📜 guardar historial
-    cursor.execute("""
-        INSERT INTO pagos_credito (
-            factura_id,
-            cliente,
-            abono,
-            fecha,
-            observacion,
-            empresa_id
+    try:
+        registrar_abono(
+            factura_id=factura_id,
+            abono=request.form.get("abono", ""),
+            observacion=request.form.get("observacion", "")[:300],
+            empresa_id=session["empresa_id"]
         )
-        VALUES (%s, %s, %s, datetime('now'), %s, %s)
-    """, (
-        factura_id,
-        factura["cliente"],
-        abono_nuevo,
-        observacion,
-        empresa_id
-    ))
-
-    conn.commit()
-    conn.close()
+    except ValueError as e:
+        flash("⚠️ " + str(e), "error")
 
     return redirect("/cartera")
 
