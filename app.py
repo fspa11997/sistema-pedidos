@@ -1382,9 +1382,9 @@ def ventas():
                 if not cuadre: raise ValueError("No se encontró el cuadre vigente.")
                 diffs=[float(cuadre['contado_efectivo'] or 0)-float(cuadre['esperado_efectivo'] or 0),float(cuadre['contado_tarjeta'] or 0)-float(cuadre['esperado_tarjeta'] or 0),float(cuadre['contado_nequi'] or 0)-float(cuadre['esperado_nequi'] or 0)]
                 obs=request.form.get('observacion','').strip()[:500]
-                if any(abs(x)>0.005 for x in diffs) and not obs: raise ValueError("Debes escribir una observación cuando existe una diferencia.")
+                # La observación del cierre es opcional, incluso cuando existen diferencias.
                 cur.execute("SELECT COALESCE(jsonb_agg(to_jsonb(m) ORDER BY m.id),'[]'::jsonb) snap FROM movimientos_caja m WHERE caja_id=%s",(caja['id'],)); snap=cur.fetchone()['snap']
-                cur.execute("INSERT INTO cierres_caja(caja_id,empresa_id,usuario,total_efectivo,total_tarjeta,total_nequi,diferencia_efectivo,diferencia_tarjeta,diferencia_nequi,observacion,movimientos_snapshot) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(caja['id'],empresa_id,usuario,cuadre['contado_efectivo'],cuadre['contado_tarjeta'],cuadre['contado_nequi'],diffs[0],diffs[1],diffs[2],obs,snap))
+                cur.execute("INSERT INTO cierres_caja(caja_id,empresa_id,usuario,total_efectivo,total_tarjeta,total_nequi,diferencia_efectivo,diferencia_tarjeta,diferencia_nequi,observacion,movimientos_snapshot) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb)",(caja['id'],empresa_id,usuario,cuadre['contado_efectivo'],cuadre['contado_tarjeta'],cuadre['contado_nequi'],diffs[0],diffs[1],diffs[2],obs,__import__('json').dumps(snap, default=str)))
                 cur.execute("UPDATE cuadres_caja SET estado='cerrado' WHERE id=%s",(cuadre['id'],))
                 cur.execute("UPDATE cajas SET estado='cerrada',cerrada_en=(NOW() AT TIME ZONE 'America/Bogota'),cerrada_por=%s WHERE id=%s",(usuario,caja['id']))
                 cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s)",(empresa_id,usuario))
