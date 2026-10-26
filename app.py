@@ -835,7 +835,8 @@ def crear_factura_route():
         plazo_pago=plazo_pago,
         abono=abono,
         domiciliario=domiciliario,
-        metodo_pago=metodo_pago
+        metodo_pago=metodo_pago,
+        usuario=session.get("usuario")
     )
 
     # =========================
@@ -1327,104 +1328,90 @@ def eliminar_producto(id):
 
 from datetime import date
 
-@app.route("/ventas")
+@app.route("/ventas", methods=["GET", "POST"])
 def ventas():
-
     if "usuario" not in session:
         return redirect("/")
-
-    empresa_id = session["empresa_id"]
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    # ================= VENTAS =================
-    cursor.execute("""
-        SELECT *
-        FROM pedidos
-        WHERE empresa_id = %s
-        AND eliminado = 0
-        ORDER BY id DESC
-    """, (empresa_id,))
-
-    ventas = [dict(v) for v in cursor.fetchall()]
-
-    # ================= RESUMEN DIARIO =================
-    cursor.execute("""
-        SELECT 
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
-        FROM facturas
-        WHERE empresa_id = %s
-        AND fecha::date = CURRENT_DATE
-    """, (empresa_id,))
-
-    dia = cursor.fetchone()
-    dia = dict(dia) if dia else {
-        "facturado": 0,
-        "abonado": 0,
-        "deben": 0
-    }
-
-    # ================= RESUMEN MENSUAL =================
-    cursor.execute("""
-        SELECT 
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
-        FROM facturas
-        WHERE empresa_id = %s
-        AND TO_CHAR(fecha::timestamp, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')
-    """, (empresa_id,))
-
-    mes = cursor.fetchone()
-    mes = dict(mes) if mes else {
-        "facturado": 0,
-        "abonado": 0,
-        "deben": 0
-    }
-
-    # ================= HISTÓRICO DIARIO =================
-    cursor.execute("""
-        SELECT 
-            fecha::date as dia,
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
-        FROM facturas
-        WHERE empresa_id = %s
-        GROUP BY dia
-        ORDER BY dia DESC
-    """, (empresa_id,))
-
-    diario = [dict(r) for r in cursor.fetchall()]
-
-    # ================= HISTÓRICO MENSUAL =================
-    cursor.execute("""
-        SELECT 
-            TO_CHAR(fecha::timestamp, 'YYYY-MM') as mes,
-            SUM(total) as facturado,
-            SUM(abono) as abonado,
-            SUM(total - abono) as deben
-        FROM facturas
-        WHERE empresa_id = %s
-        GROUP BY mes
-        ORDER BY mes DESC
-    """, (empresa_id,))
-
-    mensual = [dict(r) for r in cursor.fetchall()]
-
-    conn.close()
-
-    return render_template(
-        "ventas.html",
-        ventas=ventas,
-        dia=dia,
-        mes=mes,
-        diario=diario,
-        mensual=mensual
-    )
+    empresa_id = session.get("empresa_id")
+    usuario = session.get("usuario", "")
+    rol = session.get("rol", "vendedor")
+    admin = rol in ("admin", "owner_global")
+    conn = conectar(); cur = conn.cursor()
+    mensaje = None
+    try:
+        if request.method == "POST":
+            accion = request.form.get("accion", "")
+            if accion in ("cuadrar", "cancelar_cuadre", "cerrar", "movimiento") and not admin:
+                return "No autorizado", 403
+            if accion == "movimiento":
+                tipo = request.form.get("tipo")
+                metodo = request.form.get("metodo_pago", "efectivo")
+                concepto = request.form.get("concepto", "").strip()[:250]
+                try: valor = round(float(request.form.get("valor", "0")), 2)
+                except ValueError: valor = 0
+                if tipo not in ("ingreso_manual", "egreso_manual") or metodo not in ("efectivo", "tarjeta", "nequi") or valor <= 0 or not concepto:
+                    raise ValueError("Completa concepto, método y un valor mayor que cero.")
+                cur.execute("SELECT id,estado FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') FOR UPDATE", (empresa_id,)); caja=cur.fetchone()
+                if caja and caja['estado'] != 'abierta': raise ValueError("La caja está en cuadre; no admite movimientos.")
+                if not caja:
+                    cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s) RETURNING id",(empresa_id,usuario)); caja_id=cur.fetchone()[0]
+                else: caja_id=caja['id']
+                cur.execute("INSERT INTO movimientos_caja(caja_id,empresa_id,tipo,metodo_pago,valor,concepto,usuario,origen) VALUES (%s,%s,%s,%s,%s,%s,%s,'manual')",(caja_id,empresa_id,tipo,metodo,valor,concepto,usuario))
+                conn.commit(); mensaje="Movimiento registrado."
+            elif accion == "cuadrar":
+                cur.execute("SELECT id,estado FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') FOR UPDATE",(empresa_id,)); caja=cur.fetchone()
+                if not caja:
+                    cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s) RETURNING id",(empresa_id,usuario)); caja={'id':cur.fetchone()[0],'estado':'abierta'}
+                if caja['estado'] != 'abierta': raise ValueError("La caja ya está en cuadre.")
+                cur.execute("UPDATE cajas SET estado='en_cuadre' WHERE id=%s",(caja['id'],))
+                cur.execute("""SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo IN ('egreso_manual') THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago""",(caja['id'],))
+                totals={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()}
+                def num(k):
+                    try: return round(float(request.form.get(k,0) or 0),2)
+                    except ValueError: return 0
+                cur.execute("INSERT INTO cuadres_caja(caja_id,empresa_id,usuario,esperado_efectivo,contado_efectivo,esperado_tarjeta,contado_tarjeta,esperado_nequi,contado_nequi,observacion) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (caja['id'],empresa_id,usuario,totals.get('efectivo',0),num('efectivo'),totals.get('tarjeta',0),num('tarjeta'),totals.get('nequi',0),num('nequi'),request.form.get('observacion','')[:500]))
+                conn.commit(); mensaje="Cuadre guardado. La caja queda bloqueada hasta cerrar o cancelar el cuadre."
+            elif accion == "cancelar_cuadre":
+                cur.execute("SELECT id FROM cajas WHERE empresa_id=%s AND estado='en_cuadre' FOR UPDATE",(empresa_id,)); caja=cur.fetchone()
+                if not caja: raise ValueError("No hay un cuadre activo para cancelar.")
+                cur.execute("UPDATE cajas SET estado='abierta' WHERE id=%s",(caja['id'],)); cur.execute("UPDATE cuadres_caja SET estado='cancelado' WHERE caja_id=%s AND estado='vigente'",(caja['id'],)); conn.commit(); mensaje="Cuadre cancelado; la caja vuelve a estar habilitada."
+            elif accion == "cerrar":
+                cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado='en_cuadre' FOR UPDATE",(empresa_id,)); caja=cur.fetchone()
+                if not caja: raise ValueError("Debes iniciar un cuadre antes del cierre.")
+                cur.execute("SELECT * FROM cuadres_caja WHERE caja_id=%s AND estado='vigente' ORDER BY id DESC LIMIT 1",(caja['id'],)); cuadre=cur.fetchone()
+                if not cuadre: raise ValueError("No se encontró el cuadre vigente.")
+                diffs=[float(cuadre['contado_efectivo'] or 0)-float(cuadre['esperado_efectivo'] or 0),float(cuadre['contado_tarjeta'] or 0)-float(cuadre['esperado_tarjeta'] or 0),float(cuadre['contado_nequi'] or 0)-float(cuadre['esperado_nequi'] or 0)]
+                obs=request.form.get('observacion','').strip()[:500]
+                if any(abs(x)>0.005 for x in diffs) and not obs: raise ValueError("Debes escribir una observación cuando existe una diferencia.")
+                cur.execute("SELECT COALESCE(jsonb_agg(to_jsonb(m) ORDER BY m.id),'[]'::jsonb) snap FROM movimientos_caja m WHERE caja_id=%s",(caja['id'],)); snap=cur.fetchone()['snap']
+                cur.execute("INSERT INTO cierres_caja(caja_id,empresa_id,usuario,total_efectivo,total_tarjeta,total_nequi,diferencia_efectivo,diferencia_tarjeta,diferencia_nequi,observacion,movimientos_snapshot) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(caja['id'],empresa_id,usuario,cuadre['contado_efectivo'],cuadre['contado_tarjeta'],cuadre['contado_nequi'],diffs[0],diffs[1],diffs[2],obs,snap))
+                cur.execute("UPDATE cuadres_caja SET estado='cerrado' WHERE id=%s",(cuadre['id'],))
+                cur.execute("UPDATE cajas SET estado='cerrada',cerrada_en=(NOW() AT TIME ZONE 'America/Bogota'),cerrada_por=%s WHERE id=%s",(usuario,caja['id']))
+                cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s)",(empresa_id,usuario))
+                conn.commit(); mensaje="Cierre guardado. Se abrió una caja nueva con base cero."
+            else: raise ValueError("Acción no válida.")
+        cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') ORDER BY id DESC LIMIT 1",(empresa_id,)); caja=cur.fetchone()
+        if not caja:
+            cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s) RETURNING *",(empresa_id,usuario)); caja=cur.fetchone(); conn.commit()
+        cur.execute("SELECT * FROM movimientos_caja WHERE caja_id=%s ORDER BY id DESC",(caja['id'],)); movimientos=[dict(x) for x in cur.fetchall()]
+        cur.execute("""SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago""",(caja['id'],))
+        totales={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()}
+        desde=request.args.get('desde',''); hasta=request.args.get('hasta','')
+        cur.execute("SELECT * FROM cuadres_caja WHERE empresa_id=%s AND (%s='' OR fecha::date >= %s::date) AND (%s='' OR fecha::date <= %s::date) ORDER BY id DESC LIMIT 200",(empresa_id,desde,desde,hasta,hasta)); cuadres=[dict(x) for x in cur.fetchall()]
+        cur.execute("SELECT * FROM cierres_caja WHERE empresa_id=%s AND (%s='' OR fecha::date >= %s::date) AND (%s='' OR fecha::date <= %s::date) ORDER BY id DESC LIMIT 200",(empresa_id,desde,desde,hasta,hasta)); cierres=[dict(x) for x in cur.fetchall()]
+        cur.execute("SELECT COALESCE(SUM(total),0) facturado, COALESCE(SUM(CASE WHEN tipo_venta='credito' THEN total-abono ELSE 0 END),0) saldo_credito FROM facturas WHERE empresa_id=%s AND fecha::date=(NOW() AT TIME ZONE 'America/Bogota')::date",(empresa_id,)); resumen=dict(cur.fetchone())
+        cur.execute("SELECT id,estado,usuario,fecha,esperado_efectivo,contado_efectivo,esperado_tarjeta,contado_tarjeta,esperado_nequi,contado_nequi,observacion FROM cuadres_caja WHERE caja_id=%s AND estado='vigente' ORDER BY id DESC LIMIT 1",(caja['id'],)); cuadre_activo=cur.fetchone()
+        return render_template('ventas.html', caja=dict(caja), movimientos=movimientos, totales=totales, cuadres=cuadres, cierres=cierres, desde=desde, hasta=hasta, resumen=dict(resumen), cuadre_activo=dict(cuadre_activo) if cuadre_activo else None, admin=admin, mensaje=mensaje)
+    except ValueError as e:
+        conn.rollback()
+        cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') ORDER BY id DESC LIMIT 1",(empresa_id,)); caja=cur.fetchone()
+        cur.execute("SELECT * FROM movimientos_caja WHERE caja_id=%s ORDER BY id DESC",(caja['id'],)) if caja else None
+        movimientos=[dict(x) for x in cur.fetchall()] if caja else []
+        cur.execute("SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago",(caja['id'],)) if caja else None
+        totales={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()} if caja else {}
+        return render_template('ventas.html', caja=dict(caja) if caja else {'estado':'abierta','id':'—'}, movimientos=movimientos, totales=totales, cuadres=[], cierres=[], desde='', hasta='', resumen={'facturado':0,'saldo_credito':0}, cuadre_activo=None, admin=admin, mensaje=str(e)), 400
+    finally:
+        conn.close()
 
 @app.route("/reportes")
 def reportes():
@@ -1748,7 +1735,8 @@ def abonar_credito_route():
             abono=request.form.get("abono", ""),
             observacion=request.form.get("observacion", "")[:300],
             empresa_id=session["empresa_id"],
-            metodo_pago=request.form.get("metodo_pago", "")
+            metodo_pago=request.form.get("metodo_pago", ""),
+            usuario=session.get("usuario")
         )
     except ValueError as e:
         flash("⚠️ " + str(e), "error")

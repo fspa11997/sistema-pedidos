@@ -314,6 +314,39 @@ def inicializar_db():
         cursor.execute("INSERT INTO empresas (nombre) VALUES ('Empresa Demo')")
         print("🔥 DB inicializada")
 
+    # Tablas del módulo de caja (nuevas; no alteran datos históricos).
+    cursor.execute("""CREATE TABLE IF NOT EXISTS cajas (
+        id SERIAL PRIMARY KEY, empresa_id INTEGER NOT NULL, estado TEXT NOT NULL DEFAULT 'abierta',
+        base_inicial NUMERIC(14,2) NOT NULL DEFAULT 0, abierta_en TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Bogota'),
+        abierta_por TEXT, cerrada_en TIMESTAMP, cerrada_por TEXT
+    )""")
+    cursor.execute("""CREATE UNIQUE INDEX IF NOT EXISTS uq_caja_activa_empresa ON cajas(empresa_id) WHERE estado IN ('abierta','en_cuadre')""")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS movimientos_caja (
+        id SERIAL PRIMARY KEY, caja_id INTEGER NOT NULL REFERENCES cajas(id), empresa_id INTEGER NOT NULL,
+        fecha TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Bogota'), tipo TEXT NOT NULL,
+        metodo_pago TEXT NOT NULL DEFAULT 'efectivo', valor NUMERIC(14,2) NOT NULL,
+        concepto TEXT NOT NULL DEFAULT '', factura_id INTEGER, usuario TEXT, origen TEXT NOT NULL DEFAULT 'manual'
+    )""")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS cuadres_caja (
+        id SERIAL PRIMARY KEY, caja_id INTEGER NOT NULL REFERENCES cajas(id), empresa_id INTEGER NOT NULL,
+        fecha TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Bogota'), usuario TEXT,
+        esperado_efectivo NUMERIC(14,2) NOT NULL DEFAULT 0, contado_efectivo NUMERIC(14,2) NOT NULL DEFAULT 0,
+        esperado_tarjeta NUMERIC(14,2) NOT NULL DEFAULT 0, contado_tarjeta NUMERIC(14,2) NOT NULL DEFAULT 0,
+        esperado_nequi NUMERIC(14,2) NOT NULL DEFAULT 0, contado_nequi NUMERIC(14,2) NOT NULL DEFAULT 0,
+        observacion TEXT, estado TEXT NOT NULL DEFAULT 'vigente'
+    )""")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS cierres_caja (
+        id SERIAL PRIMARY KEY, caja_id INTEGER NOT NULL UNIQUE REFERENCES cajas(id), empresa_id INTEGER NOT NULL,
+        fecha TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Bogota'), usuario TEXT,
+        total_efectivo NUMERIC(14,2) NOT NULL DEFAULT 0, total_tarjeta NUMERIC(14,2) NOT NULL DEFAULT 0,
+        total_nequi NUMERIC(14,2) NOT NULL DEFAULT 0, diferencia_efectivo NUMERIC(14,2) NOT NULL DEFAULT 0,
+        diferencia_tarjeta NUMERIC(14,2) NOT NULL DEFAULT 0, diferencia_nequi NUMERIC(14,2) NOT NULL DEFAULT 0,
+        observacion TEXT, movimientos_snapshot JSONB NOT NULL DEFAULT '[]'::jsonb
+    )""")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_movimientos_caja_empresa_fecha ON movimientos_caja(empresa_id, fecha DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_cuadres_caja_empresa_fecha ON cuadres_caja(empresa_id, fecha DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_cierres_caja_empresa_fecha ON cierres_caja(empresa_id, fecha DESC)")
+
     # 🔥 ESTO FALTABA
     conn.commit()
     conn.close()
@@ -936,7 +969,8 @@ def crear_factura(
     plazo_pago=None,
     abono=0,
     domiciliario="",
-    metodo_pago=None
+    metodo_pago=None,
+    usuario=None
 ):
 
     import os
@@ -945,8 +979,19 @@ def crear_factura(
     conn = conectar()
     cursor = conn.cursor()
 
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    #fecha = ahora()#
+    # Bloquear nuevas ventas durante el cuadre y asegurar caja activa por empresa.
+    cursor.execute("SELECT id, estado FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') FOR UPDATE", (empresa_id,))
+    caja_activa = cursor.fetchone()
+    if caja_activa and caja_activa["estado"] != "abierta":
+        conn.close()
+        raise ValueError("La caja está en cuadre. No se pueden registrar ventas hasta cancelar el cuadre o abrir una nueva caja.")
+    if not caja_activa:
+        cursor.execute("INSERT INTO cajas(empresa_id, estado, base_inicial, abierta_por) VALUES (%s,'abierta',0,%s) RETURNING id", (empresa_id, usuario))
+        caja_id = cursor.fetchone()[0]
+    else:
+        caja_id = caja_activa["id"]
+
+    fecha = ahora()
 
     total = 0
 
@@ -1036,6 +1081,13 @@ def crear_factura(
     ))
 
     factura_id = cursor.fetchone()[0]
+
+    # Registrar únicamente dinero realmente recibido (no el saldo a crédito).
+    if abono > 0 and metodo_pago:
+        cursor.execute("""INSERT INTO movimientos_caja
+            (caja_id, empresa_id, fecha, tipo, metodo_pago, valor, concepto, factura_id, usuario, origen)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'factura')""",
+            (caja_id, empresa_id, fecha, 'venta_contado' if tipo_venta != 'credito' else 'abono_inicial', metodo_pago, abono, 'Pago recibido de factura', factura_id, usuario))
 
     # =========================
     # DETALLE FACTURA
@@ -1427,7 +1479,7 @@ def crear_credito(cliente, factura_id, total, empresa_id):
     conn.close()
 
 
-def registrar_abono(factura_id, abono, observacion, empresa_id, metodo_pago=None):
+def registrar_abono(factura_id, abono, observacion, empresa_id, metodo_pago=None, usuario=None):
     """Registra un abono. Lanza ValueError con un mensaje legible si no es válido."""
     import math
     from datetime import datetime
@@ -1460,6 +1512,16 @@ def registrar_abono(factura_id, abono, observacion, empresa_id, metodo_pago=None
 
         if not factura:
             raise ValueError("Factura no encontrada.")
+
+        cursor.execute("SELECT id, estado FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') FOR UPDATE", (empresa_id,))
+        caja_activa = cursor.fetchone()
+        if caja_activa and caja_activa["estado"] != "abierta":
+            raise ValueError("La caja está en cuadre. No se pueden registrar abonos hasta cancelar el cuadre o abrir una nueva caja.")
+        if not caja_activa:
+            cursor.execute("INSERT INTO cajas(empresa_id, estado, base_inicial) VALUES (%s,'abierta',0) RETURNING id", (empresa_id,))
+            caja_id = cursor.fetchone()[0]
+        else:
+            caja_id = caja_activa['id']
 
         total = float(factura["total"] or 0)
         abono_actual = float(factura["abono"] or 0)
@@ -1499,6 +1561,10 @@ def registrar_abono(factura_id, abono, observacion, empresa_id, metodo_pago=None
         """, (nuevo_abono, saldo, estado, factura_id, empresa_id))
 
         fecha = ahora()
+        cursor.execute("""INSERT INTO movimientos_caja
+            (caja_id, empresa_id, fecha, tipo, metodo_pago, valor, concepto, factura_id, usuario, origen)
+            VALUES (%s,%s,%s,'abono_cartera',%s,%s,%s,%s,%s,'abono')""",
+            (caja_id, empresa_id, fecha, metodo_pago, abono, observacion or 'Abono de cartera', factura_id, usuario))
 
         cursor.execute("""
             INSERT INTO pagos_credito (
