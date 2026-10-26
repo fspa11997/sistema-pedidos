@@ -1410,29 +1410,10 @@ def ventas():
         cur.execute("SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago",(caja['id'],)) if caja else None
         totales={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()} if caja else {}
         return render_template('ventas.html', caja=dict(caja) if caja else {'estado':'abierta','id':'—'}, movimientos=movimientos, totales=totales, cuadres=[], cierres=[], desde='', hasta='', resumen={'facturado':0,'saldo_credito':0}, cuadre_activo=None, admin=admin, mensaje=str(e)), 400
-    except Exception as e:
-        # Mantener el error técnico en los logs y mostrar un mensaje en pantalla,
-        # en vez de que el formulario parezca no hacer nada.
+    except Exception:
         conn.rollback()
-        app.logger.exception("Error procesando accion del modulo Ventas/Caja (empresa_id=%s, accion=%s)", empresa_id, request.form.get('accion', '') if request.method == 'POST' else 'consulta')
-        try:
-            cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') ORDER BY id DESC LIMIT 1", (empresa_id,))
-            caja = cur.fetchone()
-            movimientos = []
-            totales = {}
-            if caja:
-                cur.execute("SELECT * FROM movimientos_caja WHERE caja_id=%s ORDER BY id DESC", (caja['id'],))
-                movimientos = [dict(x) for x in cur.fetchall()]
-                cur.execute("SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago", (caja['id'],))
-                totales = {r['metodo_pago']: float(r['total'] or 0) for r in cur.fetchall()}
-            cur.execute("SELECT * FROM cuadres_caja WHERE empresa_id=%s ORDER BY id DESC LIMIT 200", (empresa_id,))
-            cuadres = [dict(x) for x in cur.fetchall()]
-            cur.execute("SELECT * FROM cierres_caja WHERE empresa_id=%s ORDER BY id DESC LIMIT 200", (empresa_id,))
-            cierres = [dict(x) for x in cur.fetchall()]
-            return render_template('ventas.html', caja=dict(caja) if caja else {'estado':'abierta','id':'—','base_inicial':0}, movimientos=movimientos, totales=totales, cuadres=cuadres, cierres=cierres, desde='', hasta='', resumen={'facturado':0,'saldo_credito':0}, cuadre_activo=None, admin=admin, mensaje='No se pudo completar la operación. No se guardaron cambios. Revisa los logs de Railway o comparte el error para corregir la causa.'), 500
-        except Exception:
-            conn.rollback()
-            raise
+        app.logger.exception("Error en el módulo Ventas/Caja para empresa_id=%s, acción=%s", empresa_id, request.form.get("accion", "GET"))
+        return ("No se pudo completar la operación de Ventas/Caja. La operación fue cancelada para evitar registros parciales. Revisa los registros de Railway para ver el error SQL exacto.", 500)
     finally:
         conn.close()
 
