@@ -309,7 +309,15 @@
         <div class="section-title">Detalle de productos</div>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Descripción</th><th class="num">Unid</th><th class="num">Precio unid</th><th class="num">Subtotal</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th class="num">Unid</th>
+                        <th class="num">Precio unid</th>
+                        <th class="num">IVA (%)</th>
+                        <th class="num">Subtotal</th>
+                    </tr>
+                </thead>
                 <tbody>
                 {% for d in detalles %}
                     <tr>
