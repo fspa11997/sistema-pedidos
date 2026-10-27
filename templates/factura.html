@@ -49,14 +49,15 @@
         .pill-pending { background:#fff1d6; color:#92400e; }
         .pill-partial { background:#ffedd5; color:#9a3412; }
         .table-wrap { width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:10px; margin-top:10px; }
-        table { width:100%; border-collapse:collapse; min-width:540px; }
+        table { width:100%; border-collapse:collapse; min-width:590px; }
         thead { background:#f0f5fb; }
-        th { color:#334e68; text-align:left; padding:12px 13px; font-size:10px; letter-spacing:.6px; text-transform:uppercase; border-bottom:1px solid #dce6f0; }
-        td { padding:12px 13px; font-size:12px; color:#334155; border-bottom:1px solid #edf1f5; vertical-align:top; }
+        th { color:#334e68; text-align:left; padding:12px 10px; font-size:10px; letter-spacing:.4px; text-transform:uppercase; border-bottom:1px solid #dce6f0; }
+        td { padding:12px 10px; font-size:12px; color:#334155; border-bottom:1px solid #edf1f5; vertical-align:top; }
         tbody tr:last-child td { border-bottom:0; }
         tbody tr:nth-child(even) { background:#fbfdff; }
         .num { text-align:right; white-space:nowrap; }
-        .product-name { color:#172b43; font-weight:700; }
+        .iva-cell { text-align:center; white-space:nowrap; }
+        .product-name { color:#172b43; font-weight:700; overflow-wrap:anywhere; }
         .totals-row { display:flex; justify-content:flex-end; margin-top:16px; }
         .totals { width:100%; max-width:330px; border:1px solid var(--line); border-radius:11px; padding:14px 16px; }
         .total-line { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:5px 0; color:#526174; font-size:12px; }
@@ -95,38 +96,30 @@
             .thanks { white-space:normal; }
             .totals { max-width:none; }
         }
-        /* Impresión: estilos únicos para evitar conflictos entre formatos. */
         @media print {
             html, body { box-sizing:border-box !important; margin:0 !important; padding:0 !important; background:#fff !important; color:#111 !important; }
             .toolbar, .cut-line { display:none !important; }
             .invoice { box-sizing:border-box !important; box-shadow:none !important; border-radius:0 !important; }
         }
 
-        /* CARTA: factura profesional; cada copia ocupa una página completa. */
+        /* CARTA: conserva las dos copias, cada una en una página. */
         @media print {
             @page { size: letter portrait; margin: 10mm; }
             html:has(body.modo-media-carta), body.modo-media-carta {
-                width: auto !important; min-width: 0 !important; max-width: none !important;
-                margin: 0 !important; padding: 0 !important; background: #fff !important;
-                color: #172b43 !important; font-size: 10pt !important; line-height: 1.35 !important;
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+                width:auto !important; min-width:0 !important; max-width:none !important;
+                margin:0 !important; padding:0 !important; background:#fff !important;
+                color:#172b43 !important; font-size:10pt !important; line-height:1.35 !important;
+                -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
             }
             body.modo-media-carta .invoice {
-                display: flex !important; flex-direction: column !important;
-                width: 100% !important; max-width: none !important; min-width: 0 !important;
-                min-height: 0 !important; height: auto !important; max-height: none !important;
-                margin: 0 !important; padding: 0 !important; overflow: visible !important;
-                border: 1px solid #d7e1ec !important; border-radius: 4mm !important;
-                box-shadow: none !important; break-inside: avoid !important; page-break-inside: avoid !important;
-                break-after: page !important; page-break-after: always !important;
+                display:flex !important; flex-direction:column !important; width:100% !important; max-width:none !important;
+                min-width:0 !important; min-height:0 !important; height:auto !important; max-height:none !important;
+                margin:0 !important; padding:0 !important; overflow:visible !important; border:1px solid #d7e1ec !important;
+                border-radius:4mm !important; box-shadow:none !important; break-inside:avoid !important; page-break-inside:avoid !important;
+                break-after:page !important; page-break-after:always !important;
             }
-            body.modo-media-carta .invoice:last-of-type { break-after: auto !important; page-break-after: auto !important; }
-            body.modo-media-carta .invoice-header {
-                display:flex !important; flex-direction:row !important; align-items:center !important;
-                justify-content:space-between !important; gap:8mm !important; padding:10mm 11mm !important;
-                background:linear-gradient(125deg,#102f50,#1c5688) !important; color:#fff !important;
-                border:0 !important; border-radius:3mm 3mm 0 0 !important;
-            }
+            body.modo-media-carta .invoice:last-of-type { break-after:auto !important; page-break-after:auto !important; }
+            body.modo-media-carta .invoice-header { display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:space-between !important; gap:8mm !important; padding:10mm 11mm !important; background:linear-gradient(125deg,#102f50,#1c5688) !important; color:#fff !important; border:0 !important; border-radius:3mm 3mm 0 0 !important; }
             body.modo-media-carta .brand { display:flex !important; gap:4mm !important; }
             body.modo-media-carta .brand-mark { display:grid !important; width:14mm !important; height:14mm !important; flex:0 0 14mm !important; border-radius:3mm !important; font-size:15pt !important; }
             body.modo-media-carta .brand-name { color:#fff !important; font-size:19pt !important; }
@@ -145,12 +138,14 @@
             body.modo-media-carta .section-title { margin:8mm 0 3mm !important; font-size:9pt !important; letter-spacing:1pt !important; }
             body.modo-media-carta .table-wrap { width:100% !important; margin-top:2mm !important; overflow:visible !important; border:1px solid #dce5ef !important; border-radius:2mm !important; }
             body.modo-media-carta table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-            body.modo-media-carta th { padding:3mm 2.5mm !important; font-size:8pt !important; color:#fff !important; background:#173b63 !important; border-bottom:0 !important; }
-            body.modo-media-carta td { padding:3mm 2.5mm !important; font-size:9pt !important; line-height:1.3 !important; color:#334155 !important; border-bottom:1px solid #e8eef5 !important; }
-            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width:40% !important; }
-            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width:14% !important; }
-            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width:23% !important; }
-            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width:23% !important; }
+            body.modo-media-carta th { padding:3mm 1.5mm !important; font-size:8pt !important; color:#fff !important; background:#173b63 !important; border-bottom:0 !important; }
+            body.modo-media-carta td { padding:3mm 1.5mm !important; font-size:9pt !important; line-height:1.3 !important; color:#334155 !important; border-bottom:1px solid #e8eef5 !important; }
+            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width:34% !important; }
+            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width:11% !important; }
+            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width:15% !important; }
+            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width:20% !important; }
+            body.modo-media-carta th:nth-child(5), body.modo-media-carta td:nth-child(5) { width:20% !important; }
+            body.modo-media-carta .iva-cell { text-align:center !important; }
             body.modo-media-carta .totals-row { display:flex !important; justify-content:flex-end !important; margin-top:7mm !important; }
             body.modo-media-carta .totals { width:78mm !important; max-width:none !important; padding:4mm 5mm !important; border:1px solid #dce5ef !important; border-radius:3mm !important; }
             body.modo-media-carta .total-line { padding:2mm 0 !important; font-size:9pt !important; }
@@ -162,33 +157,13 @@
             body.modo-media-carta .cut-line { display:none !important; }
         }
 
-        /* TIRILLA EPSON 58 MM: una copia, contenido compacto y sin relleno final. */
+        /* TIRILLA 58 MM: una sola copia compacta. */
         @media print {
-            @page { size: 58mm auto; margin: 0; }
-
-            html:has(body.modo-tirilla), body.modo-tirilla {
-                width:58mm !important; min-width:0 !important; max-width:58mm !important; box-sizing:border-box !important;
-                height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important;
-                background:#fff !important; font-size:9px !important; line-height:1.15 !important;
-                overflow:visible !important;
-            }
-            body.modo-tirilla .toolbar,
-            body.modo-tirilla .cut-line,
-            body.modo-tirilla section.invoice:nth-of-type(2) { display:none !important; }
-
-            body.modo-tirilla .invoice {
-                display:block !important; width:58mm !important; min-width:0 !important; max-width:58mm !important; box-sizing:border-box !important;
-                height:auto !important; min-height:0 !important; max-height:none !important;
-                margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important;
-                box-shadow:none !important; overflow:visible !important;
-                break-inside:auto !important; page-break-inside:auto !important;
-                break-after:auto !important; page-break-after:auto !important;
-            }
-            body.modo-tirilla .invoice-header {
-                display:flex !important; justify-content:space-between !important; align-items:center !important;
-                gap:2mm !important; padding:2.5mm 2.5mm !important;
-                background:#fff !important; color:#111 !important; border-bottom:1px solid #777 !important;
-            }
+            @page { size:58mm auto; margin:0; }
+            html:has(body.modo-tirilla), body.modo-tirilla { width:58mm !important; min-width:0 !important; max-width:58mm !important; box-sizing:border-box !important; height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important; background:#fff !important; font-size:9px !important; line-height:1.15 !important; overflow:visible !important; }
+            body.modo-tirilla .toolbar, body.modo-tirilla .cut-line, body.modo-tirilla section.invoice:nth-of-type(2) { display:none !important; }
+            body.modo-tirilla .invoice { display:block !important; width:58mm !important; min-width:0 !important; max-width:58mm !important; box-sizing:border-box !important; height:auto !important; min-height:0 !important; max-height:none !important; margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; overflow:visible !important; break-inside:auto !important; page-break-inside:auto !important; break-after:auto !important; page-break-after:auto !important; }
+            body.modo-tirilla .invoice-header { display:flex !important; justify-content:space-between !important; align-items:center !important; gap:2mm !important; padding:2.5mm 2.5mm !important; background:#fff !important; color:#111 !important; border-bottom:1px solid #777 !important; }
             body.modo-tirilla .brand { gap:1mm !important; }
             body.modo-tirilla .brand-mark { display:none !important; }
             body.modo-tirilla .brand-name { color:#111 !important; font-size:13px !important; letter-spacing:0 !important; }
@@ -198,15 +173,9 @@
             body.modo-tirilla .invoice-number strong { color:#111 !important; font-size:14px !important; }
             body.modo-tirilla .invoice-number .date { color:#111 !important; font-size:8px !important; margin-top:1mm !important; }
             body.modo-tirilla .invoice-body { margin:0 !important; padding:1.5mm 2.5mm 0 !important; }
-            body.modo-tirilla .copy-label {
-                padding:0 !important; margin:0 0 1mm !important; background:transparent !important;
-                color:#111 !important; font-size:7px !important; letter-spacing:0 !important;
-            }
+            body.modo-tirilla .copy-label { padding:0 !important; margin:0 0 1mm !important; background:transparent !important; color:#111 !important; font-size:7px !important; letter-spacing:0 !important; }
             body.modo-tirilla .parties { display:block !important; margin:0 !important; gap:0 !important; }
-            body.modo-tirilla .info-card {
-                padding:1mm 0 !important; margin:0 !important; border:0 !important;
-                border-bottom:1px dashed #aaa !important; border-radius:0 !important;
-            }
+            body.modo-tirilla .info-card { padding:1mm 0 !important; margin:0 !important; border:0 !important; border-bottom:1px dashed #aaa !important; border-radius:0 !important; }
             body.modo-tirilla .info-card .eyebrow { margin:0 0 .5mm !important; font-size:8px !important; }
             body.modo-tirilla .client-name { margin:0 0 .5mm !important; font-size:10px !important; }
             body.modo-tirilla .info-line { margin:.5mm 0 !important; font-size:9px !important; line-height:1.2 !important; overflow-wrap:anywhere !important; }
@@ -214,35 +183,25 @@
             body.modo-tirilla .section-title { margin:1.5mm 0 1mm !important; font-size:9px !important; letter-spacing:0 !important; }
             body.modo-tirilla .table-wrap { width:100% !important; margin:0 !important; overflow:visible !important; border:0 !important; border-radius:0 !important; }
             body.modo-tirilla table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-            body.modo-tirilla th { padding:1.2mm .7mm !important; font-size:7.5px !important; color:#111 !important; background:#eee !important; letter-spacing:0 !important; overflow-wrap:anywhere !important; }
-            body.modo-tirilla td { padding:1.3mm .7mm !important; font-size:8.5px !important; line-height:1.2 !important; color:#111 !important; overflow-wrap:anywhere !important; }
-            body.modo-tirilla th:first-child, body.modo-tirilla td:first-child { width:40% !important; }
-            body.modo-tirilla th:nth-child(2), body.modo-tirilla td:nth-child(2) { width:13% !important; }
-            body.modo-tirilla th:nth-child(3), body.modo-tirilla td:nth-child(3) { width:24% !important; }
-            body.modo-tirilla th:nth-child(4), body.modo-tirilla td:nth-child(4) { width:23% !important; }
+            body.modo-tirilla th { padding:1mm .35mm !important; font-size:7px !important; color:#111 !important; background:#eee !important; letter-spacing:0 !important; overflow-wrap:anywhere !important; }
+            body.modo-tirilla td { padding:1mm .35mm !important; font-size:7.5px !important; line-height:1.2 !important; color:#111 !important; overflow-wrap:anywhere !important; }
+            body.modo-tirilla th:first-child, body.modo-tirilla td:first-child { width:31% !important; }
+            body.modo-tirilla th:nth-child(2), body.modo-tirilla td:nth-child(2) { width:10% !important; }
+            body.modo-tirilla th:nth-child(3), body.modo-tirilla td:nth-child(3) { width:14% !important; }
+            body.modo-tirilla th:nth-child(4), body.modo-tirilla td:nth-child(4) { width:22% !important; }
+            body.modo-tirilla th:nth-child(5), body.modo-tirilla td:nth-child(5) { width:23% !important; }
+            body.modo-tirilla .iva-cell { text-align:center !important; white-space:normal !important; }
             body.modo-tirilla .num { white-space:normal !important; overflow-wrap:anywhere !important; text-align:right !important; }
             body.modo-tirilla .totals-row { display:flex !important; justify-content:flex-end !important; margin:1mm 0 0 !important; }
             body.modo-tirilla .totals { width:100% !important; max-width:none !important; padding:1mm 0 0 !important; border:0 !important; border-radius:0 !important; }
             body.modo-tirilla .total-line { padding:1mm 0 !important; font-size:9px !important; }
-            body.modo-tirilla .grand-total {
-                margin:1mm 0 0 !important; padding:1.5mm 0 !important; background:#fff !important; color:#111 !important;
-                border-top:1px dashed #777 !important; border-bottom:1px dashed #777 !important; border-radius:0 !important; font-size:10px !important;
-            }
+            body.modo-tirilla .grand-total { margin:1mm 0 0 !important; padding:1.5mm 0 !important; background:#fff !important; color:#111 !important; border-top:1px dashed #777 !important; border-bottom:1px dashed #777 !important; border-radius:0 !important; font-size:10px !important; }
             body.modo-tirilla .grand-total strong { color:#111 !important; font-size:12px !important; }
-            body.modo-tirilla .footer {
-                display:block !important; margin:1.5mm 0 0 !important; padding:0 !important; border:0 !important;
-                font-size:8px !important; line-height:1.2 !important; color:#111 !important;
-            }
+            body.modo-tirilla .footer { display:block !important; margin:1.5mm 0 0 !important; padding:0 !important; border:0 !important; font-size:8px !important; line-height:1.2 !important; color:#111 !important; }
             body.modo-tirilla .legal-note { max-width:none !important; margin:0 !important; padding:0 !important; }
-            body.modo-tirilla .thanks {
-                display:block !important; margin:1mm 0 0 !important; padding:0 !important; color:#111 !important;
-                white-space:normal !important; font-size:9px !important; font-weight:800 !important;
-            }
-            body.modo-tirilla .invoice-body, body.modo-tirilla .footer, body.modo-tirilla .thanks {
-                break-after:auto !important; page-break-after:auto !important;
-            }
-            body.modo-tirilla .invoice-body { height:auto !important; min-height:0 !important; }
-            body.modo-tirilla .footer { height:auto !important; min-height:0 !important; }
+            body.modo-tirilla .thanks { display:block !important; margin:1mm 0 0 !important; padding:0 !important; color:#111 !important; white-space:normal !important; font-size:9px !important; font-weight:800 !important; }
+            body.modo-tirilla .invoice-body, body.modo-tirilla .footer, body.modo-tirilla .thanks { break-after:auto !important; page-break-after:auto !important; }
+            body.modo-tirilla .invoice-body, body.modo-tirilla .footer { height:auto !important; min-height:0 !important; }
             body.modo-tirilla .invoice:last-of-type { display:none !important; }
             body.modo-tirilla * { animation:none !important; transition:none !important; }
         }
@@ -313,21 +272,29 @@
                     <tr>
                         <th>Descripción</th>
                         <th class="num">Unid</th>
+                        <th class="iva-cell">IVA %</th>
                         <th class="num">Precio unid</th>
-                        <th class="num">IVA (%)</th>
                         <th class="num">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for d in detalles %}
+                    {% set iva_porcentaje = d.iva_porcentaje|default(d.porcentaje_iva|default(d.tarifa_iva|default(none, true), true), true) %}
                     <tr>
                         <td class="product-name">{{ d.producto }}</td>
                         <td class="num">{{ d.cantidad }}</td>
+                        <td class="iva-cell">
+                            {% if iva_porcentaje is not none and iva_porcentaje != '' %}
+                                {{ iva_porcentaje }}{% if '%' not in (iva_porcentaje|string) %}%{% endif %}
+                            {% else %}
+                                No definido
+                            {% endif %}
+                        </td>
                         <td class="num">${{ "{:,.0f}".format(d.precio_unitario or 0) }}</td>
                         <td class="num">${{ "{:,.0f}".format(d.subtotal or 0) }}</td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="4">No hay productos asociados a esta factura.</td></tr>
+                    <tr><td colspan="5">No hay productos asociados a esta factura.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -377,8 +344,6 @@ function imprimirFactura(modo) {
 
     window.setTimeout(function () {
         if (modo === 'tirilla') {
-            // Forzar el recálculo con los estilos de tirilla ya aplicados.
-            // Medir el contenido real (no una altura fija de página) y añadir solo un pequeño margen de corte.
             const primera = document.querySelector('body.modo-tirilla section.invoice');
             if (primera) {
                 primera.style.setProperty('height', 'auto', 'important');
@@ -405,6 +370,5 @@ window.addEventListener('afterprint', function () {
     document.body.style.height = '';
 });
 </script>
-
 </body>
 </html>
