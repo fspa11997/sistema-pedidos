@@ -108,7 +108,8 @@ def inicializar_db():
         empresa_id INTEGER,
         activo INTEGER DEFAULT 1,
         foto BYTEA,
-        foto_mimetype TEXT
+        foto_mimetype TEXT,
+        iva_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (iva_porcentaje >= 0 AND iva_porcentaje <= 100)
     )
     """)
 
@@ -117,6 +118,9 @@ def inicializar_db():
     cursor.execute("ALTER TABLE recibos_abono ADD COLUMN IF NOT EXISTS metodo_pago TEXT")
     cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto BYTEA")
     cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto_mimetype TEXT")
+    # IVA por producto y desglose tributario de las facturas (migración compatible con datos existentes).
+    cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS iva_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0")
+
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS pedidos (
@@ -163,6 +167,8 @@ def inicializar_db():
 
         domiciliario TEXT,
         tipo_precio TEXT,
+        subtotal REAL DEFAULT 0,
+        iva_total REAL DEFAULT 0,
 
         empresa_id INTEGER
     )
@@ -179,9 +185,16 @@ def inicializar_db():
         cantidad INTEGER,
         precio_unitario REAL,
         subtotal REAL,
-        tipo_precio TEXT
+        tipo_precio TEXT,
+        iva_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0,
+        iva_valor REAL NOT NULL DEFAULT 0
     )
     """)
+
+    cursor.execute("ALTER TABLE facturas ADD COLUMN IF NOT EXISTS subtotal REAL DEFAULT 0")
+    cursor.execute("ALTER TABLE facturas ADD COLUMN IF NOT EXISTS iva_total REAL DEFAULT 0")
+    cursor.execute("ALTER TABLE detalle_factura ADD COLUMN IF NOT EXISTS iva_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0")
+    cursor.execute("ALTER TABLE detalle_factura ADD COLUMN IF NOT EXISTS iva_valor REAL NOT NULL DEFAULT 0")
 
     # =========================
     # INVENTARIO
@@ -557,7 +570,7 @@ def obtener_productos(empresa_id, conn=None):
 
     cursor.execute("""
         SELECT id, nombre, precio_mayorista, precio_individual,
-               precio_mostrador, costo, codigo_barras, empresa_id, activo
+               precio_mostrador, costo, codigo_barras, empresa_id, activo, iva_porcentaje
         FROM productos
         WHERE empresa_id = %s
           AND activo = TRUE
@@ -993,7 +1006,8 @@ def crear_factura(
 
     fecha = ahora()
 
-    total = 0
+    subtotal_factura = 0
+    iva_factura = 0
 
     # =========================
     # NORMALIZAR ABONO
@@ -1007,14 +1021,17 @@ def crear_factura(
     # CALCULAR TOTAL FACTURA
     # =========================
     for p in productos:
-
         precio = float(p.get("precio") or 0)
         cantidad = int(p.get("cantidad") or 0)
+        iva_porcentaje = float(p.get("iva_porcentaje") or 0)
 
-        # Facturación por UNIDADES: el precio es por unidad.
-        subtotal = precio * cantidad
-        total += subtotal
+        # Los precios configurados en Productos son base antes de IVA.
+        linea_subtotal = precio * cantidad
+        linea_iva = int((linea_subtotal * iva_porcentaje / 100) + 0.5)
+        subtotal_factura += linea_subtotal
+        iva_factura += linea_iva
 
+    total = subtotal_factura + iva_factura
     saldo = total - abono
     if saldo < 0:
         saldo = 0
@@ -1059,9 +1076,11 @@ def crear_factura(
             abono,
             domiciliario,
             metodo_pago,
+            subtotal,
+            iva_total,
             empresa_id
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
     """, (
         cliente,
@@ -1077,6 +1096,8 @@ def crear_factura(
         abono,
         domiciliario,
         metodo_pago,
+        subtotal_factura,
+        iva_factura,
         empresa_id
     ))
 
@@ -1096,24 +1117,20 @@ def crear_factura(
 
         precio = float(p.get("precio") or 0)
         cantidad = int(p.get("cantidad") or 0)
-        # Facturación por unidades: el precio es por unidad.
+        iva_porcentaje = float(p.get("iva_porcentaje") or 0)
+        # Se guarda el impuesto aplicado por línea para que las facturas históricas no cambien.
         subtotal = precio * cantidad
+        iva_valor = int((subtotal * iva_porcentaje / 100) + 0.5)
 
         cursor.execute("""
             INSERT INTO detalle_factura (
-                factura_id,
-                producto,
-                cantidad,
-                precio_unitario,
-                subtotal
+                factura_id, producto, cantidad, precio_unitario, subtotal,
+                iva_porcentaje, iva_valor
             )
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
-            factura_id,
-            p.get("producto"),
-            cantidad,
-            precio,
-            subtotal
+            factura_id, p.get("producto"), cantidad, precio, subtotal,
+            iva_porcentaje, iva_valor
         ))
 
         # =========================

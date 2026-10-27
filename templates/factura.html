@@ -64,7 +64,6 @@
         .total-line.balance strong { color:var(--orange); }
         .grand-total { margin:8px -16px -14px; padding:13px 16px; border-radius:0 0 10px 10px; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:800; }
         .grand-total strong { font-size:19px; white-space:nowrap; }
-        .iva-tirilla, .total-iva-tirilla, .saldo-tirilla { display:none; }
         .footer { margin-top:25px; padding-top:15px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:flex-start; gap:18px; color:var(--muted); font-size:10px; }
         .footer strong { color:#334e68; }
         .legal-note { max-width:520px; }
@@ -573,12 +572,6 @@
             body.modo-tirilla .invoice:last-of-type {
                 display: none !important;
             }
-            /* El IVA automático se muestra solo en tirilla; carta conserva sus totales originales. */
-            body.modo-tirilla .iva-tirilla,
-            body.modo-tirilla .total-iva-tirilla,
-            body.modo-tirilla .saldo-tirilla { display: flex !important; }
-            body.modo-tirilla .total-original,
-            body.modo-tirilla .saldo-original { display: none !important; }
         }
 
     </style>
@@ -595,15 +588,14 @@
     </div>
 </div>
 
-{# IVA automático del 19 % para la tirilla. La impresión en carta conserva los totales originales. #}
+{# El desglose tributario se toma de los valores guardados al crear la factura. #}
 {% set base_iva = namespace(valor=0) %}
+{% set iva_total_guardado = namespace(valor=0) %}
 {% for item_iva in detalles %}
     {% set base_iva.valor = base_iva.valor + (item_iva.subtotal or 0) %}
+    {% set iva_total_guardado.valor = iva_total_guardado.valor + (item_iva.iva_valor or 0) %}
 {% endfor %}
-{% set iva_tirilla = (base_iva.valor * 0.19) | round(0) | int %}
-{% set total_con_iva_tirilla = base_iva.valor + iva_tirilla %}
 {% set saldo = (factura.total or 0) - (factura.abono or 0) %}
-{% set saldo_con_iva_tirilla = total_con_iva_tirilla - (factura.abono or 0) %}
 {% set estado_factura = factura.estado or 'pendiente' %}
 {% set tipo_venta = factura.tipo_venta or 'contado' %}
 {% for copia in ['CLIENTE', 'ARCHIVO'] %}
@@ -656,7 +648,7 @@
                 <tbody>
                 {% for d in detalles %}
                     <tr>
-                        <td class="product-name">{{ d.producto }}</td>
+                        <td class="product-name">{{ d.producto }}<small style="display:block;font-size:9px;font-weight:500;color:#64748b">{{ "%.2f"|format(d.iva_porcentaje or 0) }}% IVA</small></td>
                         <td class="num">{{ d.cantidad }}</td>
                         <td class="num">${{ "{:,.0f}".format(d.precio_unitario or 0) }}</td>
                         <td class="num">${{ "{:,.0f}".format(d.subtotal or 0) }}</td>
@@ -670,14 +662,11 @@
 
         <div class="totals-row">
             <div class="totals">
-                <div class="total-line total-original"><span>Total de la venta</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
-                <div class="total-line iva-tirilla"><span>Subtotal</span><strong>${{ "{:,.0f}".format(base_iva.valor) }}</strong></div>
-                <div class="total-line iva-tirilla"><span>IVA (19 %)</span><strong>${{ "{:,.0f}".format(iva_tirilla) }}</strong></div>
+                <div class="total-line"><span>Subtotal</span><strong>${{ "{:,.0f}".format(base_iva.valor) }}</strong></div>
+                <div class="total-line"><span>IVA total</span><strong>${{ "{:,.0f}".format(iva_total_guardado.valor) }}</strong></div>
                 <div class="total-line"><span>Abonado</span><strong>${{ "{:,.0f}".format(factura.abono or 0) }}</strong></div>
-                <div class="total-line balance saldo-original"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo) }}</strong></div>
-                <div class="total-line balance saldo-tirilla"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo_con_iva_tirilla) }}</strong></div>
-                <div class="grand-total total-original"><span>TOTAL</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
-                <div class="grand-total total-iva-tirilla"><span>TOTAL + IVA</span><strong>${{ "{:,.0f}".format(total_con_iva_tirilla) }}</strong></div>
+                <div class="total-line balance"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo) }}</strong></div>
+                <div class="grand-total"><span>TOTAL</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
             </div>
         </div>
 

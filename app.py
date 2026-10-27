@@ -804,10 +804,17 @@ def crear_factura_route():
         else:
             precio_unitario = producto_db["precio_mostrador"]
 
+        iva_producto = producto_db["iva_porcentaje"]
+        if iva_producto is None:
+            conn.close()
+            flash(f"⚠️ Debes configurar el IVA del producto '{producto}' antes de venderlo.", "error")
+            return redirect("/productos")
+
         productos_factura.append({
             "producto": producto,
             "cantidad": cantidad,
-            "precio": precio_unitario
+            "precio": precio_unitario,
+            "iva_porcentaje": float(iva_producto)
         })
 
     conn.close()
@@ -851,7 +858,7 @@ def crear_factura_route():
             telefono=telefono,
             domiciliario=domiciliario,
             cantidad=p["cantidad"],
-            precio=p["precio"] * p["cantidad"],
+            precio=(p["precio"] * p["cantidad"]) + int((p["precio"] * p["cantidad"] * p["iva_porcentaje"] / 100) + 0.5),
             abono=abono,
             tipo_precio=tipo_precio,
             empresa_id=empresa_id
@@ -1118,7 +1125,20 @@ def crear_producto():
     precio_individual = request.form.get("precio_individual") or 0
     precio_mostrador = request.form.get("precio_mostrador") or 0
     costo = request.form.get("costo") or 0
+    iva_raw = request.form.get("iva_porcentaje")
     codigo_barras = request.form.get("codigo_barras", "").strip()
+
+    # El IVA es obligatorio: 0 es válido, campo vacío no.
+    if iva_raw is None or not iva_raw.strip():
+        return render_template("productos.html", productos=obtener_productos(empresa_id),
+            error="Debes especificar el IVA del producto. Puedes indicar 0 si no lleva IVA.")
+    try:
+        iva_porcentaje = float(iva_raw)
+        if not 0 <= iva_porcentaje <= 100:
+            raise ValueError
+    except (TypeError, ValueError):
+        return render_template("productos.html", productos=obtener_productos(empresa_id),
+            error="El IVA debe ser un porcentaje entre 0 y 100.")
 
     try:
         cantidad = int(request.form.get("cantidad") or 0)
@@ -1166,11 +1186,11 @@ def crear_producto():
         cursor.execute("""
             INSERT INTO productos (
                 nombre, precio_mayorista, precio_individual,
-                precio_mostrador, costo, codigo_barras, empresa_id
+                precio_mostrador, costo, codigo_barras, empresa_id, iva_porcentaje
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (nombre, precio_mayorista, precio_individual,
-              precio_mostrador, costo, codigo_barras, empresa_id))
+              precio_mostrador, costo, codigo_barras, empresa_id, iva_porcentaje))
 
         # 2. Crear automáticamente su registro de inventario con la cantidad inicial.
         cursor.execute("""
@@ -1192,6 +1212,39 @@ def crear_producto():
     finally:
         conn.close()
 
+    return redirect("/productos")
+
+
+@app.route("/actualizar_iva_producto/<int:producto_id>", methods=["POST"])
+def actualizar_iva_producto(producto_id):
+    if "usuario" not in session:
+        return redirect("/")
+    empresa_id = session["empresa_id"]
+    iva_raw = request.form.get("iva_porcentaje")
+    if iva_raw is None or not iva_raw.strip():
+        flash("Debes especificar el IVA. Puedes usar 0 si el producto no lleva IVA.", "error")
+        return redirect("/productos")
+    try:
+        iva = float(iva_raw)
+        if not 0 <= iva <= 100:
+            raise ValueError
+    except (TypeError, ValueError):
+        flash("El IVA debe ser un porcentaje entre 0 y 100.", "error")
+        return redirect("/productos")
+
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE productos SET iva_porcentaje=%s
+        WHERE id=%s AND empresa_id=%s
+    """, (iva, producto_id, empresa_id))
+    actualizado = cursor.rowcount
+    conn.commit()
+    conn.close()
+    if not actualizado:
+        flash("No se encontró el producto para actualizar su IVA.", "error")
+    else:
+        flash("IVA del producto actualizado correctamente.", "success")
     return redirect("/productos")
 
 
