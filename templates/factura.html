@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Factura FS-{{ factura.id }} | ST Gestión</title>
+    <title>Comprobante 000{{ factura.id }} | ST Gestión</title>
     <style>
         :root { --navy:#102f50; --blue:#2364aa; --blue-light:#eaf3ff; --ink:#1f2937; --muted:#64748b; --line:#e2e8f0; --paper:#fff; --bg:#eef3f8; --green:#087f5b; --orange:#a85b00; }
         * { box-sizing:border-box; }
@@ -628,7 +628,7 @@
         </div>
         <div class="invoice-number">
             <div class="invoice-kicker">Factura </div>
-            <strong>FS-{{ factura.id }}</strong>
+            <strong>Comprobante 000{{ factura.id }}</strong>
             <span class="date">16/09/2026 </span>
         </div>
     </header>
