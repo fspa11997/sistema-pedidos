@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Comprobante 000{{ factura.id }} | ST Gestión</title>
+    <title>Factura FS-{{ factura.id }} | ST Gestión</title>
     <style>
         :root { --navy:#102f50; --blue:#2364aa; --blue-light:#eaf3ff; --ink:#1f2937; --muted:#64748b; --line:#e2e8f0; --paper:#fff; --bg:#eef3f8; --green:#087f5b; --orange:#a85b00; }
         * { box-sizing:border-box; }
@@ -246,353 +246,7 @@
             body.modo-tirilla .invoice:last-of-type { display:none !important; }
             body.modo-tirilla * { animation:none !important; transition:none !important; }
         }
-    
-        /* DISEÑO RENOVADO DE TIRILLA POS.
-           Cambios exclusivamente visuales: no modifica datos, cálculos ni impresión por modo. */
-        @media print {
-            body.modo-tirilla {
-                font-family: "Arial", "Helvetica Neue", sans-serif !important;
-                font-size: 9px !important;
-                line-height: 1.3 !important;
-                color: #171717 !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            body.modo-tirilla .invoice {
-                font-family: "Arial", "Helvetica Neue", sans-serif !important;
-                background: #fff !important;
-            }
-
-            /* Cabecera compacta, con marca a la izquierda y número sin centrar */
-            body.modo-tirilla .invoice-header {
-                display: block !important;
-                margin: 0 2mm !important;
-                padding: 3mm 1mm 2.5mm !important;
-                background: #fff !important;
-                color: #171717 !important;
-                border-top: 3px solid #171717 !important;
-                border-bottom: 1px solid #171717 !important;
-                text-align: left !important;
-            }
-
-            body.modo-tirilla .brand {
-                display: block !important;
-                width: 100% !important;
-                text-align: left !important;
-            }
-
-            body.modo-tirilla .brand-mark { display: none !important; }
-
-            body.modo-tirilla .brand-name {
-                color: #111 !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 18px !important;
-                font-weight: 900 !important;
-                line-height: 1.05 !important;
-                letter-spacing: .2px !important;
-                text-transform: uppercase !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla .brand-subtitle {
-                margin-top: 1mm !important;
-                color: #555 !important;
-                font-size: 8px !important;
-                font-weight: 700 !important;
-                letter-spacing: 1.1px !important;
-                text-transform: uppercase !important;
-            }
-
-            body.modo-tirilla .invoice-number {
-                width: 100% !important;
-                min-width: 0 !important;
-                margin-top: 2.5mm !important;
-                padding: 2mm 0 0 !important;
-                text-align: left !important;
-                border-top: 1px dashed #777 !important;
-            }
-
-            body.modo-tirilla .invoice-kicker {
-                display: block !important;
-                color: #555 !important;
-                font-size: 7px !important;
-                font-weight: 800 !important;
-                letter-spacing: 1px !important;
-                text-transform: uppercase !important;
-            }
-
-            body.modo-tirilla .invoice-number strong {
-                display: block !important;
-                margin: .7mm 0 !important;
-                color: #111 !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 20px !important;
-                font-weight: 900 !important;
-                letter-spacing: .3px !important;
-                text-align: left !important;
-            }
-
-            body.modo-tirilla .invoice-number .date {
-                margin-top: .5mm !important;
-                color: #333 !important;
-                font-size: 8px !important;
-                font-weight: 600 !important;
-            }
-
-            body.modo-tirilla .invoice-body {
-                margin: 0 !important;
-                padding: 2mm 2.5mm 1mm !important;
-            }
-
-            body.modo-tirilla .copy-label {
-                display: inline-block !important;
-                width: auto !important;
-                margin: 0 0 1.5mm !important;
-                padding: .8mm 1.5mm !important;
-                border: 0 !important;
-                border-left: 3px solid #171717 !important;
-                border-radius: 0 !important;
-                background: #f0f0f0 !important;
-                color: #222 !important;
-                font-size: 7px !important;
-                font-weight: 800 !important;
-                letter-spacing: .7px !important;
-            }
-
-            body.modo-tirilla .parties { display: block !important; margin: 0 !important; }
-
-            body.modo-tirilla .info-card {
-                margin: 0 !important;
-                padding: 1.7mm 0 !important;
-                border: 0 !important;
-                border-bottom: 1px dashed #999 !important;
-                border-radius: 0 !important;
-            }
-
-            body.modo-tirilla .info-card .eyebrow {
-                margin: 0 0 .8mm !important;
-                color: #555 !important;
-                font-size: 7px !important;
-                font-weight: 800 !important;
-                letter-spacing: .7px !important;
-            }
-
-            body.modo-tirilla .client-name {
-                margin: 0 0 .8mm !important;
-                color: #111 !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 11px !important;
-                font-weight: 800 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla .info-line {
-                margin: .6mm 0 !important;
-                color: #292929 !important;
-                font-size: 8px !important;
-                line-height: 1.3 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla .info-line b { color: #111 !important; font-weight: 800 !important; }
-
-            body.modo-tirilla .pill {
-                padding: .3mm 1mm !important;
-                border: 1px solid #555 !important;
-                border-radius: 2px !important;
-                background: #fff !important;
-                color: #111 !important;
-                font-size: 7px !important;
-                font-weight: 800 !important;
-            }
-
-            body.modo-tirilla .section-title {
-                margin: 2mm 0 1mm !important;
-                padding: 1.2mm 1mm !important;
-                border: 0 !important;
-                border-left: 3px solid #111 !important;
-                background: #ededed !important;
-                color: #111 !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 8px !important;
-                font-weight: 900 !important;
-                letter-spacing: .6px !important;
-                text-align: left !important;
-            }
-
-            body.modo-tirilla .table-wrap {
-                margin: 0 !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-                overflow: visible !important;
-            }
-
-            body.modo-tirilla table {
-                width: 100% !important;
-                min-width: 0 !important;
-                table-layout: fixed !important;
-                border-collapse: collapse !important;
-            }
-
-            body.modo-tirilla th {
-                padding: 1.4mm .5mm !important;
-                border-top: 1px solid #333 !important;
-                border-bottom: 1px solid #333 !important;
-                background: #e8e8e8 !important;
-                color: #111 !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 7px !important;
-                font-weight: 800 !important;
-                letter-spacing: 0 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla td {
-                padding: 1.5mm .5mm !important;
-                border-bottom: 1px dotted #bbb !important;
-                color: #222 !important;
-                font-size: 8px !important;
-                line-height: 1.25 !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla th:first-child,
-            body.modo-tirilla td:first-child { width: 38% !important; }
-            body.modo-tirilla th:nth-child(2),
-            body.modo-tirilla td:nth-child(2) { width: 12% !important; }
-            body.modo-tirilla th:nth-child(3),
-            body.modo-tirilla td:nth-child(3) { width: 25% !important; }
-            body.modo-tirilla th:nth-child(4),
-            body.modo-tirilla td:nth-child(4) { width: 25% !important; }
-
-            body.modo-tirilla .product-name { color: #111 !important; font-weight: 800 !important; }
-            body.modo-tirilla .num {
-                text-align: right !important;
-                white-space: normal !important;
-                overflow-wrap: anywhere !important;
-            }
-
-            body.modo-tirilla .totals-row { display: block !important; margin: 2mm 0 0 !important; }
-
-            body.modo-tirilla .totals {
-                width: 100% !important;
-                max-width: none !important;
-                padding: 1.5mm 1.5mm !important;
-                border: 1px solid #aaa !important;
-                border-radius: 0 !important;
-                background: #fafafa !important;
-            }
-
-            body.modo-tirilla .total-line {
-                padding: 1mm 0 !important;
-                color: #333 !important;
-                font-size: 8px !important;
-                font-weight: 600 !important;
-            }
-
-            body.modo-tirilla .total-line strong { color: #111 !important; font-weight: 800 !important; }
-            body.modo-tirilla .total-line.balance {
-                margin-top: 1mm !important;
-                padding-top: 1.5mm !important;
-                border-top: 1px dashed #999 !important;
-            }
-
-            body.modo-tirilla .grand-total {
-                display: flex !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                gap: 2mm !important;
-                margin: 1.5mm -1.5mm -1.5mm !important;
-                padding: 2.2mm 1.5mm !important;
-                border: 0 !important;
-                border-radius: 0 !important;
-                background: #171717 !important;
-                color: #fff !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 11px !important;
-                font-weight: 900 !important;
-            }
-
-            body.modo-tirilla .grand-total span,
-            body.modo-tirilla .grand-total strong { color: #fff !important; font-weight: 900 !important; }
-            body.modo-tirilla .grand-total strong { font-size: 15px !important; }
-
-            body.modo-tirilla .footer {
-                display: block !important;
-                margin: 2mm 0 0 !important;
-                padding: 2mm 0 0 !important;
-                border-top: 1px dashed #777 !important;
-                color: #333 !important;
-                text-align: center !important;
-                font-size: 7px !important;
-                line-height: 1.3 !important;
-            }
-
-            body.modo-tirilla .legal-note {
-                width: 100% !important;
-                max-width: none !important;
-                font-weight: 600 !important;
-            }
-
-            body.modo-tirilla .thanks {
-                display: block !important;
-                margin-top: 1.5mm !important;
-                color: #111 !important;
-                font-family: "Arial", sans-serif !important;
-                font-size: 9px !important;
-                font-weight: 900 !important;
-                text-align: center !important;
-            }
-
-            body.modo-tirilla .invoice:last-of-type { display: none !important; }
-        }
-
-    
-
-        /* TIRILLA SIN LÍNEAS HORIZONTALES: solo cambia la impresión de tirilla */
-        @media print {
-            body.modo-tirilla .invoice-header,
-            body.modo-tirilla .invoice-number,
-            body.modo-tirilla .info-card,
-            body.modo-tirilla .table-wrap,
-            body.modo-tirilla th,
-            body.modo-tirilla td,
-            body.modo-tirilla .totals,
-            body.modo-tirilla .total-line.balance,
-            body.modo-tirilla .grand-total,
-            body.modo-tirilla .footer {
-                border-top: 0 !important;
-                border-bottom: 0 !important;
-                box-shadow: none !important;
-            }
-
-            body.modo-tirilla .invoice-header,
-            body.modo-tirilla .totals,
-            body.modo-tirilla .grand-total {
-                border-left: 0 !important;
-                border-right: 0 !important;
-                background: #fff !important;
-            }
-
-            body.modo-tirilla .grand-total,
-            body.modo-tirilla .grand-total span,
-            body.modo-tirilla .grand-total strong {
-                color: #111 !important;
-            }
-
-            body.modo-tirilla .info-card::before,
-            body.modo-tirilla .info-card::after,
-            body.modo-tirilla .invoice-header::before,
-            body.modo-tirilla .invoice-header::after,
-            body.modo-tirilla .footer::before,
-            body.modo-tirilla .footer::after {
-                content: none !important;
-                display: none !important;
-                border: 0 !important;
-            }
-        }
-</style>
+    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
@@ -606,13 +260,6 @@
     </div>
 </div>
 
-{# El desglose tributario se toma de los valores guardados al crear la factura. #}
-{% set base_iva = namespace(valor=0) %}
-{% set iva_total_guardado = namespace(valor=0) %}
-{% for item_iva in detalles %}
-    {% set base_iva.valor = base_iva.valor + (item_iva.subtotal or 0) %}
-    {% set iva_total_guardado.valor = iva_total_guardado.valor + (item_iva.iva_valor or 0) %}
-{% endfor %}
 {% set saldo = (factura.total or 0) - (factura.abono or 0) %}
 {% set estado_factura = factura.estado or 'pendiente' %}
 {% set tipo_venta = factura.tipo_venta or 'contado' %}
@@ -622,19 +269,19 @@
         <div class="brand">
             <div class="brand-mark">ST</div>
             <div>
-                <div class="brand-name">VARIEDADES FESTIN</div>
+                <div class="brand-name">ST GESTIÓN</div>
                 <div class="brand-subtitle">Control comercial</div>
             </div>
         </div>
         <div class="invoice-number">
-            <div class="invoice-kicker">Factura </div>
-            <strong>Comprobante 000{{ factura.id }}</strong>
-            <span class="date">16/09/2026 </span>
+            <div class="invoice-kicker">Factura / comprobante de venta</div>
+            <strong>FS-{{ factura.id }}</strong>
+            <span class="date">{{ factura.fecha|fecha_hora }}</span>
         </div>
     </header>
 
     <div class="invoice-body">
-        <span class="copy-label"> {{ copia|lower }}</span>
+        <span class="copy-label">▤ Copia {{ copia|lower }}</span>
         <div class="parties">
             <div class="info-card">
                 <div class="eyebrow">Facturado a</div>
@@ -646,8 +293,8 @@
             </div>
             <div class="info-card">
                 <div class="eyebrow">Información de la venta</div>
-                <div class="info-line"><b>Número:</b> FS {{ factura.id }}</div>
-                <div class="info-line"><b>Fecha:</b> 16/09/2026 </div>
+                <div class="info-line"><b>Número:</b> FS-{{ factura.id }}</div>
+                <div class="info-line"><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</div>
                 <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
                 {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
                 {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
@@ -659,14 +306,14 @@
             </div>
         </div>
 
-        <div class="section-title">Detalle </div>
+        <div class="section-title">Detalle de productos</div>
         <div class="table-wrap">
             <table>
                 <thead><tr><th>Descripción</th><th class="num">Unid</th><th class="num">Precio unid</th><th class="num">Subtotal</th></tr></thead>
                 <tbody>
                 {% for d in detalles %}
                     <tr>
-                        <td class="product-name">{{ d.producto }}<small style="display:block;font-size:9px;font-weight:500;color:#64748b">{{ "%.2f"|format(d.iva_porcentaje or 0) }}% IVA</small></td>
+                        <td class="product-name">{{ d.producto }}</td>
                         <td class="num">{{ d.cantidad }}</td>
                         <td class="num">${{ "{:,.0f}".format(d.precio_unitario or 0) }}</td>
                         <td class="num">${{ "{:,.0f}".format(d.subtotal or 0) }}</td>
@@ -680,8 +327,7 @@
 
         <div class="totals-row">
             <div class="totals">
-                <div class="total-line"><span>Subtotal</span><strong>${{ "{:,.0f}".format(base_iva.valor) }}</strong></div>
-                <div class="total-line"><span>IVA total</span><strong>${{ "{:,.0f}".format(iva_total_guardado.valor) }}</strong></div>
+                <div class="total-line"><span>Total de la venta</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
                 <div class="total-line"><span>Abonado</span><strong>${{ "{:,.0f}".format(factura.abono or 0) }}</strong></div>
                 <div class="total-line balance"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo) }}</strong></div>
                 <div class="grand-total"><span>TOTAL</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
@@ -689,8 +335,8 @@
         </div>
 
         <footer class="footer">
-            <div class="legal-note"><strong></strong> .</div>
-            <div class="thanks"></div>
+            <div class="legal-note"><strong>Nota:</strong> Este documento es un comprobante interno de gestión comercial. No reemplaza la factura electrónica validada por la DIAN cuando esta sea exigible.</div>
+            <div class="thanks">Gracias por tu compra.</div>
         </footer>
     </div>
 </section>
