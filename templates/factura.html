@@ -806,6 +806,74 @@
             body.modo-tirilla .invoice:last-of-type { display: none !important; }
         }
 
+
+        /* Ajustes solicitados: tipografía diferente, impresión más marcada y folio alineado a la izquierda. */
+        @media print {
+            body.modo-tirilla,
+            body.modo-tirilla .invoice,
+            body.modo-tirilla .invoice-body,
+            body.modo-tirilla .info-line,
+            body.modo-tirilla td,
+            body.modo-tirilla .total-line {
+                font-family: "Trebuchet MS", Arial, sans-serif !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                font-weight: 600 !important;
+            }
+            body.modo-tirilla .brand-name {
+                font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif !important;
+                font-size: 17px !important;
+                font-weight: 900 !important;
+                letter-spacing: .2px !important;
+                -webkit-text-stroke: .25px currentColor !important;
+            }
+            body.modo-tirilla .invoice-number {
+                text-align: left !important;
+                padding-left: 2mm !important;
+                border-top: 2px solid #000 !important;
+                border-bottom: 1px solid #000 !important;
+            }
+            body.modo-tirilla .invoice-number strong {
+                text-align: left !important;
+                font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif !important;
+                font-size: 22px !important;
+                font-weight: 900 !important;
+                letter-spacing: .3px !important;
+                -webkit-text-stroke: .3px currentColor !important;
+            }
+            body.modo-tirilla .invoice-kicker,
+            body.modo-tirilla .invoice-number .date {
+                display: block !important;
+                text-align: left !important;
+                font-weight: 800 !important;
+                color: #000 !important;
+            }
+            body.modo-tirilla .section-title,
+            body.modo-tirilla th,
+            body.modo-tirilla .eyebrow,
+            body.modo-tirilla .client-name,
+            body.modo-tirilla .product-name,
+            body.modo-tirilla .total-line strong,
+            body.modo-tirilla .thanks {
+                font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif !important;
+                font-weight: 900 !important;
+                color: #000 !important;
+            }
+            body.modo-tirilla .grand-total {
+                background: #000 !important;
+                border: 1px solid #000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body.modo-tirilla .info-card,
+            body.modo-tirilla td,
+            body.modo-tirilla th,
+            body.modo-tirilla .totals {
+                border-color: #555 !important;
+            }
+        }
+
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
@@ -851,7 +919,7 @@
         <span class="copy-label"> {{ copia|lower }}</span>
         <div class="parties">
             <div class="info-card">
-                <div class="eyebrow">Facturado a</div>
+                <div class="eyebrow"> Cargar a</div>
                 <div class="client-name">{{ factura.cliente or 'Cliente no especificado' }}</div>
                 {% if factura.direccion %}<div class="info-line"><b>Dirección:</b> {{ factura.direccion }}</div>{% endif %}
                 {% if factura.ciudad %}<div class="info-line"><b>Ciudad:</b> {{ factura.ciudad }}</div>{% endif %}
@@ -860,11 +928,11 @@
             </div>
             <div class="info-card">
                 <div class="eyebrow">Información de la venta</div>
-                <div class="info-line"><b>Número:</b> FS {{ factura.id }}</div>
+                <div class="info-line"><b>Número:</b> Comprobante {{ factura.id }}</div>
                 <div class="info-line"><b>Fecha:</b> 16/09/2026 </div>
                 <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
                 {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
-                {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
+                {% if factura.domiciliario %}<div class="info-line"><b>punto de venta:</b> {{ factura.domiciliario }}</div>{% endif %}
                 <div class="info-line"><b>Estado:</b>
                     {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>
                     {% elif estado_factura == 'parcial' %}<span class="pill pill-partial">Pago parcial</span>
@@ -873,7 +941,7 @@
             </div>
         </div>
 
-        <div class="section-title">Detalle de productos</div>
+        <div class="section-title">Detalles</div>
         <div class="table-wrap">
             <table>
                 <thead><tr><th>Descripción</th><th class="num">Unid</th><th class="num">Precio unid</th><th class="num">Subtotal</th></tr></thead>
@@ -904,7 +972,7 @@
 
         <footer class="footer">
             <div class="legal-note"><strong>Nota:</strong> .</div>
-            <div class="thanks">Gracias por tu compra.</div>
+            <div class="thanks"> </div>
         </footer>
     </div>
 </section>
