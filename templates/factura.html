@@ -579,13 +579,13 @@
             <div class="brand-mark">ST</div>
             <div>
                 <div class="brand-name">VARIEDADES FESTIN</div>
-                <div class="brand-subtitle">Control comercial</div>
+                <div class="brand-subtitle"> Todo lo que necesites para tus fiestas y muchos más. </div>
             </div>
         </div>
         <div class="invoice-number">
-            <div class="invoice-kicker">Factura </div>
-            <strong>FS-{{ factura.id }}</strong>
-            <span class="date">16/09/2026 </span>
+            <div class="invoice-kicker">Comprobante N_ </div>
+            <strong>000{{ factura.id }}</strong>
+            <span class="date"> </span>
         </div>
     </header>
 
@@ -593,7 +593,7 @@
         <span class="copy-label"> {{ copia|lower }}</span>
         <div class="parties">
             <div class="info-card">
-                <div class="eyebrow">Facturado a</div>
+                <div class="eyebrow">Cargar a</div>
                 <div class="client-name">{{ factura.cliente or 'Cliente no especificado' }}</div>
                 {% if factura.direccion %}<div class="info-line"><b>Dirección:</b> {{ factura.direccion }}</div>{% endif %}
                 {% if factura.ciudad %}<div class="info-line"><b>Ciudad:</b> {{ factura.ciudad }}</div>{% endif %}
@@ -606,8 +606,8 @@
                 <div class="info-line"><b>Fecha:</b> 16/09/2026 </div>
                 <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
                 {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
-                {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
-                <div class="info-line"><b>Estado:</b>
+                {% if factura.domiciliario %}<div class="info-line"><b>SEDE</b> {{ factura.domiciliario }}</div>{% endif %}
+                <div class="info-line"><b></b>
                     {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>
                     {% elif estado_factura == 'parcial' %}<span class="pill pill-partial">Pago parcial</span>
                     {% else %}<span class="pill pill-paid">Pagado</span>{% endif %}
