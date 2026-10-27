@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Comprobante N_ 000{{ factura.id }} | ST Gestión</title>
+    <title>Factura FS-{{ factura.id }} | ST Gestión</title>
     <style>
         :root { --navy:#102f50; --blue:#2364aa; --blue-light:#eaf3ff; --ink:#1f2937; --muted:#64748b; --line:#e2e8f0; --paper:#fff; --bg:#eef3f8; --green:#087f5b; --orange:#a85b00; }
         * { box-sizing:border-box; }
@@ -548,7 +548,51 @@
             body.modo-tirilla .invoice:last-of-type { display: none !important; }
         }
 
-    </style>
+    
+
+        /* TIRILLA SIN LÍNEAS HORIZONTALES: solo cambia la impresión de tirilla */
+        @media print {
+            body.modo-tirilla .invoice-header,
+            body.modo-tirilla .invoice-number,
+            body.modo-tirilla .info-card,
+            body.modo-tirilla .table-wrap,
+            body.modo-tirilla th,
+            body.modo-tirilla td,
+            body.modo-tirilla .totals,
+            body.modo-tirilla .total-line.balance,
+            body.modo-tirilla .grand-total,
+            body.modo-tirilla .footer {
+                border-top: 0 !important;
+                border-bottom: 0 !important;
+                box-shadow: none !important;
+            }
+
+            body.modo-tirilla .invoice-header,
+            body.modo-tirilla .totals,
+            body.modo-tirilla .grand-total {
+                border-left: 0 !important;
+                border-right: 0 !important;
+                background: #fff !important;
+            }
+
+            body.modo-tirilla .grand-total,
+            body.modo-tirilla .grand-total span,
+            body.modo-tirilla .grand-total strong {
+                color: #111 !important;
+            }
+
+            body.modo-tirilla .info-card::before,
+            body.modo-tirilla .info-card::after,
+            body.modo-tirilla .invoice-header::before,
+            body.modo-tirilla .invoice-header::after,
+            body.modo-tirilla .footer::before,
+            body.modo-tirilla .footer::after {
+                content: none !important;
+                display: none !important;
+                border: 0 !important;
+            }
+        }
+</style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
@@ -579,13 +623,13 @@
             <div class="brand-mark">ST</div>
             <div>
                 <div class="brand-name">VARIEDADES FESTIN</div>
-                <div class="brand-subtitle"> Todo lo que necesites para tus fiestas y muchos más. </div>
+                <div class="brand-subtitle">Control comercial</div>
             </div>
         </div>
         <div class="invoice-number">
-            <div class="invoice-kicker">Comprobante N_ </div>
-            <strong>000{{ factura.id }}</strong>
-            <span class="date"> </span>
+            <div class="invoice-kicker">Factura </div>
+            <strong>FS-{{ factura.id }}</strong>
+            <span class="date">16/09/2026 </span>
         </div>
     </header>
 
@@ -593,7 +637,7 @@
         <span class="copy-label"> {{ copia|lower }}</span>
         <div class="parties">
             <div class="info-card">
-                <div class="eyebrow">Cargar a</div>
+                <div class="eyebrow">Facturado a</div>
                 <div class="client-name">{{ factura.cliente or 'Cliente no especificado' }}</div>
                 {% if factura.direccion %}<div class="info-line"><b>Dirección:</b> {{ factura.direccion }}</div>{% endif %}
                 {% if factura.ciudad %}<div class="info-line"><b>Ciudad:</b> {{ factura.ciudad }}</div>{% endif %}
@@ -606,8 +650,8 @@
                 <div class="info-line"><b>Fecha:</b> 16/09/2026 </div>
                 <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
                 {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
-                {% if factura.domiciliario %}<div class="info-line"><b>SEDE</b> {{ factura.domiciliario }}</div>{% endif %}
-                <div class="info-line"><b></b>
+                {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
+                <div class="info-line"><b>Estado:</b>
                     {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>
                     {% elif estado_factura == 'parcial' %}<span class="pill pill-partial">Pago parcial</span>
                     {% else %}<span class="pill pill-paid">Pagado</span>{% endif %}
