@@ -1571,20 +1571,61 @@ def ventas():
         cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') ORDER BY id DESC LIMIT 1",(empresa_id,)); caja=cur.fetchone()
         if not caja:
             cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s) RETURNING *",(empresa_id,usuario)); caja=cur.fetchone(); conn.commit()
-        cur.execute("SELECT * FROM movimientos_caja WHERE caja_id=%s ORDER BY id DESC",(caja['id'],)); movimientos=[dict(x) for x in cur.fetchall()]
+        desde=request.args.get('desde','').strip()
+        hasta=request.args.get('hasta','').strip()
+        # Los historiales solo se consultan cuando el usuario aplica al menos
+        # uno de los límites de fecha. Las consultas quedan restringidas
+        # a la empresa activa y al periodo solicitado.
+        try:
+            if desde:
+                date.fromisoformat(desde)
+            if hasta:
+                date.fromisoformat(hasta)
+            if desde and hasta and desde > hasta:
+                raise ValueError("La fecha Desde no puede ser posterior a Hasta.")
+        except ValueError as e:
+            raise ValueError("Selecciona un rango de fechas válido. " + str(e))
+        if desde or hasta:
+            cur.execute("""
+                SELECT * FROM movimientos_caja
+                WHERE empresa_id=%s
+                  AND (%s='' OR fecha::date >= %s::date)
+                  AND (%s='' OR fecha::date <= %s::date)
+                ORDER BY id DESC
+                LIMIT 500
+            """, (empresa_id, desde, desde or None, hasta, hasta or None))
+            movimientos=[dict(x) for x in cur.fetchall()]
+        else:
+            movimientos=[]
         cur.execute("""SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago""",(caja['id'],))
         totales={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()}
-        desde=request.args.get('desde',''); hasta=request.args.get('hasta','')
-        cur.execute("SELECT * FROM cuadres_caja WHERE empresa_id=%s AND (%s='' OR fecha::date >= NULLIF(%s,'')::date) AND (%s='' OR fecha::date <= NULLIF(%s,'')::date) ORDER BY id DESC LIMIT 200",(empresa_id,desde,desde,hasta,hasta)); cuadres=[dict(x) for x in cur.fetchall()]
-        cur.execute("SELECT * FROM cierres_caja WHERE empresa_id=%s AND (%s='' OR fecha::date >= NULLIF(%s,'')::date) AND (%s='' OR fecha::date <= NULLIF(%s,'')::date) ORDER BY id DESC LIMIT 200",(empresa_id,desde,desde,hasta,hasta)); cierres=[dict(x) for x in cur.fetchall()]
+        if desde or hasta:
+            cur.execute("""
+                SELECT * FROM cuadres_caja
+                WHERE empresa_id=%s
+                  AND (%s='' OR fecha::date >= %s::date)
+                  AND (%s='' OR fecha::date <= %s::date)
+                ORDER BY id DESC LIMIT 200
+            """, (empresa_id, desde, desde or None, hasta, hasta or None))
+            cuadres=[dict(x) for x in cur.fetchall()]
+            cur.execute("""
+                SELECT * FROM cierres_caja
+                WHERE empresa_id=%s
+                  AND (%s='' OR fecha::date >= %s::date)
+                  AND (%s='' OR fecha::date <= %s::date)
+                ORDER BY id DESC LIMIT 200
+            """, (empresa_id, desde, desde or None, hasta, hasta or None))
+            cierres=[dict(x) for x in cur.fetchall()]
+        else:
+            cuadres=[]
+            cierres=[]
         cur.execute("SELECT COALESCE(SUM(total),0) facturado, COALESCE(SUM(CASE WHEN tipo_venta='credito' THEN total-abono ELSE 0 END),0) saldo_credito FROM facturas WHERE empresa_id=%s AND fecha::date=(NOW() AT TIME ZONE 'America/Bogota')::date",(empresa_id,)); resumen=dict(cur.fetchone())
         cur.execute("SELECT id,estado,usuario,fecha,esperado_efectivo,contado_efectivo,esperado_tarjeta,contado_tarjeta,esperado_nequi,contado_nequi,observacion FROM cuadres_caja WHERE caja_id=%s AND estado='vigente' ORDER BY id DESC LIMIT 1",(caja['id'],)); cuadre_activo=cur.fetchone()
         return render_template('ventas.html', caja=dict(caja), movimientos=movimientos, totales=totales, cuadres=cuadres, cierres=cierres, desde=desde, hasta=hasta, resumen=dict(resumen), cuadre_activo=dict(cuadre_activo) if cuadre_activo else None, admin=admin, mensaje=mensaje)
     except ValueError as e:
         conn.rollback()
         cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') ORDER BY id DESC LIMIT 1",(empresa_id,)); caja=cur.fetchone()
-        cur.execute("SELECT * FROM movimientos_caja WHERE caja_id=%s ORDER BY id DESC",(caja['id'],)) if caja else None
-        movimientos=[dict(x) for x in cur.fetchall()] if caja else []
+        movimientos=[]
         cur.execute("SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago",(caja['id'],)) if caja else None
         totales={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()} if caja else {}
         return render_template('ventas.html', caja=dict(caja) if caja else {'estado':'abierta','id':'—'}, movimientos=movimientos, totales=totales, cuadres=[], cierres=[], desde='', hasta='', resumen={'facturado':0,'saldo_credito':0}, cuadre_activo=None, admin=admin, mensaje=str(e)), 400
