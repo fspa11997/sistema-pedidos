@@ -18,7 +18,7 @@ if %errorlevel%==0 (
     ) else (
         echo ERROR: No se encontro Python en Windows.
         echo.
-        echo Instala Python 3.11+ y marca "Add Python to PATH".
+        echo Instala Python 3.11 a 3.13 y marca "Add Python to PATH".
         echo Luego vuelve a ejecutar este archivo.
         pause
         exit /b 1
@@ -27,6 +27,11 @@ if %errorlevel%==0 (
 
 echo Python detectado: %PY%
 echo.
+
+if not exist "launcher.py" (
+    echo ERROR: Falta launcher.py en esta carpeta.
+    goto :error
+)
 
 if not exist ".venv\Scripts\python.exe" (
     echo [1/4] Creando entorno virtual...
@@ -43,9 +48,18 @@ if errorlevel 1 goto :error
 if errorlevel 1 goto :error
 
 echo [3/4] Generando Gestion.exe...
-echo     (El proceso de compilacion se ejecuta fuera de OneDrive para evitar bloqueos de archivos)
-.venv\Scripts\python.exe -m PyInstaller --noconfirm --workpath "%TEMP%\GestionBuild_%RANDOM%" --distpath "%~dp0dist" Gestion.spec
+echo     (La compilacion se hace fuera de OneDrive para evitar bloqueos de archivos)
+if exist "dist\Gestion.exe" del /f /q "dist\Gestion.exe"
+.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --workpath "%TEMP%\GestionBuild_%RANDOM%" --distpath "%~dp0dist" Gestion.spec
 if errorlevel 1 goto :error
+
+if not exist "dist\Gestion.exe" (
+    echo ERROR: PyInstaller termino pero no se creo dist\Gestion.exe
+    goto :error
+)
+
+REM Dejar una plantilla de configuracion junto al exe.
+if exist "config.env.ejemplo" copy /y "config.env.ejemplo" "dist\config.env.ejemplo" >nul
 
 echo.
 echo [4/4] Proceso terminado.
@@ -56,6 +70,7 @@ echo   Ejecutable: dist\Gestion.exe
 echo ========================================
 echo.
 echo Para abrirlo: doble clic en dist\Gestion.exe
+echo La primera vez creara config.env junto al .exe: pega ahi tu DATABASE_URL.
 echo.
 pause
 exit /b 0

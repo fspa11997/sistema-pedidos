@@ -85,6 +85,13 @@ def inicializar_db():
     )
     """)
 
+    # Suscripción por empresa. Las empresas que ya existían quedan activas y
+    # sin fecha de vencimiento (no vencen hasta que tú les pongas una fecha).
+    cursor.execute("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'basico'")
+    cursor.execute("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS activa BOOLEAN NOT NULL DEFAULT TRUE")
+    cursor.execute("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS fecha_vencimiento DATE")
+    cursor.execute("ALTER TABLE empresas ADD COLUMN IF NOT EXISTS notas TEXT")
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS usuarios (
         id SERIAL PRIMARY KEY,
@@ -553,12 +560,92 @@ def obtener_empresas(conn=None):
         conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, nombre FROM empresas")
+    cursor.execute("""
+        SELECT id, nombre, plan, activa, fecha_vencimiento,
+               (NOW() AT TIME ZONE 'America/Bogota')::date AS hoy
+        FROM empresas
+        ORDER BY id
+    """)
     data = cursor.fetchall()
 
     if _own_conn:
         conn.close()
     return data
+
+# =========================
+# SUSCRIPCIÓN POR EMPRESA
+# =========================
+PLANES_VALIDOS = ("prueba", "basico", "profesional")
+DIAS_PRUEBA = 14
+
+_HOY_BOGOTA = "(NOW() AT TIME ZONE 'America/Bogota')::date"
+
+
+def leer_suscripcion_empresa(empresa_id):
+    """Devuelve activa, fecha_vencimiento y hoy (fecha de Colombia), o None."""
+    conn = conectar()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT activa, fecha_vencimiento, {_HOY_BOGOTA} AS hoy
+            FROM empresas
+            WHERE id = %s
+        """, (empresa_id,))
+        return cursor.fetchone()
+    finally:
+        conn.close()
+
+
+def establecer_suscripcion(empresa_id, plan, fecha_vencimiento, activa):
+    """Fija plan, vencimiento (None = sin vencimiento) y estado de una empresa."""
+    conn = conectar()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE empresas
+            SET plan = %s, fecha_vencimiento = %s, activa = %s
+            WHERE id = %s
+        """, (plan, fecha_vencimiento, bool(activa), empresa_id))
+        conn.commit()
+        return cursor.rowcount
+    finally:
+        conn.close()
+
+
+def extender_suscripcion(empresa_id, dias):
+    """Suma días al vencimiento. Si ya venció (o no tiene), cuenta desde hoy."""
+    conn = conectar()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            UPDATE empresas
+            SET fecha_vencimiento =
+                GREATEST(COALESCE(fecha_vencimiento, {_HOY_BOGOTA}), {_HOY_BOGOTA}) + %s
+            WHERE id = %s
+        """, (int(dias), empresa_id))
+        conn.commit()
+        return cursor.rowcount
+    finally:
+        conn.close()
+
+
+def crear_empresa_con_prueba(nombre, dias_prueba=DIAS_PRUEBA):
+    """Crea la empresa con plan de prueba. Devuelve False si el nombre ya existe."""
+    conn = conectar()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM empresas WHERE nombre = %s", (nombre,))
+        if cursor.fetchone():
+            return False
+        cursor.execute(f"""
+            INSERT INTO empresas (nombre, plan, activa, fecha_vencimiento)
+            VALUES (%s, 'prueba', TRUE, {_HOY_BOGOTA} + %s)
+        """, (nombre, int(dias_prueba)))
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
 
 def obtener_productos(empresa_id, conn=None):
     

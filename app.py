@@ -4,7 +4,7 @@ import hmac
 import secrets
 import gzip
 import psycopg2
-from datetime import datetime
+from datetime import datetime, date
 import barcode
 from barcode.writer import SVGWriter
 from flask import Flask, flash, render_template, session, redirect, request, Response
@@ -42,8 +42,15 @@ from db import (
     METODOS_PAGO,
     segundos_bloqueo_login,
     registrar_fallo_login,
-    limpiar_intentos_login
+    limpiar_intentos_login,
+    PLANES_VALIDOS,
+    DIAS_PRUEBA,
+    leer_suscripcion_empresa,
+    establecer_suscripcion,
+    extender_suscripcion,
+    crear_empresa_con_prueba
 )
+import suscripcion
 
 
 
@@ -198,6 +205,66 @@ def verificar_csrf():
         if not esperado or not hmac.compare_digest(esperado, enviado):
             return "Sesión expirada o solicitud no válida. Recarga la página e inténtalo de nuevo.", 403
 
+# =========================
+# SUSCRIPCIÓN POR EMPRESA
+# =========================
+# Bloquea el acceso de las empresas suspendidas o vencidas y muestra un aviso
+# unos días antes del vencimiento. El superadmin global nunca se bloquea.
+estado_empresa = suscripcion.EstadoEmpresa(leer_suscripcion_empresa)
+suscripcion.instalar(app, estado_empresa)
+
+
+# =========================
+# HEALTH CHECK (para Railway y monitores externos)
+# =========================
+@app.route("/health")
+def health():
+    try:
+        conn = conectar()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        finally:
+            conn.close()
+    except Exception:
+        return {"status": "error"}, 503
+    return {"status": "ok"}
+
+
+# =========================
+# PÁGINAS LEGALES
+# =========================
+LEGAL_ACTUALIZADO = "5 de noviembre de 2026"
+_LEGAL_PENDIENTE = "[COMPLETAR]"
+
+
+def datos_legales():
+    """Datos del titular del servicio, tomados de variables de entorno."""
+    return {
+        "titular": os.environ.get("LEGAL_TITULAR") or f"{_LEGAL_PENDIENTE} nombre o razón social",
+        "documento": os.environ.get("LEGAL_DOCUMENTO") or f"{_LEGAL_PENDIENTE} NIT o cédula",
+        "email": os.environ.get("LEGAL_EMAIL") or f"{_LEGAL_PENDIENTE} correo de contacto",
+        "ciudad": os.environ.get("LEGAL_CIUDAD") or f"{_LEGAL_PENDIENTE} ciudad",
+        "actualizado": LEGAL_ACTUALIZADO,
+    }
+
+
+if not all(os.environ.get(v) for v in ("LEGAL_TITULAR", "LEGAL_DOCUMENTO", "LEGAL_EMAIL", "LEGAL_CIUDAD")):
+    print("⚠️  Faltan variables LEGAL_* (TITULAR, DOCUMENTO, EMAIL, CIUDAD): "
+          "los términos y la política de privacidad mostrarán [COMPLETAR].")
+
+
+@app.route("/terminos")
+def terminos():
+    return render_template("terminos.html", **datos_legales())
+
+
+@app.route("/privacidad")
+def privacidad():
+    return render_template("privacidad.html", **datos_legales())
+
+
 zona_colombia = pytz.timezone("America/Bogota")
 fecha_entrega = datetime.now(zona_colombia)
 ROLES_PERMITIDOS = {"admin", "vendedor"}
@@ -229,8 +296,6 @@ def ip_cliente():
 # =========================
 @app.route("/", methods=["GET", "POST"])
 def login():
-    empresas = obtener_empresas()
-    
     if request.method == "POST":
         user = request.form["usuario"]
         pwd = request.form["password"]
@@ -240,7 +305,7 @@ def login():
         if espera:
             minutos = (espera + 59) // 60
             return render_template(
-                "login.html", empresas=empresas,
+                "login.html",
                 error=f"Demasiados intentos fallidos. Intenta de nuevo en {minutos} min."
             ), 429
 
@@ -249,6 +314,13 @@ def login():
         if usuario:
             limpiar_intentos_login(clave_intentos)
 
+            # Empresa suspendida o con suscripción vencida: no se inicia sesión.
+            if usuario["rol"] != "owner_global":
+                estado_empresa.invalidar(usuario["empresa_id"])
+                info = estado_empresa.obtener(usuario["empresa_id"])
+                if info["bloqueada"]:
+                    return render_template("login.html", error=info["mensaje"]), 403
+
             session["usuario"] = usuario["usuario"]
             session["rol"] = usuario["rol"]
             session["empresa_id"] = usuario["empresa_id"]
@@ -256,9 +328,13 @@ def login():
             return redirect("/dashboard")
 
         registrar_fallo_login(clave_intentos)
-        return render_template("login.html", empresas=empresas, error="Credenciales inválidas")
+        return render_template("login.html", error="Credenciales inválidas")
 
-    return render_template("login.html", empresas=empresas)
+    # Mensaje cuando una sesión activa fue cerrada por suscripción vencida/suspendida.
+    return render_template(
+        "login.html",
+        error=suscripcion.MENSAJES_LOGIN.get(request.args.get("s", ""))
+    )
 
 
 # =========================
@@ -331,7 +407,19 @@ def dashboard():
     # =========================
     # RESTO DEL DASHBOARD
     # =========================
-    empresas = obtener_empresas(conn=conn)
+    empresas = obtener_empresas(conn=conn) if rol == "owner_global" else []
+    empresas_suscripcion = []
+    for e in empresas:
+        info = suscripcion.evaluar(e["activa"], e["fecha_vencimiento"], e["hoy"])
+        empresas_suscripcion.append({
+            "id": e["id"],
+            "nombre": e["nombre"],
+            "plan": e["plan"],
+            "activa": e["activa"],
+            "fecha_vencimiento": e["fecha_vencimiento"],
+            "estado": info["estado"],
+            "dias": info["dias_restantes"],
+        })
 
     buscar = request.args.get("buscar", "")
     fecha = request.args.get("fecha")
@@ -374,6 +462,8 @@ def dashboard():
         productos=productos,
         filtro=filtro,
         empresas=empresas,
+        empresas_suscripcion=empresas_suscripcion,
+        planes=PLANES_VALIDOS,
         total_dia=total_dia,
         total_mes=total_mes,
         facturas_hoy=facturas_hoy,
@@ -575,25 +665,59 @@ def crear_empresa():
     if "rol" not in session or session["rol"] != "owner_global":
         return "No autorizado", 403
 
-    nombre = request.form["nombre"]
+    nombre = request.form.get("nombre", "").strip()
+    if not nombre:
+        return redirect("/dashboard")
 
-    conn = conectar()
-    cursor = conn.cursor()
+    # Nace con plan de prueba (DIAS_PRUEBA días). Si el nombre ya existe, no hace nada.
+    crear_empresa_con_prueba(nombre, DIAS_PRUEBA)
 
-    # 🔍 VALIDAR SI YA EXISTE
-    cursor.execute("SELECT id FROM empresas WHERE nombre = %s", (nombre,))
-    if cursor.fetchone():
-        conn.close()
-        return redirect("/dashboard")  # puedes luego mostrar mensaje
+    return redirect("/dashboard")
 
-    # ✅ INSERTAR SI NO EXISTE
-    cursor.execute("""
-        INSERT INTO empresas (nombre)
-        VALUES (%s)
-    """, (nombre,))
 
-    conn.commit()
-    conn.close()
+# SUSCRIPCIÓN: cambiar plan / vencimiento / estado de una empresa
+@app.route("/empresa/<int:id>/suscripcion", methods=["POST"])
+def actualizar_suscripcion_empresa(id):
+
+    if session.get("rol") != "owner_global":
+        return "No autorizado", 403
+
+    plan = request.form.get("plan", "")
+    if plan not in PLANES_VALIDOS:
+        return "Plan no válido", 400
+
+    fecha_txt = request.form.get("fecha_vencimiento", "").strip()
+    fecha_vencimiento = None  # vacío = sin vencimiento
+    if fecha_txt:
+        try:
+            fecha_vencimiento = date.fromisoformat(fecha_txt)
+        except ValueError:
+            return "Fecha no válida", 400
+
+    activa = request.form.get("activa") == "1"
+
+    establecer_suscripcion(id, plan, fecha_vencimiento, activa)
+    estado_empresa.invalidar(id)
+
+    return redirect("/dashboard")
+
+
+# SUSCRIPCIÓN: registrar un pago sumando días (30, 90, 365…)
+@app.route("/empresa/<int:id>/extender", methods=["POST"])
+def extender_suscripcion_empresa(id):
+
+    if session.get("rol") != "owner_global":
+        return "No autorizado", 403
+
+    try:
+        dias = int(request.form.get("dias", "30"))
+    except ValueError:
+        return "Días no válidos", 400
+    if not 1 <= dias <= 400:
+        return "Días no válidos", 400
+
+    extender_suscripcion(id, dias)
+    estado_empresa.invalidar(id)
 
     return redirect("/dashboard")
 
@@ -625,6 +749,7 @@ def eliminar_empresa(id):
 
     conn.commit()
     conn.close()
+    estado_empresa.invalidar(id)
 
     return redirect("/dashboard")
 

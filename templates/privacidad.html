@@ -1,0 +1,40 @@
+{% extends "legal_base.html" %}
+{% block titulo %}Política de privacidad{% endblock %}
+{% block contenido %}
+<h1>Política de privacidad y tratamiento de datos personales</h1>
+<div class="meta">Última actualización: {{ actualizado }}</div>
+
+<p>Esta política describe cómo <strong>{{ titular }}</strong> ({{ documento }}), con domicilio en {{ ciudad }}, trata los datos personales en <strong>ST Gestión</strong>, conforme a la Ley 1581 de 2012 y sus normas reglamentarias en Colombia.</p>
+
+<h2>1. Quién es responsable de qué</h2>
+<ul>
+    <li><strong>Datos de los usuarios del sistema</strong> (nombre de usuario, clave cifrada, rol y empresa): el Prestador es responsable del tratamiento.</li>
+    <li><strong>Datos que cada empresa registra de sus propios clientes y operaciones</strong> (nombre, identificación, dirección, teléfono, pedidos, facturas, cartera): la empresa es la responsable y el Prestador actúa como encargado, tratándolos solo para prestar el servicio y siguiendo las instrucciones de la empresa.</li>
+</ul>
+
+<h2>2. Datos que se recopilan</h2>
+<ul>
+    <li>Datos de cuenta: usuario, clave (almacenada cifrada, nunca en texto legible), rol y empresa.</li>
+    <li>Datos comerciales cargados por la empresa: clientes, productos, inventario, ventas, abonos y movimientos de caja.</li>
+    <li>Datos técnicos: dirección IP y usuario en los intentos de inicio de sesión, usados para limitar intentos fallidos y proteger las cuentas; y una cookie de sesión necesaria para mantener la sesión iniciada.</li>
+</ul>
+
+<h2>3. Finalidades</h2>
+<p>Prestar y mantener el servicio, autenticar usuarios, proteger la seguridad del sistema, gestionar la suscripción y el soporte, y cumplir obligaciones legales. No vendemos datos personales ni los usamos para publicidad de terceros.</p>
+
+<h2>4. Derechos de los titulares</h2>
+<p>Como titular de datos personales puedes conocer, actualizar y rectificar tus datos, solicitar prueba de la autorización, ser informado del uso que se les da, revocar la autorización o solicitar la supresión cuando proceda, y presentar quejas ante la Superintendencia de Industria y Comercio. Si tus datos fueron registrados por una empresa que usa ST Gestión (por ejemplo, eres cliente de esa empresa), dirige primero tu solicitud a esa empresa; también puedes escribirnos y la trasladaremos.</p>
+<p>Para ejercer tus derechos escribe a <strong>{{ email }}</strong>.</p>
+
+<h2>5. Conservación</h2>
+<p>Los datos se conservan mientras la empresa tenga una suscripción vigente y, después, por el tiempo necesario para la renovación, el cumplimiento de obligaciones legales o la defensa ante reclamaciones. Luego se eliminan o se anonimizan.</p>
+
+<h2>6. Seguridad</h2>
+<p>Aplicamos medidas razonables: claves cifradas, conexión segura (HTTPS), separación de la información por empresa, protección contra solicitudes falsificadas, bloqueo temporal tras intentos fallidos de acceso y copias de seguridad. Ningún sistema es completamente infalible; si ocurre un incidente que afecte tus datos, lo comunicaremos conforme a la ley.</p>
+
+<h2>7. Proveedores y transmisión de datos</h2>
+<p>Los datos se alojan con un proveedor de infraestructura en la nube (Railway), cuyos servidores pueden estar ubicados fuera de Colombia. Con este proveedor se realiza una transmisión de datos necesaria para operar el servicio. No compartimos datos con otros terceros salvo obligación legal o autoridad competente.</p>
+
+<h2>8. Cambios a esta política</h2>
+<p>Podemos actualizar esta política; la versión vigente siempre estará disponible en esta página con su fecha de actualización.</p>
+{% endblock %}

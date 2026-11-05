@@ -866,6 +866,12 @@ button,input,select{font-family:inherit}
 
 <body>
 
+{% if aviso_suscripcion %}
+<div style="background:#fff3cd;color:#664d03;border:1px solid #ffecb5;padding:10px 14px;margin:8px;border-radius:8px;font-size:14px;">
+    ⚠️ {{ aviso_suscripcion }}
+</div>
+{% endif %}
+
 <div class="header-title">
     <h2>NUEVA VENTA 🛒</h2>
 
@@ -1135,7 +1141,8 @@ button,input,select{font-family:inherit}
 
     <form method="POST" action="/crear_empresa"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <input type="text" name="nombre" placeholder="Nombre de la empresa" required><br><br>
+        <input type="text" name="nombre" placeholder="Nombre de la empresa" required><br>
+        <small>La empresa nace con plan de prueba de 14 días.</small><br><br>
 
         <button type="submit">Guardar Empresa</button>
 
@@ -1143,28 +1150,67 @@ button,input,select{font-family:inherit}
 
     <hr>
 
-    <h3>Empresas</h3>
+    <h3>Empresas y suscripción</h3>
 
+    <div style="overflow-x:auto">
     <table border="1">
         <tr>
             <th>ID</th>
             <th>Nombre</th>
+            <th>Estado</th>
+            <th>Plan / Vencimiento / Acceso</th>
+            <th>Pago</th>
             <th>Acción</th>
         </tr>
 
-        {% for emp in empresas %}
+        {% for emp in empresas_suscripcion %}
         <tr>
             <td>{{ emp.id }}</td>
             <td>{{ emp.nombre }}</td>
             <td>
+                {% if emp.estado == 'al_dia' %}
+                    <span style="color:#08ad60;font-weight:bold">● Al día</span>
+                    {% if emp.dias is not none %}<br><small>{{ emp.dias }} días</small>{% else %}<br><small>sin vencimiento</small>{% endif %}
+                {% elif emp.estado == 'por_vencer' %}
+                    <span style="color:#d98a00;font-weight:bold">● Por vencer</span><br><small>{{ emp.dias }} días</small>
+                {% elif emp.estado == 'vencida' %}
+                    <span style="color:#c62828;font-weight:bold">● Vencida</span><br><small>hace {{ -emp.dias }} días</small>
+                {% else %}
+                    <span style="color:#c62828;font-weight:bold">● Suspendida</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="POST" action="/empresa/{{ emp.id }}/suscripcion" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="plan">
+                        {% for pl in planes %}
+                        <option value="{{ pl }}" {% if pl == emp.plan %}selected{% endif %}>{{ pl }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="date" name="fecha_vencimiento" value="{{ emp.fecha_vencimiento.isoformat() if emp.fecha_vencimiento else '' }}" title="Último día con acceso. Vacío = sin vencimiento">
+                    <label><input type="checkbox" name="activa" value="1" {% if emp.activa %}checked{% endif %}> Acceso activo</label>
+                    <button type="submit">Guardar</button>
+                </form>
+            </td>
+            <td>
+                <form method="POST" action="/empresa/{{ emp.id }}/extender" style="display:flex;gap:6px;align-items:center"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <select name="dias">
+                        <option value="30">+30 días</option>
+                        <option value="90">+90 días</option>
+                        <option value="365">+365 días</option>
+                    </select>
+                    <button type="submit">Registrar pago</button>
+                </form>
+            </td>
+            <td>
                 <form method="POST" action="/eliminar_empresa/{{ emp.id }}" style="display:inline"
-                      onsubmit="return confirm('¿Seguro que quieres eliminar esta empresa?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      onsubmit="return confirm('¿Seguro que quieres eliminar esta empresa? Se borran TODOS sus datos.')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" style="background:red;color:white;">Eliminar</button>
                 </form>
             </td>
         </tr>
         {% endfor %}
     </table>
+    </div>
 </div>
 {% endif %}
 <!-- 📦 FORMULARIO PEDIDOS -->

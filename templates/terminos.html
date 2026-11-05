@@ -1,0 +1,36 @@
+{% extends "legal_base.html" %}
+{% block titulo %}Términos de uso{% endblock %}
+{% block contenido %}
+<h1>Términos de uso</h1>
+<div class="meta">Última actualización: {{ actualizado }}</div>
+
+<p>Estos términos regulan el uso de <strong>ST Gestión</strong>, un software en línea para la gestión de pedidos, ventas, inventario, cartera y caja, ofrecido por <strong>{{ titular }}</strong> ({{ documento }}), con domicilio en {{ ciudad }} (en adelante, “el Prestador”). Al iniciar sesión o usar el servicio, la empresa cliente y sus usuarios aceptan estos términos.</p>
+
+<h2>1. Cuentas y usuarios</h2>
+<p>El acceso se otorga a una empresa cliente, que crea o solicita usuarios para su equipo. La empresa es responsable de la custodia de las claves, de las acciones realizadas con sus usuarios y de dar de baja a quienes ya no deban tener acceso. Las claves deben ser personales y no compartirse.</p>
+
+<h2>2. Suscripción, pagos y vencimiento</h2>
+<p>El servicio se presta mediante suscripción, con un periodo de prueba inicial cuando así se informe. El acceso está sujeto a que la suscripción esté vigente. Si la suscripción vence o el acceso es suspendido (por falta de pago o por incumplimiento de estos términos), los usuarios de la empresa no podrán iniciar sesión hasta que se renueve o se reactive el servicio. El Prestador conservará la información de la empresa durante 30 días después del vencimiento para facilitar la renovación; pasado ese tiempo podrá eliminarla.</p>
+<p>Los precios, planes y formas de pago se acuerdan directamente con la empresa y podrán ajustarse con aviso previo.</p>
+
+<h2>3. Alcance del servicio y obligaciones tributarias</h2>
+<p>ST Gestión es una herramienta de gestión interna. Los documentos que genera (facturas, recibos de abono, comprobantes) son comprobantes internos y <strong>no reemplazan la factura electrónica validada por la DIAN</strong> ni otros documentos exigidos por la ley cuando sean obligatorios. La empresa es la única responsable de cumplir sus obligaciones tributarias, contables y legales, y de verificar que los cálculos (incluido el IVA) correspondan a su situación.</p>
+
+<h2>4. Información de la empresa</h2>
+<p>La información que la empresa carga o genera en el sistema (clientes, productos, ventas, inventario, cartera, caja) sigue siendo de la empresa. El Prestador la trata únicamente para prestar el servicio, conforme a la <a href="{{ url_for('privacidad') }}">Política de privacidad</a>. La empresa garantiza que tiene autorización para registrar los datos personales de sus propios clientes y trabajadores.</p>
+
+<h2>5. Uso aceptable</h2>
+<p>Está prohibido intentar acceder a datos de otras empresas, vulnerar la seguridad del sistema, usarlo para actividades ilícitas, o revender el acceso sin autorización del Prestador.</p>
+
+<h2>6. Disponibilidad y copias de seguridad</h2>
+<p>El Prestador hace esfuerzos razonables para mantener el servicio disponible y realiza copias de seguridad periódicas, pero no garantiza un funcionamiento ininterrumpido ni libre de errores. Pueden presentarse interrupciones por mantenimiento o por fallas de terceros (por ejemplo, el proveedor de infraestructura). Se recomienda a la empresa conservar sus propios registros de las operaciones críticas.</p>
+
+<h2>7. Limitación de responsabilidad</h2>
+<p>En la medida permitida por la ley, el Prestador no responde por lucro cesante, pérdida de negocio o daños indirectos derivados del uso o de la imposibilidad de usar el servicio. Su responsabilidad total, cuando exista, se limita al valor pagado por la empresa durante los 3 meses anteriores al hecho que originó el reclamo.</p>
+
+<h2>8. Cambios</h2>
+<p>El Prestador puede modificar estos términos y el servicio. Los cambios relevantes se informarán con antelación razonable; seguir usando el servicio después de ese aviso implica aceptarlos.</p>
+
+<h2>9. Ley aplicable y contacto</h2>
+<p>Estos términos se rigen por las leyes de la República de Colombia. Para dudas, soporte o reclamos escribe a <strong>{{ email }}</strong>.</p>
+{% endblock %}

@@ -1,20 +1,27 @@
 COMO GENERAR Gestion.exe
 ========================
 
-1. Descomprime este proyecto en Windows.
-2. Abre la carpeta Gestion-main.
-3. Haz doble clic en:
+1. Descomprime este proyecto en Windows (mejor fuera de OneDrive).
+2. Haz doble clic en:  generar_exe.bat
+   (crea el entorno virtual, instala dependencias y ejecuta PyInstaller)
+3. El ejecutable queda en:  dist\Gestion.exe
 
-   generar_exe.bat
-
-El archivo se encarga de crear el entorno virtual, instalar las dependencias y ejecutar PyInstaller.
-
-El ejecutable quedara en:
-
-   dist\Gestion\Gestion.exe
+USAR EL EJECUTABLE
+------------------
+- La primera vez que abras Gestion.exe se crea "config.env" junto al .exe y se
+  abre en el Bloc de notas. Pega tu DATABASE_URL (PostgreSQL de Railway),
+  guarda y vuelve a abrir Gestion.exe.
+- Se abrira el navegador en http://127.0.0.1:5000/
+- Si algo falla, aparece una ventana con el motivo y el detalle queda en
+  "gestion.log" (junto al .exe).
+- Para copiar el programa a otro PC basta con llevar Gestion.exe y config.env.
 
 IMPORTANTE
 ----------
-- Cada vez que hagas cambios en app.py, db.py, templates o static, vuelve a ejecutar generar_exe.bat.
-- La base de datos pedidos.db se mantiene junto al Gestion.exe para que los datos no dependan de la carpeta temporal de PyInstaller.
-- Si Windows indica que Python no existe, instala Python 3.11 o superior y activa "Add Python to PATH" durante la instalacion.
+- SOLO USO INTERNO: Gestion.exe + config.env dan acceso directo a TODA la base
+  de datos (todas las empresas). No se lo entregues a clientes; ellos deben usar
+  la aplicacion web.
+- La app usa PostgreSQL (ya no SQLite). No hace falta pedidos.db.
+- Cada vez que cambies app.py, db.py, templates o static, vuelve a ejecutar
+  generar_exe.bat.
+- Usa Python 3.11 a 3.13 de 64 bits.
