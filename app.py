@@ -1571,55 +1571,13 @@ def ventas():
         cur.execute("SELECT * FROM cajas WHERE empresa_id=%s AND estado IN ('abierta','en_cuadre') ORDER BY id DESC LIMIT 1",(empresa_id,)); caja=cur.fetchone()
         if not caja:
             cur.execute("INSERT INTO cajas(empresa_id,estado,base_inicial,abierta_por) VALUES (%s,'abierta',0,%s) RETURNING *",(empresa_id,usuario)); caja=cur.fetchone(); conn.commit()
-        mov_desde=request.args.get('mov_desde','').strip()
-        mov_hasta=request.args.get('mov_hasta','').strip()
-        hist_desde=request.args.get('hist_desde','').strip()
-        hist_hasta=request.args.get('hist_hasta','').strip()
-        # Cada panel consulta únicamente sus propios límites de fecha.
-        try:
-            for valor in (mov_desde, mov_hasta, hist_desde, hist_hasta):
-                if valor:
-                    date.fromisoformat(valor)
-            if mov_desde and mov_hasta and mov_desde > mov_hasta:
-                raise ValueError("En movimientos, la fecha Desde no puede ser posterior a Hasta.")
-            if hist_desde and hist_hasta and hist_desde > hist_hasta:
-                raise ValueError("En el historial, la fecha Desde no puede ser posterior a Hasta.")
-        except ValueError as e:
-            raise ValueError("Selecciona un rango de fechas válido. " + str(e))
-        if mov_desde or mov_hasta:
-            cur.execute("""
-                SELECT * FROM movimientos_caja
-                WHERE empresa_id=%s
-                  AND (%s='' OR fecha::date >= %s::date)
-                  AND (%s='' OR fecha::date <= %s::date)
-                ORDER BY id DESC
-                LIMIT 500
-            """, (empresa_id, mov_desde, mov_desde or None, mov_hasta, mov_hasta or None))
-            movimientos=[dict(x) for x in cur.fetchall()]
-        else:
-            movimientos=[]
+        # Los reportes se consultan en páginas independientes.
+        movimientos=[]
+        cuadres=[]
+        cierres=[]
+        mov_desde=mov_hasta=hist_desde=hist_hasta=''
         cur.execute("""SELECT metodo_pago, COALESCE(SUM(CASE WHEN tipo='egreso_manual' THEN -valor WHEN tipo IN ('venta_contado','abono_inicial','abono_cartera','ingreso_manual') THEN valor ELSE 0 END),0) total FROM movimientos_caja WHERE caja_id=%s GROUP BY metodo_pago""",(caja['id'],))
         totales={r['metodo_pago']:float(r['total'] or 0) for r in cur.fetchall()}
-        if hist_desde or hist_hasta:
-            cur.execute("""
-                SELECT * FROM cuadres_caja
-                WHERE empresa_id=%s
-                  AND (%s='' OR fecha::date >= %s::date)
-                  AND (%s='' OR fecha::date <= %s::date)
-                ORDER BY id DESC LIMIT 200
-            """, (empresa_id, hist_desde, hist_desde or None, hist_hasta, hist_hasta or None))
-            cuadres=[dict(x) for x in cur.fetchall()]
-            cur.execute("""
-                SELECT * FROM cierres_caja
-                WHERE empresa_id=%s
-                  AND (%s='' OR fecha::date >= %s::date)
-                  AND (%s='' OR fecha::date <= %s::date)
-                ORDER BY id DESC LIMIT 200
-            """, (empresa_id, hist_desde, hist_desde or None, hist_hasta, hist_hasta or None))
-            cierres=[dict(x) for x in cur.fetchall()]
-        else:
-            cuadres=[]
-            cierres=[]
         cur.execute("SELECT COALESCE(SUM(total),0) facturado, COALESCE(SUM(CASE WHEN tipo_venta='credito' THEN total-abono ELSE 0 END),0) saldo_credito FROM facturas WHERE empresa_id=%s AND fecha::date=(NOW() AT TIME ZONE 'America/Bogota')::date",(empresa_id,)); resumen=dict(cur.fetchone())
         cur.execute("SELECT id,estado,usuario,fecha,esperado_efectivo,contado_efectivo,esperado_tarjeta,contado_tarjeta,esperado_nequi,contado_nequi,observacion FROM cuadres_caja WHERE caja_id=%s AND estado='vigente' ORDER BY id DESC LIMIT 1",(caja['id'],)); cuadre_activo=cur.fetchone()
         return render_template('ventas.html', caja=dict(caja), movimientos=movimientos, totales=totales, cuadres=cuadres, cierres=cierres, mov_desde=mov_desde, mov_hasta=mov_hasta, hist_desde=hist_desde, hist_hasta=hist_hasta, resumen=dict(resumen), cuadre_activo=dict(cuadre_activo) if cuadre_activo else None, admin=admin, mensaje=mensaje)
@@ -1636,6 +1594,74 @@ def ventas():
         return ("No se pudo completar la operación de Ventas/Caja. La operación fue cancelada para evitar registros parciales. Revisa los registros de Railway para ver el error SQL exacto.", 500)
     finally:
         conn.close()
+
+
+def _validar_rango_reporte(desde, hasta):
+    if desde: date.fromisoformat(desde)
+    if hasta: date.fromisoformat(hasta)
+    if desde and hasta and desde > hasta:
+        raise ValueError("La fecha Desde no puede ser posterior a Hasta.")
+
+@app.route("/ventas/movimientos")
+def ventas_reporte_movimientos():
+    if "usuario" not in session: return redirect("/")
+    empresa_id=session.get("empresa_id")
+    desde=request.args.get("desde","").strip()
+    hasta=request.args.get("hasta","").strip()
+    conn=conectar()
+    try:
+        cur=conn.cursor()
+        _validar_rango_reporte(desde,hasta)
+        movimientos=[]
+        if desde or hasta:
+            cur.execute("""
+                SELECT * FROM movimientos_caja
+                WHERE empresa_id=%s
+                  AND (%s='' OR fecha::date >= %s::date)
+                  AND (%s='' OR fecha::date <= %s::date)
+                ORDER BY fecha ASC, id ASC
+            """,(empresa_id,desde,desde or None,hasta,hasta or None))
+            movimientos=[dict(x) for x in cur.fetchall()]
+        return render_template("ventas_movimientos.html",movimientos=movimientos,
+            desde=desde,hasta=hasta,consultado=bool(desde or hasta))
+    except ValueError as e:
+        return render_template("ventas_movimientos.html",movimientos=[],desde=desde,
+            hasta=hasta,consultado=False,mensaje=str(e)),400
+    finally: conn.close()
+
+@app.route("/ventas/historial")
+def ventas_reporte_historial():
+    if "usuario" not in session: return redirect("/")
+    if session.get("rol","vendedor") not in ("admin","owner_global"): return "No autorizado",403
+    empresa_id=session.get("empresa_id")
+    desde=request.args.get("desde","").strip()
+    hasta=request.args.get("hasta","").strip()
+    conn=conectar()
+    try:
+        cur=conn.cursor()
+        _validar_rango_reporte(desde,hasta)
+        cuadres=[]; cierres=[]
+        if desde or hasta:
+            cur.execute("""
+                SELECT * FROM cuadres_caja WHERE empresa_id=%s
+                AND (%s='' OR fecha::date >= %s::date)
+                AND (%s='' OR fecha::date <= %s::date)
+                ORDER BY fecha ASC,id ASC
+            """,(empresa_id,desde,desde or None,hasta,hasta or None))
+            cuadres=[dict(x) for x in cur.fetchall()]
+            cur.execute("""
+                SELECT * FROM cierres_caja WHERE empresa_id=%s
+                AND (%s='' OR fecha::date >= %s::date)
+                AND (%s='' OR fecha::date <= %s::date)
+                ORDER BY fecha ASC,id ASC
+            """,(empresa_id,desde,desde or None,hasta,hasta or None))
+            cierres=[dict(x) for x in cur.fetchall()]
+        return render_template("ventas_historial.html",cuadres=cuadres,cierres=cierres,
+            desde=desde,hasta=hasta,consultado=bool(desde or hasta))
+    except ValueError as e:
+        return render_template("ventas_historial.html",cuadres=[],cierres=[],desde=desde,
+            hasta=hasta,consultado=False,mensaje=str(e)),400
+    finally: conn.close()
 
 @app.route("/reportes")
 def reportes():
