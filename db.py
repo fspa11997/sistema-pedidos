@@ -116,7 +116,7 @@ def inicializar_db():
         activo INTEGER DEFAULT 1,
         foto BYTEA,
         foto_mimetype TEXT,
-        iva_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0 CHECK (iva_porcentaje >= 0 AND iva_porcentaje <= 100)
+        iva_porcentaje NUMERIC(5,2) CHECK (iva_porcentaje IS NULL OR (iva_porcentaje >= 0 AND iva_porcentaje <= 100))
     )
     """)
 
@@ -125,8 +125,25 @@ def inicializar_db():
     cursor.execute("ALTER TABLE recibos_abono ADD COLUMN IF NOT EXISTS metodo_pago TEXT")
     cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto BYTEA")
     cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS foto_mimetype TEXT")
-    # IVA por producto y desglose tributario de las facturas (migración compatible con datos existentes).
-    cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS iva_porcentaje NUMERIC(5,2) NOT NULL DEFAULT 0")
+    # IVA por producto: NULL significa pendiente de configuración.
+    # La migración conserva los porcentajes ya guardados y permite que el vendedor
+    # cree productos sin asignarles un IVA.
+    cursor.execute("ALTER TABLE productos ADD COLUMN IF NOT EXISTS iva_porcentaje NUMERIC(5,2)")
+    cursor.execute("ALTER TABLE productos ALTER COLUMN iva_porcentaje DROP NOT NULL")
+    cursor.execute("ALTER TABLE productos ALTER COLUMN iva_porcentaje DROP DEFAULT")
+    cursor.execute("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint
+                WHERE conname = 'productos_iva_porcentaje_rango'
+            ) THEN
+                ALTER TABLE productos
+                ADD CONSTRAINT productos_iva_porcentaje_rango
+                CHECK (iva_porcentaje IS NULL OR (iva_porcentaje >= 0 AND iva_porcentaje <= 100));
+            END IF;
+        END $$;
+    """)
 
 
     cursor.execute("""

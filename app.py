@@ -999,8 +999,15 @@ def productos_page():
     if "usuario" not in session:
         return redirect("/")
     empresa_id = session["empresa_id"]
-    productos = obtener_productos(empresa_id, )
-    return render_template("productos.html", productos=productos)
+    productos = obtener_productos(empresa_id)
+    rol = str(session.get("rol", "")).strip().lower()
+    puede_configurar_iva = rol in ("admin", "owner_global")
+    return render_template(
+        "productos.html",
+        productos=productos,
+        rol=rol,
+        puede_configurar_iva=puede_configurar_iva
+    )
 
 
 @app.route("/producto_foto/<int:producto_id>")
@@ -1319,20 +1326,27 @@ def crear_producto():
     precio_individual = request.form.get("precio_individual") or 0
     precio_mostrador = request.form.get("precio_mostrador") or 0
     costo = request.form.get("costo") or 0
-    iva_raw = request.form.get("iva_porcentaje")
+    iva_raw = request.form.get("iva_porcentaje", "").strip()
     codigo_barras = request.form.get("codigo_barras", "").strip()
+    rol = str(session.get("rol", "")).strip().lower()
+    puede_configurar_iva = rol in ("admin", "owner_global")
 
-    # El IVA es obligatorio: 0 es válido, campo vacío no.
-    if iva_raw is None or not iva_raw.strip():
-        return render_template("productos.html", productos=obtener_productos(empresa_id),
-            error="Debes especificar el IVA del producto. Puedes indicar 0 si no lleva IVA.")
-    try:
-        iva_porcentaje = float(iva_raw)
-        if not 0 <= iva_porcentaje <= 100:
-            raise ValueError
-    except (TypeError, ValueError):
-        return render_template("productos.html", productos=obtener_productos(empresa_id),
-            error="El IVA debe ser un porcentaje entre 0 y 100.")
+    # El vendedor puede crear el producto, pero el IVA queda pendiente (NULL).
+    # Admin y owner global pueden asignarlo desde la creación; 0 es un valor válido.
+    iva_porcentaje = None
+    if puede_configurar_iva and iva_raw:
+        try:
+            iva_porcentaje = float(iva_raw)
+            if not 0 <= iva_porcentaje <= 100:
+                raise ValueError
+        except (TypeError, ValueError):
+            return render_template(
+                "productos.html",
+                productos=obtener_productos(empresa_id),
+                rol=rol,
+                puede_configurar_iva=puede_configurar_iva,
+                error="El IVA debe ser un porcentaje entre 0 y 100."
+            )
 
     try:
         cantidad = int(request.form.get("cantidad") or 0)
@@ -1341,12 +1355,14 @@ def crear_producto():
 
     if not nombre:
         return render_template("productos.html",
-            productos=obtener_productos(empresa_id),
+            productos=obtener_productos(empresa_id), rol=rol,
+            puede_configurar_iva=puede_configurar_iva,
             error="Debes indicar el nombre del producto.")
 
     if cantidad <= 0:
         return render_template("productos.html",
-            productos=obtener_productos(empresa_id),
+            productos=obtener_productos(empresa_id), rol=rol,
+            puede_configurar_iva=puede_configurar_iva,
             error="La cantidad inicial debe ser un número entero mayor que 0.")
 
     conn = conectar()
@@ -1372,7 +1388,8 @@ def crear_producto():
     if cursor.fetchone():
         conn.close()
         return render_template("productos.html",
-            productos=obtener_productos(empresa_id),
+            productos=obtener_productos(empresa_id), rol=rol,
+            puede_configurar_iva=puede_configurar_iva,
             error="Ya existe un producto con ese código de barras.")
 
     try:
@@ -1413,6 +1430,10 @@ def crear_producto():
 def actualizar_iva_producto(producto_id):
     if "usuario" not in session:
         return redirect("/")
+    rol = str(session.get("rol", "")).strip().lower()
+    if rol not in ("admin", "owner_global"):
+        return "No tienes permiso para modificar el IVA de los productos.", 403
+
     empresa_id = session["empresa_id"]
     iva_raw = request.form.get("iva_porcentaje")
     if iva_raw is None or not iva_raw.strip():
