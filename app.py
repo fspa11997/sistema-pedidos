@@ -1043,7 +1043,76 @@ def inventario_page():
     empresa_id = session["empresa_id"]
     productos = obtener_productos(empresa_id)
     inventario = obtener_inventario(empresa_id)
-    return render_template("inventario.html", productos=productos, inventario=inventario, fotos_por_nombre={p["nombre"]: p["id"] for p in productos})
+    rol = str(session.get("rol", "")).strip().lower()
+    puede_actualizar_inventario = rol in ("admin", "owner_global")
+    return render_template(
+        "inventario.html",
+        productos=productos,
+        inventario=inventario,
+        fotos_por_nombre={p["nombre"]: p["id"] for p in productos},
+        puede_actualizar_inventario=puede_actualizar_inventario
+    )
+
+
+@app.route("/inventario/actualizar-cantidad", methods=["POST"])
+def actualizar_cantidad_inventario():
+    if "usuario" not in session:
+        return redirect("/")
+    rol = str(session.get("rol", "")).strip().lower()
+    if rol not in ("admin", "owner_global"):
+        return "No tienes permisos para actualizar el inventario.", 403
+
+    producto = request.form.get("producto", "").strip()
+    cantidad_texto = request.form.get("cantidad", "").strip()
+    if not producto or not cantidad_texto:
+        flash("Debes indicar el producto y la nueva cantidad.", "error")
+        return redirect("/inventario")
+    try:
+        nueva_cantidad = int(cantidad_texto)
+        if nueva_cantidad < 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        flash("La cantidad debe ser un número entero igual o mayor que cero.", "error")
+        return redirect("/inventario")
+
+    empresa_id = session["empresa_id"]
+    conn = conectar()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT stock_unidades
+            FROM inventario
+            WHERE producto = %s AND empresa_id = %s
+            FOR UPDATE
+        """, (producto, empresa_id))
+        fila = cursor.fetchone()
+        if not fila:
+            conn.rollback()
+            flash("No se encontró el producto en el inventario.", "error")
+            return redirect("/inventario")
+
+        cantidad_anterior = int(fila["stock_unidades"] or 0)
+        diferencia = nueva_cantidad - cantidad_anterior
+        cursor.execute("""
+            UPDATE inventario
+            SET stock_unidades = %s
+            WHERE producto = %s AND empresa_id = %s
+        """, (nueva_cantidad, producto, empresa_id))
+
+        if diferencia != 0:
+            cursor.execute("""
+                INSERT INTO movimientos_inventario
+                    (producto, tipo, cantidad, fecha, empresa_id)
+                VALUES (%s, 'ajuste_manual', %s, %s, %s)
+            """, (producto, diferencia, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), empresa_id))
+        conn.commit()
+        flash(f"Inventario actualizado: {producto} ahora tiene {nueva_cantidad} unidades.", "success")
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+    return redirect("/inventario")
 
 
 @app.route("/producto/<int:producto_id>/foto", methods=["POST"])
