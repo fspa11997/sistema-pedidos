@@ -1,25 +1,696 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Historial de cuadres y cierres</title><style>
-:root{--navy:#102f50;--blue:#2364aa;--bg:#eef2f7;--line:#dbe3ec}*{box-sizing:border-box}
-body{margin:0;padding:20px;background:var(--bg);font:14px Arial,sans-serif;color:#1f2937}
-.wrap{max-width:1400px;margin:auto}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-h1,h2{color:var(--navy)}h1{margin:0;font-size:25px}h2{font-size:19px}
-.btn{display:inline-block;border:0;border-radius:8px;padding:10px 14px;background:var(--blue);color:white;text-decoration:none;font-weight:bold;cursor:pointer}
-.btn.dark{background:var(--navy)}.btn.gray{background:#64748b}.card{background:white;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 4px 15px #102f5010}
-.forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}label{display:block;font-weight:bold;margin-bottom:5px}
-input{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th{background:var(--navy);color:white;text-align:left}
-td,th{padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}tr:nth-child(even){background:#f8fafc}
-.muted{color:#64748b}.notice{padding:12px;border-radius:8px;background:#e0f2fe;margin-bottom:14px}
-@media(max-width:600px){body{padding:10px}.card{padding:13px}h1{font-size:21px}}
-@media print{body{background:white;padding:0}.no-print{display:none!important}.card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}.tablewrap{overflow:visible}table{min-width:0;width:100%;font-size:10px}td,th{white-space:normal;padding:5px}}
-</style></head><body><main class="wrap"><div class="head"><div><h1>Historial de cuadres y cierres</h1><div class="muted">Consulta e impresión de reportes por periodo</div></div><a class="btn dark no-print" href="/ventas">← Volver a ventas</a></div>
-{% if mensaje %}<div class="notice">{{ mensaje }}</div>{% endif %}
-<section class="card no-print"><h2>Filtrar historial</h2><form method="get"><div class="forms"><div><label>Desde</label><input type="date" name="desde" value="{{ desde }}"></div><div><label>Hasta</label><input type="date" name="hasta" value="{{ hasta }}"></div></div><div class="actions"><button class="btn">Filtrar</button><a class="btn gray" href="/ventas/historial">Limpiar</a><button class="btn dark" type="button" onclick="window.print()">Imprimir reporte completo</button></div></form></section>
-<section class="card" id="cuadres"><div class="head"><h2>Reporte de cuadres</h2><button class="btn dark no-print" onclick="imprimir('cuadres')">Imprimir cuadres</button></div><p class="muted">Periodo: {{ desde or 'Sin fecha inicial' }} al {{ hasta or 'Sin fecha final' }}</p><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Caja</th><th>Responsable</th><th>Efectivo esperado / contado</th><th>Tarjeta esperado / contado</th><th>Nequi esperado / contado</th><th>Estado</th></tr></thead><tbody>
-{% if consultado %}{% for q in cuadres %}<tr><td>{{ q.fecha }}</td><td>#{{ q.caja_id }}</td><td>{{ q.usuario }}</td><td>${{ '{:,.0f}'.format(q.esperado_efectivo or 0) }} / ${{ '{:,.0f}'.format(q.contado_efectivo or 0) }}</td><td>${{ '{:,.0f}'.format(q.esperado_tarjeta or 0) }} / ${{ '{:,.0f}'.format(q.contado_tarjeta or 0) }}</td><td>${{ '{:,.0f}'.format(q.esperado_nequi or 0) }} / ${{ '{:,.0f}'.format(q.contado_nequi or 0) }}</td><td>{{ q.estado }}</td></tr>{% else %}<tr><td colspan="7">No hay cuadres en las fechas seleccionadas.</td></tr>{% endfor %}{% else %}<tr><td colspan="7">Selecciona las fechas y pulsa Filtrar.</td></tr>{% endif %}
-</tbody></table></div></section>
-<section class="card" id="cierres"><div class="head"><h2>Reporte de cierres</h2><button class="btn dark no-print" onclick="imprimir('cierres')">Imprimir cierres</button></div><p class="muted">Periodo: {{ desde or 'Sin fecha inicial' }} al {{ hasta or 'Sin fecha final' }}</p><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Caja</th><th>Responsable</th><th>Efectivo contado</th><th>Tarjeta</th><th>Nequi</th><th>Diferencias (E/T/N)</th><th>Observación</th></tr></thead><tbody>
-{% if consultado %}{% for c in cierres %}<tr><td>{{ c.fecha }}</td><td>#{{ c.caja_id }}</td><td>{{ c.usuario }}</td><td>${{ '{:,.0f}'.format(c.total_efectivo or 0) }}</td><td>${{ '{:,.0f}'.format(c.total_tarjeta or 0) }}</td><td>${{ '{:,.0f}'.format(c.total_nequi or 0) }}</td><td>${{ '{:,.0f}'.format(c.diferencia_efectivo or 0) }} / ${{ '{:,.0f}'.format(c.diferencia_tarjeta or 0) }} / ${{ '{:,.0f}'.format(c.diferencia_nequi or 0) }}</td><td>{{ c.observacion or '—' }}</td></tr>{% else %}<tr><td colspan="8">No hay cierres en las fechas seleccionadas.</td></tr>{% endfor %}{% else %}<tr><td colspan="8">Selecciona las fechas y pulsa Filtrar.</td></tr>{% endif %}
-</tbody></table></div></section></main><script>
-function imprimir(tipo){document.body.classList.add('print-'+tipo);window.print();document.body.classList.remove('print-'+tipo)}
-</script><style>@media print{body.print-cuadres #cierres,body.print-cierres #cuadres{display:none!important}}</style></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <title>Historial de cuadres y cierres | ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .topbar .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: var(--blue);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+    }
+
+    .btn:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn.dark {
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(15, 41, 66, 0.18);
+    }
+    .btn.dark:hover { background: var(--navy-light); }
+
+    .btn.outline {
+      background: var(--surface);
+      color: var(--navy);
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn.outline:hover {
+      background: #f8fafc;
+      border-color: var(--navy);
+    }
+
+    .btn.sm {
+      padding: 8px 13px;
+      font-size: 12.5px;
+    }
+
+    .btn.gray {
+      background: #fff;
+      color: #475569;
+      border-color: #cbd5e1;
+      box-shadow: none;
+    }
+    .btn.gray:hover { background: #f1f5f9; color: var(--text); }
+
+    /* ALERTS */
+    .notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-weight: 500;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 22px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 17.5px;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .period-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .period-badge strong {
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    /* FILTER FORM */
+    .filter-bar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .forms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 240px));
+      gap: 14px;
+      flex: 1;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 9.5px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 13.5px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input[type="date"]:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* TABLE */
+    .tablewrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+      background: #fff;
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: left;
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    thead th.num, tbody td.num {
+      text-align: right;
+    }
+
+    tbody td {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      font-size: 13.5px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .cell-date {
+      color: #475569;
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+    }
+
+    .caja-pill {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pair-val {
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+    }
+    .pair-val .exp {
+      color: var(--muted);
+    }
+    .pair-val .sep {
+      color: #cbd5e1;
+      margin: 0 4px;
+    }
+    .pair-val .cnt {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .money-val {
+      font-weight: 700;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .diff-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-variant-numeric: tabular-nums;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .diff-pill {
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--green-bg);
+      color: #15803d;
+    }
+    .diff-pill.short {
+      background: var(--red-bg);
+      color: #b91c1c;
+    }
+    .diff-pill.over {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #334155;
+      text-transform: capitalize;
+    }
+    .status-badge.cerrado, .status-badge.cerrada {
+      background: var(--green-bg);
+      color: #15803d;
+    }
+    .status-badge.en_cuadre, .status-badge.pendiente {
+      background: var(--amber-bg);
+      color: #b45309;
+    }
+
+    .obs-cell {
+      max-width: 240px;
+      white-space: normal;
+      line-height: 1.4;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 38px 20px !important;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 10px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state strong {
+      display: block;
+      color: var(--navy);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      body { padding: 14px 12px 32px; }
+      .card { padding: 16px; border-radius: 14px; }
+      .topbar h1 { font-size: 20px; }
+      .forms { grid-template-columns: 1fr; }
+      .actions { width: 100%; }
+      .actions .btn { flex: 1; }
+      .topbar .btn { width: 100%; }
+    }
+
+    /* PRINT */
+    @media print {
+      body { background: white; padding: 0; font-size: 11px; }
+      .no-print { display: none !important; }
+      .topbar { margin-bottom: 12px; padding-bottom: 8px; }
+      .title-icon { display: none; }
+      .card { box-shadow: none; border: 1px solid #cbd5e1; padding: 12px; margin-bottom: 14px; break-inside: avoid; }
+      .tablewrap { overflow: visible; border: 1px solid #cbd5e1; }
+      table { min-width: 0; width: 100%; }
+      thead th, tbody td { white-space: normal; padding: 6px 7px; font-size: 10px; }
+      body.print-cuadres #cierres,
+      body.print-cierres #cuadres { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <!-- CABECERA -->
+    <header class="topbar">
+      <div class="title-group">
+        <div class="title-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Historial de cuadres y cierres</h1>
+          <p class="subtitle">Consulta, auditoría e impresión de arqueos y cierres por periodo</p>
+        </div>
+      </div>
+
+      <a class="btn dark no-print" href="/ventas">← Volver a ventas</a>
+    </header>
+
+    {% if mensaje %}
+    <div class="notice" role="status">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span>{{ mensaje }}</span>
+    </div>
+    {% endif %}
+
+    <!-- FILTROS -->
+    <section class="card no-print">
+      <div class="card-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filtrar historial por fechas
+        </h2>
+      </div>
+
+      <form method="get" class="filter-bar">
+        <div class="forms">
+          <div class="field">
+            <label for="desde">Fecha inicial</label>
+            <input id="desde" type="date" name="desde" value="{{ desde }}">
+          </div>
+          <div class="field">
+            <label for="hasta">Fecha final</label>
+            <input id="hasta" type="date" name="hasta" value="{{ hasta }}">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Filtrar
+          </button>
+          <a class="btn gray" href="/ventas/historial">Limpiar</a>
+          <button class="btn outline" type="button" onclick="window.print()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimir reporte completo
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- REPORTE DE CUADRES -->
+    <section class="card" id="cuadres">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <h2>Reporte de cuadres</h2>
+          <span class="period-badge">
+            Periodo: <strong>{{ desde or 'Sin fecha inicial' }}</strong> al <strong>{{ hasta or 'Sin fecha final' }}</strong>
+          </span>
+        </div>
+        <button class="btn outline sm no-print" type="button" onclick="imprimir('cuadres')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir cuadres
+        </button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Caja</th>
+              <th>Responsable</th>
+              <th>Efectivo (Esp. / Cont.)</th>
+              <th>Tarjeta (Esp. / Cont.)</th>
+              <th>Nequi (Esp. / Cont.)</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if consultado %}
+              {% for q in cuadres %}
+              {% set st = (q.estado or '')|lower %}
+              <tr>
+                <td class="cell-date">{{ q.fecha }}</td>
+                <td><span class="caja-pill">#{{ q.caja_id }}</span></td>
+                <td>{{ q.usuario }}</td>
+                <td class="pair-val">
+                  <span class="exp">${{ '{:,.0f}'.format(q.esperado_efectivo or 0) }}</span>
+                  <span class="sep">/</span>
+                  <span class="cnt">${{ '{:,.0f}'.format(q.contado_efectivo or 0) }}</span>
+                </td>
+                <td class="pair-val">
+                  <span class="exp">${{ '{:,.0f}'.format(q.esperado_tarjeta or 0) }}</span>
+                  <span class="sep">/</span>
+                  <span class="cnt">${{ '{:,.0f}'.format(q.contado_tarjeta or 0) }}</span>
+                </td>
+                <td class="pair-val">
+                  <span class="exp">${{ '{:,.0f}'.format(q.esperado_nequi or 0) }}</span>
+                  <span class="sep">/</span>
+                  <span class="cnt">${{ '{:,.0f}'.format(q.contado_nequi or 0) }}</span>
+                </td>
+                <td>
+                  <span class="status-badge {{ st }}">{{ q.estado|replace('_',' ') }}</span>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  </div>
+                  <strong>Sin cuadres registrados</strong>
+                  <span>No hay cuadres en las fechas seleccionadas.</span>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </div>
+                  <strong>Consulta pendiente</strong>
+                  <span>Selecciona las fechas y pulsa <b>Filtrar</b> para cargar los cuadres.</span>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPORTE DE CIERRES -->
+    <section class="card" id="cierres">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <h2>Reporte de cierres</h2>
+          <span class="period-badge">
+            Periodo: <strong>{{ desde or 'Sin fecha inicial' }}</strong> al <strong>{{ hasta or 'Sin fecha final' }}</strong>
+          </span>
+        </div>
+        <button class="btn outline sm no-print" type="button" onclick="imprimir('cierres')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir cierres
+        </button>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Caja</th>
+              <th>Responsable</th>
+              <th class="num">Efectivo contado</th>
+              <th class="num">Tarjeta</th>
+              <th class="num">Nequi</th>
+              <th>Diferencias (E / T / N)</th>
+              <th>Observación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if consultado %}
+              {% for c in cierres %}
+              {% set de = c.diferencia_efectivo or 0 %}
+              {% set dt = c.diferencia_tarjeta or 0 %}
+              {% set dn = c.diferencia_nequi or 0 %}
+              <tr>
+                <td class="cell-date">{{ c.fecha }}</td>
+                <td><span class="caja-pill">#{{ c.caja_id }}</span></td>
+                <td>{{ c.usuario }}</td>
+                <td class="num money-val">${{ '{:,.0f}'.format(c.total_efectivo or 0) }}</td>
+                <td class="num money-val">${{ '{:,.0f}'.format(c.total_tarjeta or 0) }}</td>
+                <td class="num money-val">${{ '{:,.0f}'.format(c.total_nequi or 0) }}</td>
+                <td>
+                  <div class="diff-group">
+                    <span class="diff-pill {{ 'short' if de < 0 else ('over' if de > 0 else '') }}" title="Diferencia Efectivo">
+                      ${{ '{:,.0f}'.format(de) }}
+                    </span>
+                    <span class="diff-pill {{ 'short' if dt < 0 else ('over' if dt > 0 else '') }}" title="Diferencia Tarjeta">
+                      ${{ '{:,.0f}'.format(dt) }}
+                    </span>
+                    <span class="diff-pill {{ 'short' if dn < 0 else ('over' if dn > 0 else '') }}" title="Diferencia Nequi">
+                      ${{ '{:,.0f}'.format(dn) }}
+                    </span>
+                  </div>
+                </td>
+                <td class="obs-cell">{{ c.observacion or '—' }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="8" class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  </div>
+                  <strong>Sin cierres registrados</strong>
+                  <span>No hay cierres en las fechas seleccionadas.</span>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="8" class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </div>
+                  <strong>Consulta pendiente</strong>
+                  <span>Selecciona las fechas y pulsa <b>Filtrar</b> para cargar los cierres.</span>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function imprimir(tipo) {
+      document.body.classList.add('print-' + tipo);
+      window.print();
+      document.body.classList.remove('print-' + tipo);
+    }
+  </script>
+</body>
+</html>
