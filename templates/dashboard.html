@@ -1257,7 +1257,7 @@ button,input,select{font-family:inherit}
                     
 
                     <select name="tipo_precio" id="tipoPrecio" required>
-                        
+                        <option value="" disabled selected>Seleccionar</option>
                         <option value="mayorista">Mayorista</option>
                         <option value="individual">Individual</option>
                         <option value="mostrador">Mostrador</option>
@@ -1266,7 +1266,7 @@ button,input,select{font-family:inherit}
                     <!-- 💳 TIPO DE PAGO -->
                     <select name="tipo_venta" id="tipoVenta" required>
 
-                        
+                        <option value="contado">Seleccionar Contado/Crédito</option>
                         <option value="contado">💵 Contado</option>
 
                         <option value="credito">🧾 Crédito</option>
@@ -1275,8 +1275,8 @@ button,input,select{font-family:inherit}
 
                     <!-- 💳 MÉTODO DE PAGO -->
                     
-                    <select name="metodo_pago" id="metodoPago" required>
-                        
+                    <select name="metodo_pago" id="metodoPago">
+                        <option value="">Seleccionar método de pago</option>
                         <option value="efectivo">💵 Efectivo</option>
                         <option value="tarjeta">💳 Tarjeta</option>
                         <option value="nequi">📱 Nequi</option>
@@ -1331,7 +1331,7 @@ button,input,select{font-family:inherit}
                         <label>
                           🏷️<h2>Producto</h2>
                         </label>
-
+                        
                         <div class="item"> 
                             <select name="producto[]" required>
                                 {% for prod in productos %}
