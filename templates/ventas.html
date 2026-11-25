@@ -1,29 +1,779 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#102f50"><title>Ventas y caja | ST Gestión</title>
-<style>
-:root{--navy:#102f50;--blue:#2364aa;--bg:#eef2f7;--line:#dbe3ec}*{box-sizing:border-box}body{margin:0;padding:20px;background:var(--bg);font:14px Arial,sans-serif;color:#1f2937}.wrap{max-width:1400px;margin:auto}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}.head h1{margin:0;color:var(--navy);font-size:26px}.btn{display:inline-block;border:0;border-radius:8px;padding:10px 14px;background:var(--blue);color:#fff;text-decoration:none;font-weight:700;cursor:pointer}.btn.dark{background:var(--navy)}.btn.red{background:#b42318}.btn.gray{background:#64748b}.card{background:#fff;border-radius:14px;padding:18px;margin:0 0 18px;box-shadow:0 4px 15px #102f5010}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.metric{padding:16px;border-radius:12px;background:#f4f7fb;border:1px solid var(--line)}.metric small{display:block;color:#64748b;margin-bottom:7px}.metric strong{font-size:22px;color:var(--navy)}.status{display:inline-block;padding:6px 10px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:bold}.status.lock{background:#fef3c7;color:#92400e}h2{margin:0 0 14px;color:var(--navy);font-size:19px}.forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}label{display:block;font-weight:700;margin-bottom:5px}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;font:inherit}textarea{min-height:70px}form .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th{background:var(--navy);color:white;text-align:left}td,th{padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}tr:nth-child(even){background:#f8fafc}.notice{padding:12px;border-radius:8px;background:#e0f2fe;margin-bottom:14px}.warn{background:#fff7ed}.muted{color:#64748b}.section{margin-top:16px}@media(max-width:600px){body{padding:10px}.card{padding:13px}.head h1{font-size:22px}.metric strong{font-size:19px}}
-@media print{body{background:white;padding:0}.no-print,.head .btn,form{display:none!important}.card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}}
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <title>Ventas y caja | ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --red: #dc2626;
+      --red-hover: #b91c1c;
+      --purple: #7c3aed;
+      --purple-bg: #f3e8ff;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
 
-.fold{padding:0;overflow:hidden}
-.fold>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;color:var(--navy);font-size:19px;font-weight:700;cursor:pointer;user-select:none}
-.fold>summary::-webkit-details-marker{display:none}
-.fold>summary::after{content:"＋";display:inline-flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:30px;border-radius:8px;background:#eef4fb;color:var(--blue);font-size:20px}
-.fold[open]>summary::after{content:"−"}
-.fold[open]>summary{border-bottom:1px solid var(--line)}
-.fold>*:not(summary){margin-left:18px;margin-right:18px}
-.fold>summary+*{margin-top:16px}
-.fold[open]{padding-bottom:18px}
-@media(max-width:600px){.fold>summary{padding:14px;font-size:17px}.fold>*:not(summary){margin-left:13px;margin-right:13px}}
-</style></head><body><main class="wrap">
-<div class="head"><div><h1>💵 Ventas y control de caja</h1><div class="muted">Control de dinero recibido, cuadres y cierres</div></div><a class="btn dark" href="/dashboard">← Inicio</a></div>
-{% if mensaje %}<div class="notice">{{ mensaje }}</div>{% endif %}
-<div class="card"><h2>Caja actual #{{ caja.id }}</h2><p>Estado: <span class="status {{ 'lock' if caja.estado == 'en_cuadre' else '' }}">{{ 'En cuadre — operaciones bloqueadas' if caja.estado == 'en_cuadre' else 'Abierta' }}</span> &nbsp; Base inicial: ${{ '{:,.0f}'.format(caja.base_inicial or 0) }}</p>
-<div class="grid"><div class="metric"><small>Dinero recibido en efectivo</small><strong>${{ '{:,.0f}'.format(totales.get('efectivo',0)) }}</strong></div><div class="metric"><small>Tarjeta</small><strong>${{ '{:,.0f}'.format(totales.get('tarjeta',0)) }}</strong></div><div class="metric"><small>Nequi</small><strong>${{ '{:,.0f}'.format(totales.get('nequi',0)) }}</strong></div><div class="metric"><small>Facturado hoy (incluye crédito)</small><strong>${{ '{:,.0f}'.format(resumen.facturado or 0) }}</strong></div><div class="metric"><small>Saldo vendido a crédito hoy</small><strong>${{ '{:,.0f}'.format(resumen.saldo_credito or 0) }}</strong></div></div>
-<p class="muted">Los totales de caja representan movimientos de dinero registrados desde la puesta en marcha del módulo, no el total histórico de facturas.</p></div>
-{% if admin and caja.estado == 'abierta' %}<details class="card fold"><summary>Ingreso o egreso manual</summary><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="accion" value="movimiento"><div class="forms"><div><label>Tipo</label><select name="tipo" required><option value="ingreso_manual">Ingreso de dinero</option><option value="egreso_manual">Egreso / gasto / retiro</option></select></div><div><label>Método</label><select name="metodo_pago" required><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="nequi">Nequi</option></select></div><div><label>Valor</label><input name="valor" type="number" min="0.01" step="0.01" required></div><div><label>Concepto obligatorio</label><input name="concepto" maxlength="250" required placeholder="Ej. compra de bolsas"></div></div><div class="actions"><button class="btn" type="submit">Registrar movimiento</button></div></form></details>{% endif %}
-{% if admin and caja.estado == 'abierta' %}<details class="card fold"><summary>Iniciar cuadre</summary><p>Al guardar el cuadre se bloquearán ventas, abonos y movimientos hasta cancelar el cuadre o completar el cierre.</p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="accion" value="cuadrar"><div class="forms"><div><label>Efectivo contado</label><input type="number" name="efectivo" min="0" step="0.01" value="0" required></div><div><label>Tarjeta según comprobante</label><input type="number" name="tarjeta" min="0" step="0.01" value="0" required></div><div><label>Nequi según comprobante</label><input type="number" name="nequi" min="0" step="0.01" value="0" required></div><div><label>Observaciones</label><textarea name="observacion" maxlength="500" placeholder="Opcional si todo coincide"></textarea></div></div><div class="actions"><button class="btn" type="submit">Iniciar cuadre y guardar conteo</button></div></form></details>{% endif %}
+    * { box-sizing: border-box; }
 
-<div class="card"><a class="btn" href="/ventas/movimientos">Movimientos de caja</a></div>
-{% if admin and caja.estado == 'en_cuadre' %}<div class="card warn"><h2>Caja bloqueada — finalizar</h2><p>Verifica los valores registrados en el último cuadre. Puedes agregar una observación si lo deseas.</p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="accion" value="cerrar"><label>Observación de cierre (opcional)</label><textarea name="observacion" maxlength="500" placeholder="Observación opcional"></textarea><div class="actions"><button class="btn red" type="submit">Confirmar cierre y abrir caja nueva en $0</button></div></form><form method="post" class="section"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="accion" value="cancelar_cuadre"><button class="btn gray" type="submit">Cancelar cuadre y reabrir caja</button></form></div>{% endif %}
-{% if admin %}<div class="card"><a class="btn" href="/ventas/historial">Historial de cuadres y cierres</a></div>{% endif %}
-</main></body></html>
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .topbar .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: var(--blue);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+    }
+
+    .btn:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn.dark {
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(15, 41, 66, 0.18);
+    }
+    .btn.dark:hover { background: var(--navy-light); }
+
+    .btn.outline {
+      background: var(--surface);
+      color: var(--navy);
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn.outline:hover {
+      background: #f8fafc;
+      border-color: var(--navy);
+    }
+
+    .btn.red {
+      background: var(--red);
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.22);
+    }
+    .btn.red:hover { background: var(--red-hover); }
+
+    .btn.gray {
+      background: #fff;
+      color: #475569;
+      border-color: #cbd5e1;
+      box-shadow: none;
+    }
+    .btn.gray:hover { background: #f1f5f9; color: var(--text); }
+
+    /* ALERTS */
+    .notice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-weight: 500;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 20px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .caja-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .caja-title h2 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    /* STATUS BADGE */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--green-bg);
+      color: #15803d;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+    }
+
+    .status.lock {
+      background: var(--amber-bg);
+      color: #b45309;
+    }
+
+    .status.lock .dot {
+      background: var(--amber);
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+    }
+
+    .base-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .base-pill strong {
+      color: var(--navy);
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* KPI METRICS GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      position: relative;
+      padding: 18px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      overflow: hidden;
+    }
+
+    .metric:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+      background: #ffffff;
+    }
+
+    .metric::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--blue);
+    }
+
+    .metric.cash::before { background: var(--green); }
+    .metric.card-pay::before { background: var(--blue); }
+    .metric.nequi::before { background: var(--purple); }
+    .metric.total::before { background: var(--navy); }
+    .metric.credit::before { background: var(--amber); }
+
+    .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .metric small {
+      display: block;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .metric-badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .metric.cash .metric-badge { background: var(--green-bg); color: var(--green); }
+    .metric.card-pay .metric-badge { background: #dbeafe; color: var(--blue); }
+    .metric.nequi .metric-badge { background: var(--purple-bg); color: var(--purple); }
+    .metric.total .metric-badge { background: #e2e8f0; color: var(--navy); }
+    .metric.credit .metric-badge { background: var(--amber-bg); color: var(--amber); }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-footnote {
+      margin: 16px 0 0;
+      padding-top: 12px;
+      border-top: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ACCORDION / FOLD */
+    .fold {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .fold > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 22px;
+      color: var(--navy);
+      font-size: 16.5px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease;
+    }
+
+    .fold > summary:hover {
+      background: #f8fafc;
+    }
+
+    .fold > summary::-webkit-details-marker { display: none; }
+
+    .summary-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .summary-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: var(--blue);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .fold > summary::after {
+      content: "+";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 32px;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 500;
+      transition: all 0.18s ease;
+    }
+
+    .fold[open] > summary::after {
+      content: "−";
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .fold[open] > summary {
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .fold-body {
+      padding: 20px 22px 22px;
+    }
+
+    .fold-desc {
+      margin: 0 0 16px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+      font-size: 13px;
+    }
+
+    /* FORMS */
+    .forms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .input-money {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-money span {
+      position: absolute;
+      left: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .input-money input {
+      padding-left: 26px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 13.5px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    textarea {
+      min-height: 76px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    /* LOCKED STATE CARD */
+    .card.warn {
+      background: #fffbeb;
+      border-color: #fcd34d;
+    }
+
+    .card.warn h2 {
+      margin: 0 0 8px;
+      color: #92400e;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card.warn p {
+      margin: 0 0 16px;
+      color: #78350f;
+    }
+
+    .warn-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      body { padding: 14px 12px 32px; }
+      .card { padding: 16px; border-radius: 14px; }
+      .topbar h1 { font-size: 20px; }
+      .metric strong { font-size: 21px; }
+      .fold > summary { padding: 15px 16px; font-size: 15.5px; }
+      .fold-body { padding: 16px; }
+      .btn { width: 100%; }
+      .top-actions { width: 100%; }
+      .top-actions .btn { flex: 1; }
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .top-actions, form, details { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #cbd5e1; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <!-- CABECERA PRINCIPAL -->
+    <header class="topbar">
+      <div class="title-group">
+        <div class="title-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Ventas y control de caja</h1>
+          <p class="subtitle">Control de dinero recibido, cuadres diarios y cierres de turno</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <a class="btn outline" href="/ventas/movimientos">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Movimientos de caja
+        </a>
+        {% if admin %}
+        <a class="btn outline" href="/ventas/historial">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Historial de cuadres
+        </a>
+        {% endif %}
+        <a class="btn dark" href="/dashboard">← Inicio</a>
+      </div>
+    </header>
+
+    {% if mensaje %}
+    <div class="notice" role="status">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span>{{ mensaje }}</span>
+    </div>
+    {% endif %}
+
+    <!-- RESUMEN DE CAJA ACTUAL -->
+    <section class="card">
+      <div class="card-header">
+        <div class="caja-title">
+          <h2>Caja actual #{{ caja.id }}</h2>
+          <span class="status {{ 'lock' if caja.estado == 'en_cuadre' else '' }}">
+            <span class="dot"></span>
+            {{ 'En cuadre — operaciones bloqueadas' if caja.estado == 'en_cuadre' else 'Abierta y operativa' }}
+          </span>
+        </div>
+
+        <div class="base-pill">
+          <span>Base inicial:</span>
+          <strong>${{ '{:,.0f}'.format(caja.base_inicial or 0) }}</strong>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="metric cash">
+          <div class="metric-top">
+            <small>Recibido en efectivo</small>
+            <span class="metric-badge" title="Efectivo">💵</span>
+          </div>
+          <strong>${{ '{:,.0f}'.format(totales.get('efectivo',0)) }}</strong>
+        </div>
+
+        <div class="metric card-pay">
+          <div class="metric-top">
+            <small>Recibido en tarjeta</small>
+            <span class="metric-badge" title="Tarjeta">💳</span>
+          </div>
+          <strong>${{ '{:,.0f}'.format(totales.get('tarjeta',0)) }}</strong>
+        </div>
+
+        <div class="metric nequi">
+          <div class="metric-top">
+            <small>Recibido en Nequi</small>
+            <span class="metric-badge" title="Nequi">📱</span>
+          </div>
+          <strong>${{ '{:,.0f}'.format(totales.get('nequi',0)) }}</strong>
+        </div>
+
+        <div class="metric total">
+          <div class="metric-top">
+            <small>Facturado hoy (incluye crédito)</small>
+            <span class="metric-badge" title="Facturado">🧾</span>
+          </div>
+          <strong>${{ '{:,.0f}'.format(resumen.facturado or 0) }}</strong>
+        </div>
+
+        <div class="metric credit">
+          <div class="metric-top">
+            <small>Saldo vendido a crédito hoy</small>
+            <span class="metric-badge" title="Crédito">⏳</span>
+          </div>
+          <strong>${{ '{:,.0f}'.format(resumen.saldo_credito or 0) }}</strong>
+        </div>
+      </div>
+
+      <p class="card-footnote">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Los totales de caja representan movimientos de dinero registrados desde la puesta en marcha del módulo, no el total histórico de facturas.
+      </p>
+    </section>
+
+    <!-- ACCIONES DE ADMINISTRADOR (CAJA ABIERTA) -->
+    {% if admin and caja.estado == 'abierta' %}
+    <details class="card fold">
+      <summary>
+        <span class="summary-left">
+          <span class="summary-icon">⇄</span>
+          <span>Registrar ingreso o egreso manual</span>
+        </span>
+      </summary>
+      <div class="fold-body">
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="accion" value="movimiento">
+          <div class="forms">
+            <div class="field">
+              <label>Tipo de movimiento</label>
+              <select name="tipo" required>
+                <option value="ingreso_manual">Ingreso de dinero (+)</option>
+                <option value="egreso_manual">Egreso / gasto / retiro (−)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Método de pago</label>
+              <select name="metodo_pago" required>
+                <option value="efectivo">💵 Efectivo</option>
+                <option value="tarjeta">💳 Tarjeta</option>
+                <option value="nequi">📱 Nequi</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Valor</label>
+              <div class="input-money">
+                <span>$</span>
+                <input name="valor" type="number" min="0.01" step="0.01" placeholder="0.00" required>
+              </div>
+            </div>
+            <div class="field">
+              <label>Concepto obligatorio</label>
+              <input name="concepto" maxlength="250" required placeholder="Ej. Compra de bolsas o base adicional">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" type="submit">Registrar movimiento</button>
+          </div>
+        </form>
+      </div>
+    </details>
+
+    <details class="card fold">
+      <summary>
+        <span class="summary-left">
+          <span class="summary-icon">✓</span>
+          <span>Iniciar cuadre y conteo de caja</span>
+        </span>
+      </summary>
+      <div class="fold-body">
+        <p class="fold-desc">
+          <strong>Importante:</strong> Al guardar el cuadre se bloquearán temporalmente las ventas, abonos y movimientos hasta cancelar el cuadre o confirmar el cierre definitivo.
+        </p>
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="accion" value="cuadrar">
+          <div class="forms">
+            <div class="field">
+              <label>Efectivo contado en caja</label>
+              <div class="input-money">
+                <span>$</span>
+                <input type="number" name="efectivo" min="0" step="0.01" value="0" required>
+              </div>
+            </div>
+            <div class="field">
+              <label>Tarjeta según datáfono / comprobante</label>
+              <div class="input-money">
+                <span>$</span>
+                <input type="number" name="tarjeta" min="0" step="0.01" value="0" required>
+              </div>
+            </div>
+            <div class="field">
+              <label>Nequi según comprobantes</label>
+              <div class="input-money">
+                <span>$</span>
+                <input type="number" name="nequi" min="0" step="0.01" value="0" required>
+              </div>
+            </div>
+            <div class="field">
+              <label>Observaciones del conteo</label>
+              <textarea name="observacion" maxlength="500" placeholder="Opcional si todos los valores coinciden"></textarea>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn dark" type="submit">Iniciar cuadre y guardar conteo</button>
+          </div>
+        </form>
+      </div>
+    </details>
+    {% endif %}
+
+    <!-- CIERRE DE CAJA (CAJA EN CUADRE) -->
+    {% if admin and caja.estado == 'en_cuadre' %}
+    <section class="card warn">
+      <h2>🔒 Caja bloqueada en proceso de cuadre</h2>
+      <p>Verifica los valores registrados en el último conteo. Puedes agregar una observación final antes de cerrar el turno.</p>
+
+      <form method="post" id="formCerrarCaja">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="accion" value="cerrar">
+        <div class="field">
+          <label>Observación de cierre (opcional)</label>
+          <textarea name="observacion" maxlength="500" placeholder="Escribe una nota de cierre si hubo novedades o diferencias..."></textarea>
+        </div>
+      </form>
+
+      <form method="post" id="formCancelarCuadre">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="accion" value="cancelar_cuadre">
+      </form>
+
+      <div class="warn-actions">
+        <button class="btn red" type="submit" form="formCerrarCaja">Confirmar cierre y abrir caja nueva en $0</button>
+        <button class="btn gray" type="submit" form="formCancelarCuadre">Cancelar cuadre y reabrir caja</button>
+      </div>
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>
