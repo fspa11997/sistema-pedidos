@@ -1,22 +1,342 @@
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<h2>Crear Usuario</h2>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Crear usuario • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --radius: 16px;
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.08), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
 
-<form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="text" name="usuario" placeholder="Usuario" required><br><br>
-    <input type="password" name="password" placeholder="Contraseña" required><br><br>
+    * { box-sizing: border-box; }
 
-    <select name="rol">
-        <option value="admin">Admin</option>
-        <option value="empleado">Empleado</option>
-    </select><br><br>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 28px 16px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-    <button type="submit">Crear</button>
-</form>
+    .wrap {
+      width: 100%;
+      max-width: 540px;
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.16s ease;
+    }
+
+    .btn-back:hover {
+      background: #f8fafc;
+      border-color: var(--navy);
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
+
+    .card-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .card-header p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* FLASH MESSAGES */
+    .flash-alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    /* FORM */
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 43px;
+      padding: 10px 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .toggle-pass {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-pass:hover {
+      color: var(--navy);
+      background: #f1f5f9;
+    }
+
+    .role-hint {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .role-hint strong {
+      color: var(--navy);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .btn-submit {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      background: var(--blue);
+      color: #fff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.22);
+    }
+
+    .btn-submit:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 16px 12px 32px; }
+      .card { padding: 20px 16px; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a href="/dashboard" class="btn-back">← Volver al inicio</a>
+    </div>
+
+    <main class="card">
+      <div class="card-header">
+        <div class="header-icon" aria-hidden="true">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/>
+            <line x1="20" y1="8" x2="20" y2="14"/>
+            <line x1="23" y1="11" x2="17" y2="11"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Crear nuevo usuario</h1>
+          <p>Asigna credenciales y nivel de acceso al sistema</p>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash-alert" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+          <label for="usuarioInput">Nombre de usuario</label>
+          <input id="usuarioInput" type="text" name="usuario" placeholder="Ej. cajero1 o maria.gomez" autocomplete="username" required>
+        </div>
+
+        <div class="field">
+          <label for="passwordInput">Contraseña</label>
+          <div class="input-wrap">
+            <input id="passwordInput" type="password" name="password" placeholder="Ingresa una contraseña segura" autocomplete="new-password" required style="padding-right:42px;">
+            <button type="button" class="toggle-pass" onclick="togglePassword()" aria-label="Mostrar u ocultar contraseña" title="Mostrar/ocultar contraseña">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="rolSelect">Rol y permisos</label>
+          <select id="rolSelect" name="rol" onchange="actualizarInfoRol()">
+            <option value="admin">Admin — Acceso total</option>
+            <option value="empleado">Empleado — Ventas y operación</option>
+          </select>
+          <div class="role-hint" id="roleHint">
+            <strong>Administrador:</strong> Puede gestionar usuarios, realizar cuadres y cierres de caja, editar inventario y ver reportes completos.
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-submit">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Crear usuario
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('passwordInput');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function actualizarInfoRol() {
+      const rol = document.getElementById('rolSelect').value;
+      const hint = document.getElementById('roleHint');
+      if (rol === 'admin') {
+        hint.innerHTML = '<strong>Administrador:</strong> Puede gestionar usuarios, realizar cuadres y cierres de caja, editar inventario y ver reportes completos.';
+      } else {
+        hint.innerHTML = '<strong>Empleado:</strong> Puede registrar ventas, consultar clientes y abonos, sin acceso a cierres de caja ni configuración de usuarios.';
+      }
+    }
+  </script>
+</body>
+</html>

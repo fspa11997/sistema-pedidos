@@ -3,372 +3,722 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
+    <meta name="theme-color" content="#0f2942">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ST Gestión">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>N 000{{ factura.id }} | ST Gestión</title>
+    <title>N 000{{ factura.id }} • ST Gestión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --navy:#102f50; --blue:#2364aa; --blue-light:#eaf3ff; --ink:#1f2937; --muted:#64748b; --line:#e2e8f0; --paper:#fff; --bg:#eef3f8; --green:#087f5b; --orange:#a85b00; }
-        * { box-sizing:border-box; }
-        body { margin:0; padding:28px 16px 40px; background:var(--bg); color:var(--ink); font-family:Inter,"Segoe UI",Arial,sans-serif; font-size:14px; line-height:1.45; }
-        .toolbar { max-width:900px; margin:0 auto 18px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
-        .toolbar-note { color:var(--muted); font-size:12px; }
-        .toolbar-actions { display:flex; gap:8px; flex-wrap:wrap; }
-        .btn { border:0; border-radius:9px; padding:11px 16px; min-height:42px; font-weight:700; font-size:13px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; gap:7px; }
-        .btn-primary { color:#fff; background:var(--navy); box-shadow:0 4px 10px #102f5020; }
-        .btn-secondary { color:var(--navy); background:#fff; border:1px solid #cbd5e1; }
-        .invoice { max-width:900px; margin:0 auto 24px; background:var(--paper); border:1px solid #e0e7ef; border-radius:16px; overflow:hidden; box-shadow:0 12px 35px rgba(16,47,80,.09); }
-        .invoice-header { padding:28px 34px 24px; background:linear-gradient(125deg,#102f50,#1c5688); color:#fff; display:flex; justify-content:space-between; gap:24px; align-items:flex-start; }
-        .brand { display:flex; align-items:center; gap:13px; min-width:0; }
-        .brand-mark { width:46px; height:46px; flex:0 0 46px; display:grid; place-items:center; border-radius:12px; background:#ffffff1c; border:1px solid #ffffff40; font-weight:800; font-size:18px; letter-spacing:-1px; }
-        .brand-name { font-size:19px; font-weight:800; letter-spacing:.6px; line-height:1.2; }
-        .brand-subtitle { margin-top:4px; color:#d7e7f7; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; }
-        .invoice-number { text-align:right; min-width:155px; }
-        .invoice-kicker { color:#d7e7f7; font-size:10px; letter-spacing:1.8px; font-weight:700; text-transform:uppercase; }
-        .invoice-number strong { display:block; margin-top:4px; font-size:24px; line-height:1.2; overflow-wrap:anywhere; }
-        .invoice-number .date { display:block; margin-top:8px; color:#e2edf8; font-size:12px; }
-        .invoice-body { padding:28px 34px 30px; }
-        .copy-label { display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border-radius:6px; background:var(--blue-light); color:var(--blue); font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; }
-        .section-title { margin:22px 0 11px; color:var(--navy); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1.1px; }
-        .parties { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
-        .info-card { padding:16px 17px; border:1px solid var(--line); border-radius:11px; min-width:0; }
-        .info-card .eyebrow { color:var(--muted); font-size:10px; font-weight:800; letter-spacing:1.1px; text-transform:uppercase; margin-bottom:8px; }
-        .client-name { font-size:16px; font-weight:800; color:#172b43; overflow-wrap:anywhere; margin-bottom:8px; }
-        .info-line { margin:4px 0; color:#475569; font-size:12px; overflow-wrap:anywhere; }
-        .info-line b { color:#334155; font-weight:700; }
-        .payment-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
-        .payment-item { border:1px solid var(--line); border-radius:10px; padding:12px 13px; min-width:0; }
-        .payment-item span { display:block; color:var(--muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; }
-        .payment-item strong { display:block; margin-top:5px; font-size:13px; color:#172b43; overflow-wrap:anywhere; }
-        .pill { display:inline-block; border-radius:999px; padding:4px 9px; font-size:11px; font-weight:800; }
-        .pill-paid { background:#dcfce7; color:#166534; }
-        .pill-pending { background:#fff1d6; color:#92400e; }
-        .pill-partial { background:#ffedd5; color:#9a3412; }
-        .table-wrap { width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:10px; margin-top:10px; }
-        table { width:100%; border-collapse:collapse; min-width:590px; }
-        thead { background:#f0f5fb; }
-        th { color:#334e68; text-align:left; padding:12px 10px; font-size:10px; letter-spacing:.4px; text-transform:uppercase; border-bottom:1px solid #dce6f0; }
-        td { padding:12px 10px; font-size:12px; color:#334155; border-bottom:1px solid #edf1f5; vertical-align:top; }
-        tbody tr:last-child td { border-bottom:0; }
-        tbody tr:nth-child(even) { background:#fbfdff; }
-        .num { text-align:right; white-space:nowrap; }
-        .iva-cell { text-align:center; white-space:nowrap; }
-        .product-name { color:#172b43; font-weight:700; overflow-wrap:anywhere; }
-        .totals-row { display:flex; justify-content:flex-end; margin-top:16px; }
-        .totals { width:100%; max-width:330px; border:1px solid var(--line); border-radius:11px; padding:14px 16px; }
-        .total-line { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:5px 0; color:#526174; font-size:12px; }
-        .total-line strong { color:#243b53; text-align:right; white-space:nowrap; }
-        .total-line.balance strong { color:var(--orange); }
-        .grand-total { margin:8px -16px -14px; padding:13px 16px; border-radius:0 0 10px 10px; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; font-weight:800; }
-        .grand-total strong { font-size:19px; white-space:nowrap; }
-        .footer { margin-top:25px; padding-top:15px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:flex-start; gap:18px; color:var(--muted); font-size:10px; }
-        .footer strong { color:#334e68; }
-        .legal-note { max-width:520px; }
-        .thanks { white-space:nowrap; font-weight:800; color:var(--blue); }
-        .cut-line { max-width:900px; margin:0 auto 24px; border-top:2px dashed #a9b8c8; position:relative; text-align:center; }
-        .cut-line span { position:relative; top:-10px; padding:2px 12px; background:var(--bg); color:#75869a; font-size:10px; font-weight:700; letter-spacing:1.5px; }
-        @media (max-width:640px) {
-            body { padding:12px 8px 24px; }
-            .toolbar { align-items:stretch; margin-bottom:12px; }
-            .toolbar-note { width:100%; }
-            .toolbar-actions { width:100%; }
-            .toolbar-actions .btn { flex:1; }
-            .invoice { border-radius:11px; margin-bottom:16px; }
-            .invoice-header { padding:20px 17px; gap:12px; }
-            .brand { gap:9px; }
-            .brand-mark { width:38px; height:38px; flex-basis:38px; font-size:15px; }
-            .brand-name { font-size:15px; }
-            .brand-subtitle { font-size:9px; letter-spacing:1px; }
-            .invoice-number { min-width:100px; }
-            .invoice-number strong { font-size:18px; }
-            .invoice-kicker { font-size:9px; letter-spacing:1px; }
-            .invoice-number .date { font-size:10px; }
-            .invoice-body { padding:19px 15px 22px; }
-            .parties { grid-template-columns:1fr; gap:10px; }
-            .payment-strip { grid-template-columns:1fr 1fr; }
-            .payment-item:last-child { grid-column:1/-1; }
-            .info-card { padding:13px; }
-            .footer { flex-direction:column; }
-            .thanks { white-space:normal; }
-            .totals { max-width:none; }
+        :root {
+            --navy: #0f2942;
+            --navy-mid: #1d4ed8;
+            --blue: #2563eb;
+            --blue-light: #eff6ff;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --paper: #ffffff;
+            --bg: #f1f5f9;
+            --green: #166534;
+            --orange: #b45309;
         }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 24px 16px 48px;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            line-height: 1.45;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* BARRA DE HERRAMIENTAS EN PANTALLA */
+        .toolbar {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            padding: 14px 18px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(15, 41, 66, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-note {
+            color: var(--muted);
+            font-size: 12.5px;
+            max-width: 460px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 15px;
+            min-height: 40px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: all 0.16s ease;
+        }
+
+        .btn-primary {
+            color: #fff;
+            background: var(--navy);
+            box-shadow: 0 4px 12px rgba(15, 41, 66, 0.18);
+        }
+
+        .btn-primary:hover {
+            background: #1e3a5f;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            color: var(--navy);
+            background: #fff;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: var(--navy);
+        }
+
+        /* HOJA DE FACTURA EN PANTALLA */
+        .invoice {
+            max-width: 900px;
+            margin: 0 auto 24px;
+            background: var(--paper);
+            border: 1px solid #dbe4ee;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px -6px rgba(15, 41, 66, 0.09);
+        }
+
+        .invoice-header {
+            padding: 28px 34px 24px;
+            background: linear-gradient(125deg, #0f2942 0%, #1d4f82 100%);
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: flex-start;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.13);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            margin-top: 4px;
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
+
+        .invoice-number {
+            text-align: right;
+            min-width: 165px;
+        }
+
+        .invoice-kicker {
+            color: #bae6fd;
+            font-size: 10px;
+            letter-spacing: 1.6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .invoice-number strong {
+            display: block;
+            margin-top: 4px;
+            font-size: 25px;
+            font-weight: 800;
+            line-height: 1.15;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+
+        .invoice-number .date {
+            display: block;
+            margin-top: 7px;
+            color: #e2e8f0;
+            font-size: 12px;
+        }
+
+        .invoice-body {
+            padding: 28px 34px 32px;
+        }
+
+        .copy-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 11px;
+            border-radius: 7px;
+            background: var(--blue-light);
+            color: var(--blue);
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            margin: 24px 0 11px;
+            color: var(--navy);
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .parties {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .info-card {
+            padding: 17px 19px;
+            background: #fafcff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            min-width: 0;
+        }
+
+        .info-card .eyebrow {
+            color: var(--muted);
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .client-name {
+            font-size: 16.5px;
+            font-weight: 800;
+            color: var(--navy);
+            overflow-wrap: anywhere;
+            margin-bottom: 8px;
+        }
+
+        .info-line {
+            margin: 5px 0;
+            color: #475569;
+            font-size: 12.5px;
+            overflow-wrap: anywhere;
+        }
+
+        .info-line b {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .pill-paid { background: #dcfce7; color: #166534; }
+        .pill-pending { background: #fef3c7; color: #92400e; }
+        .pill-partial { background: #ffedd5; color: #9a3412; }
+
+        /* TABLA DE PRODUCTOS */
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 590px;
+        }
+
+        thead { background: #f8fafc; }
+
+        th {
+            color: #475569;
+            text-align: left;
+            padding: 12px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--line);
+        }
+
+        td {
+            padding: 12px 12px;
+            font-size: 13px;
+            color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            font-variant-numeric: tabular-nums;
+        }
+
+        tbody tr:last-child td { border-bottom: 0; }
+        tbody tr:nth-child(even) { background: #fcfdff; }
+
+        .num { text-align: right; white-space: nowrap; }
+        .iva-cell { text-align: center; white-space: nowrap; }
+
+        .product-name {
+            color: var(--navy);
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        /* TOTALES */
+        .totals-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .totals {
+            width: 100%;
+            max-width: 340px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 15px 18px;
+            background: #fafcff;
+        }
+
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 5px 0;
+            color: #475569;
+            font-size: 13px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .total-line strong {
+            color: var(--navy);
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .total-line.balance strong { color: var(--orange); }
+
+        .grand-total {
+            margin: 10px -18px -15px;
+            padding: 14px 18px;
+            border-radius: 0 0 11px 11px;
+            background: var(--navy);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .grand-total strong {
+            font-size: 20px;
+            white-space: nowrap;
+        }
+
+        /* PIE DE FACTURA */
+        .footer {
+            margin-top: 26px;
+            padding-top: 16px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .footer strong { color: #334155; }
+        .legal-note { max-width: 530px; }
+        .thanks { white-space: nowrap; font-weight: 800; color: var(--blue); font-size: 12px; }
+
+        .cut-line {
+            max-width: 900px;
+            margin: 0 auto 24px;
+            border-top: 2px dashed #94a3b8;
+            position: relative;
+            text-align: center;
+        }
+
+        .cut-line span {
+            position: relative;
+            top: -10px;
+            padding: 2px 14px;
+            background: var(--bg);
+            color: #64748b;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 12px 10px 28px; }
+            .toolbar { align-items: stretch; margin-bottom: 14px; padding: 12px 14px; }
+            .toolbar-note { width: 100%; }
+            .toolbar-actions { width: 100%; }
+            .toolbar-actions .btn { flex: 1; }
+            .invoice { border-radius: 12px; margin-bottom: 18px; }
+            .invoice-header { padding: 20px 18px; gap: 12px; }
+            .brand { gap: 10px; }
+            .brand-mark { width: 40px; height: 40px; flex-basis: 40px; font-size: 15px; }
+            .brand-name { font-size: 16px; }
+            .brand-subtitle { font-size: 9.5px; letter-spacing: 1px; }
+            .invoice-number { min-width: 105px; }
+            .invoice-number strong { font-size: 19px; }
+            .invoice-kicker { font-size: 9px; letter-spacing: 1px; }
+            .invoice-number .date { font-size: 10.5px; }
+            .invoice-body { padding: 20px 16px 22px; }
+            .parties { grid-template-columns: 1fr; gap: 10px; }
+            .info-card { padding: 14px; }
+            .footer { flex-direction: column; }
+            .thanks { white-space: normal; }
+            .totals { max-width: none; }
+        }
+
         @media print {
-            html, body { box-sizing:border-box !important; margin:0 !important; padding:0 !important; background:#fff !important; color:#111 !important; }
-            .toolbar, .cut-line { display:none !important; }
-            .invoice { box-sizing:border-box !important; box-shadow:none !important; border-radius:0 !important; }
+            html, body { box-sizing: border-box !important; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; }
+            .toolbar, .cut-line { display: none !important; }
+            .invoice { box-sizing: border-box !important; box-shadow: none !important; border-radius: 0 !important; }
         }
 
         /* CARTA: conserva las dos copias, cada una en una página. */
         @media print {
             @page { size: letter portrait; margin: 10mm; }
             html:has(body.modo-media-carta), body.modo-media-carta {
-                width:auto !important; min-width:0 !important; max-width:none !important;
-                margin:0 !important; padding:0 !important; background:#fff !important;
-                color:#172b43 !important; font-size:10pt !important; line-height:1.35 !important;
-                -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;
+                width: auto !important; min-width: 0 !important; max-width: none !important;
+                margin: 0 !important; padding: 0 !important; background: #fff !important;
+                color: #172b43 !important; font-size: 10pt !important; line-height: 1.35 !important;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
             body.modo-media-carta .invoice {
-                display:flex !important; flex-direction:column !important; width:100% !important; max-width:none !important;
-                min-width:0 !important; min-height:0 !important; height:auto !important; max-height:none !important;
-                margin:0 !important; padding:0 !important; overflow:visible !important; border:1px solid #d7e1ec !important;
-                border-radius:4mm !important; box-shadow:none !important; break-inside:avoid !important; page-break-inside:avoid !important;
-                break-after:page !important; page-break-after:always !important;
+                display: flex !important; flex-direction: column !important; width: 100% !important; max-width: none !important;
+                min-width: 0 !important; min-height: 0 !important; height: auto !important; max-height: none !important;
+                margin: 0 !important; padding: 0 !important; overflow: visible !important; border: 1px solid #d7e1ec !important;
+                border-radius: 4mm !important; box-shadow: none !important; break-inside: avoid !important; page-break-inside: avoid !important;
+                break-after: page !important; page-break-after: always !important;
             }
-            body.modo-media-carta .invoice:last-of-type { break-after:auto !important; page-break-after:auto !important; }
-            body.modo-media-carta .invoice-header { display:flex !important; flex-direction:row !important; align-items:center !important; justify-content:space-between !important; gap:8mm !important; padding:10mm 11mm !important; background:linear-gradient(125deg,#102f50,#1c5688) !important; color:#fff !important; border:0 !important; border-radius:3mm 3mm 0 0 !important; }
-            body.modo-media-carta .brand { display:flex !important; gap:4mm !important; }
-            body.modo-media-carta .brand-mark { display:grid !important; width:14mm !important; height:14mm !important; flex:0 0 14mm !important; border-radius:3mm !important; font-size:15pt !important; }
-            body.modo-media-carta .brand-name { color:#fff !important; font-size:19pt !important; }
-            body.modo-media-carta .brand-subtitle { color:#d7e7f7 !important; font-size:8pt !important; }
-            body.modo-media-carta .invoice-number { min-width:48mm !important; margin:0 !important; text-align:right !important; }
-            body.modo-media-carta .invoice-kicker { color:#d7e7f7 !important; font-size:8pt !important; letter-spacing:1pt !important; }
-            body.modo-media-carta .invoice-number strong { color:#fff !important; font-size:23pt !important; }
-            body.modo-media-carta .invoice-number .date { color:#e2edf8 !important; font-size:9pt !important; }
-            body.modo-media-carta .invoice-body { padding:9mm 11mm 10mm !important; }
-            body.modo-media-carta .copy-label { padding:2mm 3mm !important; font-size:8pt !important; border-radius:2mm !important; }
-            body.modo-media-carta .parties { display:grid !important; grid-template-columns:1fr 1fr !important; gap:5mm !important; margin-top:5mm !important; }
-            body.modo-media-carta .info-card { padding:5mm !important; margin:0 !important; border:1px solid #dce5ef !important; border-radius:3mm !important; }
-            body.modo-media-carta .info-card .eyebrow { font-size:8pt !important; margin-bottom:2mm !important; color:#64748b !important; }
-            body.modo-media-carta .client-name { font-size:12pt !important; margin-bottom:2mm !important; color:#102f50 !important; }
-            body.modo-media-carta .info-line { margin:1.2mm 0 !important; font-size:9pt !important; line-height:1.35 !important; }
-            body.modo-media-carta .section-title { margin:8mm 0 3mm !important; font-size:9pt !important; letter-spacing:1pt !important; }
-            body.modo-media-carta .table-wrap { width:100% !important; margin-top:2mm !important; overflow:visible !important; border:1px solid #dce5ef !important; border-radius:2mm !important; }
-            body.modo-media-carta table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-            body.modo-media-carta th { padding:3mm 1.5mm !important; font-size:8pt !important; color:#fff !important; background:#173b63 !important; border-bottom:0 !important; }
-            body.modo-media-carta td { padding:3mm 1.5mm !important; font-size:9pt !important; line-height:1.3 !important; color:#334155 !important; border-bottom:1px solid #e8eef5 !important; }
-            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width:34% !important; }
-            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width:11% !important; }
-            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width:15% !important; }
-            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width:20% !important; }
-            body.modo-media-carta th:nth-child(5), body.modo-media-carta td:nth-child(5) { width:20% !important; }
-            body.modo-media-carta .iva-cell { text-align:center !important; }
-            body.modo-media-carta .totals-row { display:flex !important; justify-content:flex-end !important; margin-top:7mm !important; }
-            body.modo-media-carta .totals { width:78mm !important; max-width:none !important; padding:4mm 5mm !important; border:1px solid #dce5ef !important; border-radius:3mm !important; }
-            body.modo-media-carta .total-line { padding:2mm 0 !important; font-size:9pt !important; }
-            body.modo-media-carta .grand-total { margin:3mm -5mm -4mm !important; padding:4mm 5mm !important; font-size:11pt !important; background:#102f50 !important; color:#fff !important; border-radius:0 0 3mm 3mm !important; }
-            body.modo-media-carta .grand-total strong { font-size:16pt !important; color:#fff !important; }
-            body.modo-media-carta .footer { display:flex !important; flex-direction:row !important; justify-content:space-between !important; gap:8mm !important; margin-top:10mm !important; padding-top:4mm !important; font-size:8pt !important; line-height:1.35 !important; color:#64748b !important; border-top:1px solid #dce5ef !important; }
-            body.modo-media-carta .legal-note { max-width:120mm !important; }
-            body.modo-media-carta .thanks { margin:0 !important; color:#2364aa !important; font-size:10pt !important; }
-            body.modo-media-carta .cut-line { display:none !important; }
+            body.modo-media-carta .invoice:last-of-type { break-after: auto !important; page-break-after: auto !important; }
+            body.modo-media-carta .invoice-header { display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 8mm !important; padding: 10mm 11mm !important; background: linear-gradient(125deg,#102f50,#1c5688) !important; color: #fff !important; border: 0 !important; border-radius: 3mm 3mm 0 0 !important; }
+            body.modo-media-carta .brand { display: flex !important; gap: 4mm !important; }
+            body.modo-media-carta .brand-mark { display: grid !important; width: 14mm !important; height: 14mm !important; flex: 0 0 14mm !important; border-radius: 3mm !important; font-size: 15pt !important; }
+            body.modo-media-carta .brand-name { color: #fff !important; font-size: 19pt !important; }
+            body.modo-media-carta .brand-subtitle { color: #d7e7f7 !important; font-size: 8pt !important; }
+            body.modo-media-carta .invoice-number { min-width: 48mm !important; margin: 0 !important; text-align: right !important; }
+            body.modo-media-carta .invoice-kicker { color: #d7e7f7 !important; font-size: 8pt !important; letter-spacing: 1pt !important; }
+            body.modo-media-carta .invoice-number strong { color: #fff !important; font-size: 23pt !important; }
+            body.modo-media-carta .invoice-number .date { color: #e2edf8 !important; font-size: 9pt !important; }
+            body.modo-media-carta .invoice-body { padding: 9mm 11mm 10mm !important; }
+            body.modo-media-carta .copy-label { padding: 2mm 3mm !important; font-size: 8pt !important; border-radius: 2mm !important; }
+            body.modo-media-carta .parties { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 5mm !important; margin-top: 5mm !important; }
+            body.modo-media-carta .info-card { padding: 5mm !important; margin: 0 !important; border: 1px solid #dce5ef !important; border-radius: 3mm !important; background: #fff !important; }
+            body.modo-media-carta .info-card .eyebrow { font-size: 8pt !important; margin-bottom: 2mm !important; color: #64748b !important; }
+            body.modo-media-carta .client-name { font-size: 12pt !important; margin-bottom: 2mm !important; color: #102f50 !important; }
+            body.modo-media-carta .info-line { margin: 1.2mm 0 !important; font-size: 9pt !important; line-height: 1.35 !important; }
+            body.modo-media-carta .section-title { margin: 8mm 0 3mm !important; font-size: 9pt !important; letter-spacing: 1pt !important; }
+            body.modo-media-carta .table-wrap { width: 100% !important; margin-top: 2mm !important; overflow: visible !important; border: 1px solid #dce5ef !important; border-radius: 2mm !important; }
+            body.modo-media-carta table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; border-collapse: collapse !important; }
+            body.modo-media-carta th { padding: 3mm 1.5mm !important; font-size: 8pt !important; color: #fff !important; background: #173b63 !important; border-bottom: 0 !important; }
+            body.modo-media-carta td { padding: 3mm 1.5mm !important; font-size: 9pt !important; line-height: 1.3 !important; color: #334155 !important; border-bottom: 1px solid #e8eef5 !important; }
+            body.modo-media-carta th:first-child, body.modo-media-carta td:first-child { width: 34% !important; }
+            body.modo-media-carta th:nth-child(2), body.modo-media-carta td:nth-child(2) { width: 11% !important; }
+            body.modo-media-carta th:nth-child(3), body.modo-media-carta td:nth-child(3) { width: 15% !important; }
+            body.modo-media-carta th:nth-child(4), body.modo-media-carta td:nth-child(4) { width: 20% !important; }
+            body.modo-media-carta th:nth-child(5), body.modo-media-carta td:nth-child(5) { width: 20% !important; }
+            body.modo-media-carta .iva-cell { text-align: center !important; }
+            body.modo-media-carta .totals-row { display: flex !important; justify-content: flex-end !important; margin-top: 7mm !important; }
+            body.modo-media-carta .totals { width: 78mm !important; max-width: none !important; padding: 4mm 5mm !important; border: 1px solid #dce5ef !important; border-radius: 3mm !important; background: #fff !important; }
+            body.modo-media-carta .total-line { padding: 2mm 0 !important; font-size: 9pt !important; }
+            body.modo-media-carta .grand-total { margin: 3mm -5mm -4mm !important; padding: 4mm 5mm !important; font-size: 11pt !important; background: #102f50 !important; color: #fff !important; border-radius: 0 0 3mm 3mm !important; }
+            body.modo-media-carta .grand-total strong { font-size: 16pt !important; color: #fff !important; }
+            body.modo-media-carta .footer { display: flex !important; flex-direction: row !important; justify-content: space-between !important; gap: 8mm !important; margin-top: 10mm !important; padding-top: 4mm !important; font-size: 8pt !important; line-height: 1.35 !important; color: #64748b !important; border-top: 1px solid #dce5ef !important; }
+            body.modo-media-carta .legal-note { max-width: 120mm !important; }
+            body.modo-media-carta .thanks { margin: 0 !important; color: #2364aa !important; font-size: 10pt !important; }
+            body.modo-media-carta .cut-line { display: none !important; }
         }
 
         /* TIRILLA 58 MM: una sola copia compacta. */
         @media print {
-            @page { size:58mm auto; margin:0; }
-            html:has(body.modo-tirilla), body.modo-tirilla { width:58mm !important; min-width:0 !important; max-width:58mm !important; box-sizing:border-box !important; height:auto !important; min-height:0 !important; margin:0 !important; padding:0 !important; background:#fff !important; font-size:9px !important; line-height:1.15 !important; overflow:visible !important; }
-            body.modo-tirilla .toolbar, body.modo-tirilla .cut-line, body.modo-tirilla section.invoice:nth-of-type(2) { display:none !important; }
-            body.modo-tirilla .invoice { display:block !important; width:58mm !important; min-width:0 !important; max-width:58mm !important; box-sizing:border-box !important; height:auto !important; min-height:0 !important; max-height:none !important; margin:0 !important; padding:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; overflow:visible !important; break-inside:auto !important; page-break-inside:auto !important; break-after:auto !important; page-break-after:auto !important; }
-            body.modo-tirilla .invoice-header { display:flex !important; justify-content:space-between !important; align-items:center !important; gap:2mm !important; padding:2.5mm 2.5mm !important; background:#fff !important; color:#111 !important; border-bottom:1px solid #777 !important; }
-            body.modo-tirilla .brand { gap:1mm !important; }
-            body.modo-tirilla .brand-mark { display:none !important; }
-            body.modo-tirilla .brand-name { color:#111 !important; font-size:13px !important; letter-spacing:0 !important; }
-            body.modo-tirilla .brand-subtitle { color:#333 !important; font-size:8px !important; letter-spacing:0 !important; }
-            body.modo-tirilla .invoice-number { min-width:0 !important; text-align:right !important; }
-            body.modo-tirilla .invoice-kicker { color:#333 !important; font-size:7px !important; letter-spacing:0 !important; }
-            body.modo-tirilla .invoice-number strong { color:#111 !important; font-size:14px !important; }
-            body.modo-tirilla .invoice-number .date { color:#111 !important; font-size:8px !important; margin-top:1mm !important; }
-            body.modo-tirilla .invoice-body { margin:0 !important; padding:1.5mm 2.5mm 0 !important; }
-            body.modo-tirilla .copy-label { padding:0 !important; margin:0 0 1mm !important; background:transparent !important; color:#111 !important; font-size:7px !important; letter-spacing:0 !important; }
-            body.modo-tirilla .parties { display:block !important; margin:0 !important; gap:0 !important; }
-            body.modo-tirilla .info-card { padding:1mm 0 !important; margin:0 !important; border:0 !important; border-bottom:1px dashed #aaa !important; border-radius:0 !important; }
-            body.modo-tirilla .info-card .eyebrow { margin:0 0 .5mm !important; font-size:8px !important; }
-            body.modo-tirilla .client-name { margin:0 0 .5mm !important; font-size:10px !important; }
-            body.modo-tirilla .info-line { margin:.5mm 0 !important; font-size:9px !important; line-height:1.2 !important; overflow-wrap:anywhere !important; }
-            body.modo-tirilla .pill { padding:0 !important; background:transparent !important; color:#111 !important; font-size:9px !important; }
-            body.modo-tirilla .section-title { margin:1.5mm 0 1mm !important; font-size:9px !important; letter-spacing:0 !important; }
-            body.modo-tirilla .table-wrap { width:100% !important; margin:0 !important; overflow:visible !important; border:0 !important; border-radius:0 !important; }
-            body.modo-tirilla table { width:100% !important; min-width:0 !important; table-layout:fixed !important; border-collapse:collapse !important; }
-            body.modo-tirilla th { padding:1mm .35mm !important; font-size:7px !important; color:#111 !important; background:#eee !important; letter-spacing:0 !important; overflow-wrap:anywhere !important; }
-            body.modo-tirilla td { padding:1mm .35mm !important; font-size:7.5px !important; line-height:1.2 !important; color:#111 !important; overflow-wrap:anywhere !important; }
-            body.modo-tirilla th:first-child, body.modo-tirilla td:first-child { width:31% !important; }
-            body.modo-tirilla th:nth-child(2), body.modo-tirilla td:nth-child(2) { width:10% !important; }
-            body.modo-tirilla th:nth-child(3), body.modo-tirilla td:nth-child(3) { width:14% !important; }
-            body.modo-tirilla th:nth-child(4), body.modo-tirilla td:nth-child(4) { width:22% !important; }
-            body.modo-tirilla th:nth-child(5), body.modo-tirilla td:nth-child(5) { width:23% !important; }
-            body.modo-tirilla .iva-cell { text-align:center !important; white-space:normal !important; }
-            body.modo-tirilla .num { white-space:normal !important; overflow-wrap:anywhere !important; text-align:right !important; }
-            body.modo-tirilla .totals-row { display:flex !important; justify-content:flex-end !important; margin:1mm 0 0 !important; }
-            body.modo-tirilla .totals { width:100% !important; max-width:none !important; padding:1mm 0 0 !important; border:0 !important; border-radius:0 !important; }
-            body.modo-tirilla .total-line { padding:1mm 0 !important; font-size:9px !important; }
-            body.modo-tirilla .grand-total { margin:1mm 0 0 !important; padding:1.5mm 0 !important; background:#fff !important; color:#111 !important; border-top:1px dashed #777 !important; border-bottom:1px dashed #777 !important; border-radius:0 !important; font-size:10px !important; }
-            body.modo-tirilla .grand-total strong { color:#111 !important; font-size:12px !important; }
-            body.modo-tirilla .footer { display:block !important; margin:1.5mm 0 0 !important; padding:0 !important; border:0 !important; font-size:8px !important; line-height:1.2 !important; color:#111 !important; }
-            body.modo-tirilla .legal-note { max-width:none !important; margin:0 !important; padding:0 !important; }
-            body.modo-tirilla .thanks { display:block !important; margin:1mm 0 0 !important; padding:0 !important; color:#111 !important; white-space:normal !important; font-size:9px !important; font-weight:800 !important; }
-            body.modo-tirilla .invoice-body, body.modo-tirilla .footer, body.modo-tirilla .thanks { break-after:auto !important; page-break-after:auto !important; }
-            body.modo-tirilla .invoice-body, body.modo-tirilla .footer { height:auto !important; min-height:0 !important; }
-            body.modo-tirilla .invoice:last-of-type { display:none !important; }
-            body.modo-tirilla * { animation:none !important; transition:none !important; }
+            @page { size: 58mm auto; margin: 0; }
+            html:has(body.modo-tirilla), body.modo-tirilla { width: 58mm !important; min-width: 0 !important; max-width: 58mm !important; box-sizing: border-box !important; height: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; font-size: 9px !important; line-height: 1.15 !important; overflow: visible !important; }
+            body.modo-tirilla .toolbar, body.modo-tirilla .cut-line, body.modo-tirilla section.invoice:nth-of-type(2) { display: none !important; }
+            body.modo-tirilla .invoice { display: block !important; width: 58mm !important; min-width: 0 !important; max-width: 58mm !important; box-sizing: border-box !important; height: auto !important; min-height: 0 !important; max-height: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; overflow: visible !important; break-inside: auto !important; page-break-inside: auto !important; break-after: auto !important; page-break-after: auto !important; }
+            body.modo-tirilla .invoice-header { display: flex !important; justify-content: space-between !important; align-items: center !important; gap: 2mm !important; padding: 2.5mm 2.5mm !important; background: #fff !important; color: #111 !important; border-bottom: 1px solid #777 !important; }
+            body.modo-tirilla .brand { gap: 1mm !important; }
+            body.modo-tirilla .brand-mark { display: none !important; }
+            body.modo-tirilla .brand-name { color: #111 !important; font-size: 13px !important; letter-spacing: 0 !important; }
+            body.modo-tirilla .brand-subtitle { color: #333 !important; font-size: 8px !important; letter-spacing: 0 !important; }
+            body.modo-tirilla .invoice-number { min-width: 0 !important; text-align: right !important; }
+            body.modo-tirilla .invoice-kicker { color: #333 !important; font-size: 7px !important; letter-spacing: 0 !important; }
+            body.modo-tirilla .invoice-number strong { color: #111 !important; font-size: 14px !important; }
+            body.modo-tirilla .invoice-number .date { color: #111 !important; font-size: 8px !important; margin-top: 1mm !important; }
+            body.modo-tirilla .invoice-body { margin: 0 !important; padding: 1.5mm 2.5mm 0 !important; }
+            body.modo-tirilla .copy-label { padding: 0 !important; margin: 0 0 1mm !important; background: transparent !important; color: #111 !important; font-size: 7px !important; letter-spacing: 0 !important; }
+            body.modo-tirilla .parties { display: block !important; margin: 0 !important; gap: 0 !important; }
+            body.modo-tirilla .info-card { padding: 1mm 0 !important; margin: 0 !important; border: 0 !important; border-bottom: 1px dashed #aaa !important; border-radius: 0 !important; background: #fff !important; }
+            body.modo-tirilla .info-card .eyebrow { margin: 0 0 .5mm !important; font-size: 8px !important; }
+            body.modo-tirilla .client-name { margin: 0 0 .5mm !important; font-size: 10px !important; }
+            body.modo-tirilla .info-line { margin: .5mm 0 !important; font-size: 9px !important; line-height: 1.2 !important; overflow-wrap: anywhere !important; }
+            body.modo-tirilla .pill { padding: 0 !important; background: transparent !important; color: #111 !important; font-size: 9px !important; }
+            body.modo-tirilla .section-title { margin: 1.5mm 0 1mm !important; font-size: 9px !important; letter-spacing: 0 !important; }
+            body.modo-tirilla .table-wrap { width: 100% !important; margin: 0 !important; overflow: visible !important; border: 0 !important; border-radius: 0 !important; }
+            body.modo-tirilla table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; border-collapse: collapse !important; }
+            body.modo-tirilla th { padding: 1mm .35mm !important; font-size: 7px !important; color: #111 !important; background: #eee !important; letter-spacing: 0 !important; overflow-wrap: anywhere !important; }
+            body.modo-tirilla td { padding: 1mm .35mm !important; font-size: 7.5px !important; line-height: 1.2 !important; color: #111 !important; overflow-wrap: anywhere !important; }
+            body.modo-tirilla th:first-child, body.modo-tirilla td:first-child { width: 31% !important; }
+            body.modo-tirilla th:nth-child(2), body.modo-tirilla td:nth-child(2) { width: 10% !important; }
+            body.modo-tirilla th:nth-child(3), body.modo-tirilla td:nth-child(3) { width: 14% !important; }
+            body.modo-tirilla th:nth-child(4), body.modo-tirilla td:nth-child(4) { width: 22% !important; }
+            body.modo-tirilla th:nth-child(5), body.modo-tirilla td:nth-child(5) { width: 23% !important; }
+            body.modo-tirilla .iva-cell { text-align: center !important; white-space: normal !important; }
+            body.modo-tirilla .num { white-space: normal !important; overflow-wrap: anywhere !important; text-align: right !important; }
+            body.modo-tirilla .totals-row { display: flex !important; justify-content: flex-end !important; margin: 1mm 0 0 !important; }
+            body.modo-tirilla .totals { width: 100% !important; max-width: none !important; padding: 1mm 0 0 !important; border: 0 !important; border-radius: 0 !important; background: #fff !important; }
+            body.modo-tirilla .total-line { padding: 1mm 0 !important; font-size: 9px !important; }
+            body.modo-tirilla .grand-total { margin: 1mm 0 0 !important; padding: 1.5mm 0 !important; background: #fff !important; color: #111 !important; border-top: 1px dashed #777 !important; border-bottom: 1px dashed #777 !important; border-radius: 0 !important; font-size: 10px !important; }
+            body.modo-tirilla .grand-total strong { color: #111 !important; font-size: 12px !important; }
+            body.modo-tirilla .footer { display: block !important; margin: 1.5mm 0 0 !important; padding: 0 !important; border: 0 !important; font-size: 8px !important; line-height: 1.2 !important; color: #111 !important; }
+            body.modo-tirilla .legal-note { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+            body.modo-tirilla .thanks { display: block !important; margin: 1mm 0 0 !important; padding: 0 !important; color: #111 !important; white-space: normal !important; font-size: 9px !important; font-weight: 800 !important; }
+            body.modo-tirilla .invoice-body, body.modo-tirilla .footer, body.modo-tirilla .thanks { break-after: auto !important; page-break-after: auto !important; }
+            body.modo-tirilla .invoice-body, body.modo-tirilla .footer { height: auto !important; min-height: 0 !important; }
+            body.modo-tirilla .invoice:last-of-type { display: none !important; }
+            body.modo-tirilla * { animation: none !important; transition: none !important; }
         }
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
 <body>
-<div class="toolbar">
-    <div class="toolbar-note">Elige el formato de impresión. La tirilla imprime una copia compacta; el formato carta imprime cada copia en una página completa.</div>
-    <div class="toolbar-actions">
-        <a class="btn btn-secondary" href="/facturas">← Volver a facturas</a>
-        <button type="button" onclick="imprimirFactura('tirilla')" class="btn btn-secondary">▤ Imprimir tirilla</button>
-        <button type="button" onclick="imprimirFactura('media-carta')" class="btn btn-primary">▣ Imprimir carta</button>
+    <div class="toolbar">
+        <div class="toolbar-note">
+            Elige el formato de impresión. La tirilla imprime una copia compacta (58 mm); el formato carta imprime cada copia en una página completa.
+        </div>
+        <div class="toolbar-actions">
+            <a class="btn btn-secondary" href="/facturas">← Volver a facturas</a>
+            <button type="button" onclick="imprimirFactura('tirilla')" class="btn btn-secondary">▤ Imprimir tirilla</button>
+            <button type="button" onclick="imprimirFactura('media-carta')" class="btn btn-primary">▣ Imprimir carta</button>
+        </div>
     </div>
-</div>
 
-{% set saldo = (factura.total or 0) - (factura.abono or 0) %}
-{% set estado_factura = factura.estado or 'pendiente' %}
-{% set tipo_venta = factura.tipo_venta or 'contado' %}
-{% for copia in ['CLIENTE', 'ARCHIVO'] %}
-<section class="invoice">
-    <header class="invoice-header">
-        <div class="brand">
-            <div class="brand-mark">ST</div>
-            <div>
-                <div class="brand-name">VARIEDADES FESTIN</div>
-                <div class="brand-subtitle">Control comercial</div>
-            </div>
-        </div>
-        <div class="invoice-number">
-            <div class="invoice-kicker">Factura / comprobante de venta</div>
-            <strong>N 000{{ factura.id }}</strong>
-            <span class="date">{{ factura.fecha|fecha_hora }}</span>
-        </div>
-    </header>
-
-    <div class="invoice-body">
-        <span class="copy-label">▤ Copia {{ copia|lower }}</span>
-        <div class="parties">
-            <div class="info-card">
-                <div class="eyebrow">Facturado a</div>
-                <div class="client-name">{{ factura.cliente or 'Cliente no especificado' }}</div>
-                {% if factura.direccion %}<div class="info-line"><b>Dirección:</b> {{ factura.direccion }}</div>{% endif %}
-                {% if factura.ciudad %}<div class="info-line"><b>Ciudad:</b> {{ factura.ciudad }}</div>{% endif %}
-                {% if factura.telefono %}<div class="info-line"><b>Teléfono:</b> {{ factura.telefono }}</div>{% endif %}
-                {% if factura.cliente == 'FACTURA EMPRESA' %}<div class="info-line">Comprobante generado para facturación por empresa.</div>{% endif %}
-            </div>
-            <div class="info-card">
-                <div class="eyebrow">Información de la venta</div>
-                <div class="info-line"><b>Número:</b>N 000{{ factura.id }}</div>
-                <div class="info-line"><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</div>
-                <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
-                {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
-                {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
-                <div class="info-line"><b>Estado:</b>
-                    {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>
-                    {% elif estado_factura == 'parcial' %}<span class="pill pill-partial">Pago parcial</span>
-                    {% else %}<span class="pill pill-paid">Pagado</span>{% endif %}
+    {% set saldo = (factura.total or 0) - (factura.abono or 0) %}
+    {% set estado_factura = factura.estado or 'pendiente' %}
+    {% set tipo_venta = factura.tipo_venta or 'contado' %}
+    {% for copia in ['CLIENTE', 'ARCHIVO'] %}
+    <section class="invoice">
+        <header class="invoice-header">
+            <div class="brand">
+                <div class="brand-mark">ST</div>
+                <div>
+                    <div class="brand-name">VARIEDADES FESTIN</div>
+                    <div class="brand-subtitle">Control comercial</div>
                 </div>
             </div>
-        </div>
-
-        <div class="section-title">Detalle de productos</div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Descripción</th>
-                        <th class="num">Unid</th>
-                        <th class="iva-cell">IVA %</th>
-                        <th class="num">Precio unid</th>
-                        <th class="num">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for d in detalles %}
-                    {% set iva_porcentaje = d.iva_porcentaje|default(d.porcentaje_iva|default(d.tarifa_iva|default(none, true), true), true) %}
-                    <tr>
-                        <td class="product-name">{{ d.producto }}</td>
-                        <td class="num">{{ d.cantidad }}</td>
-                        <td class="iva-cell">
-                            {% if iva_porcentaje is not none and iva_porcentaje != '' %}
-                                {{ iva_porcentaje }}{% if '%' not in (iva_porcentaje|string) %}%{% endif %}
-                            {% else %}
-                                No definido
-                            {% endif %}
-                        </td>
-                        <td class="num">${{ "{:,.0f}".format(d.precio_unitario or 0) }}</td>
-                        <td class="num">${{ "{:,.0f}".format(d.subtotal or 0) }}</td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="5">No hay productos asociados a esta factura.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="totals-row">
-            <div class="totals">
-                <div class="total-line"><span>Total de la venta</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
-                <div class="total-line"><span>Abonado</span><strong>${{ "{:,.0f}".format(factura.abono or 0) }}</strong></div>
-                <div class="total-line balance"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo) }}</strong></div>
-                <div class="grand-total"><span>TOTAL</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
+            <div class="invoice-number">
+                <div class="invoice-kicker">Factura / comprobante de venta</div>
+                <strong>N 000{{ factura.id }}</strong>
+                <span class="date">{{ factura.fecha|fecha_hora }}</span>
             </div>
+        </header>
+
+        <div class="invoice-body">
+            <span class="copy-label">▤ Copia {{ copia|lower }}</span>
+            <div class="parties">
+                <div class="info-card">
+                    <div class="eyebrow">Facturado a</div>
+                    <div class="client-name">{{ factura.cliente or 'Cliente no especificado' }}</div>
+                    {% if factura.direccion %}<div class="info-line"><b>Dirección:</b> {{ factura.direccion }}</div>{% endif %}
+                    {% if factura.ciudad %}<div class="info-line"><b>Ciudad:</b> {{ factura.ciudad }}</div>{% endif %}
+                    {% if factura.telefono %}<div class="info-line"><b>Teléfono:</b> {{ factura.telefono }}</div>{% endif %}
+                    {% if factura.cliente == 'FACTURA EMPRESA' %}<div class="info-line">Comprobante generado para facturación por empresa.</div>{% endif %}
+                </div>
+                <div class="info-card">
+                    <div class="eyebrow">Información de la venta</div>
+                    <div class="info-line"><b>Número:</b> N 000{{ factura.id }}</div>
+                    <div class="info-line"><b>Fecha:</b> {{ factura.fecha|fecha_hora }}</div>
+                    <div class="info-line"><b>Tipo de venta:</b> {{ 'Crédito' if tipo_venta == 'credito' else 'Contado' }}</div>
+                    {% if factura.metodo_pago %}<div class="info-line"><b>Método de pago:</b> {{ factura.metodo_pago|capitalize }}{% if tipo_venta == 'credito' %} (abono inicial){% endif %}</div>{% endif %}
+                    {% if factura.domiciliario %}<div class="info-line"><b>Domiciliario:</b> {{ factura.domiciliario }}</div>{% endif %}
+                    <div class="info-line"><b>Estado:</b>
+                        {% if estado_factura == 'pendiente' %}<span class="pill pill-pending">Pendiente</span>
+                        {% elif estado_factura == 'parcial' %}<span class="pill pill-partial">Pago parcial</span>
+                        {% else %}<span class="pill pill-paid">Pagado</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Detalle de productos</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th class="num">Unid</th>
+                            <th class="iva-cell">IVA %</th>
+                            <th class="num">Precio unid</th>
+                            <th class="num">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for d in detalles %}
+                        {% set iva_porcentaje = d.iva_porcentaje|default(d.porcentaje_iva|default(d.tarifa_iva|default(none, true), true), true) %}
+                        <tr>
+                            <td class="product-name">{{ d.producto }}</td>
+                            <td class="num">{{ d.cantidad }}</td>
+                            <td class="iva-cell">
+                                {% if iva_porcentaje is not none and iva_porcentaje != '' %}
+                                    {{ iva_porcentaje }}{% if '%' not in (iva_porcentaje|string) %}%{% endif %}
+                                {% else %}
+                                    No definido
+                                {% endif %}
+                            </td>
+                            <td class="num">${{ "{:,.0f}".format(d.precio_unitario or 0) }}</td>
+                            <td class="num">${{ "{:,.0f}".format(d.subtotal or 0) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5">No hay productos asociados a esta factura.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="totals-row">
+                <div class="totals">
+                    <div class="total-line"><span>Total de la venta</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
+                    <div class="total-line"><span>Abonado</span><strong>${{ "{:,.0f}".format(factura.abono or 0) }}</strong></div>
+                    <div class="total-line balance"><span>Saldo pendiente</span><strong>${{ "{:,.0f}".format(saldo) }}</strong></div>
+                    <div class="grand-total"><span>TOTAL</span><strong>${{ "{:,.0f}".format(factura.total or 0) }}</strong></div>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <div class="legal-note"><strong>Nota:</strong> Este documento es un comprobante interno de gestión comercial. No reemplaza la factura electrónica validada por la DIAN cuando esta sea exigible.</div>
+                <div class="thanks">Gracias por tu compra.</div>
+            </footer>
         </div>
+    </section>
+    {% if not loop.last %}<div class="cut-line"><span>COPIA CLIENTE · COPIA ARCHIVO</span></div>{% endif %}
+    {% endfor %}
 
-        <footer class="footer">
-            <div class="legal-note"><strong>Nota:</strong> Este documento es un comprobante interno de gestión comercial. No reemplaza la factura electrónica validada por la DIAN cuando esta sea exigible.</div>
-            <div class="thanks">Gracias por tu compra.</div>
-        </footer>
-    </div>
-</section>
-{% if not loop.last %}<div class="cut-line"><span>COPIA CLIENTE · COPIA ARCHIVO</span></div>{% endif %}
-{% endfor %}
+    <script>
+    function imprimirFactura(modo) {
+        document.body.classList.remove('modo-tirilla', 'modo-media-carta');
+        document.body.classList.add(modo === 'tirilla' ? 'modo-tirilla' : 'modo-media-carta');
 
-<script>
-function imprimirFactura(modo) {
-    document.body.classList.remove('modo-tirilla', 'modo-media-carta');
-    document.body.classList.add(modo === 'tirilla' ? 'modo-tirilla' : 'modo-media-carta');
+        let estilo = document.getElementById('st-print-page-size');
+        if (!estilo) {
+            estilo = document.createElement('style');
+            estilo.id = 'st-print-page-size';
+            document.head.appendChild(estilo);
+        }
 
-    let estilo = document.getElementById('st-print-page-size');
-    if (!estilo) {
-        estilo = document.createElement('style');
-        estilo.id = 'st-print-page-size';
-        document.head.appendChild(estilo);
+        if (modo === 'tirilla') {
+            document.documentElement.style.width = '58mm';
+            document.body.style.width = '58mm';
+            document.documentElement.style.height = 'auto';
+            document.body.style.height = 'auto';
+            estilo.textContent = '@page { size: 58mm auto; margin: 0; }';
+        } else {
+            document.documentElement.style.width = '';
+            document.body.style.width = '';
+            estilo.textContent = '@page { size: letter portrait; margin: 10mm; }';
+        }
+
+        window.setTimeout(function () {
+            if (modo === 'tirilla') {
+                const primera = document.querySelector('body.modo-tirilla section.invoice');
+                if (primera) {
+                    primera.style.setProperty('height', 'auto', 'important');
+                    primera.style.setProperty('min-height', '0', 'important');
+                    primera.style.setProperty('max-height', 'none', 'important');
+                    primera.style.setProperty('overflow', 'visible', 'important');
+                    void primera.offsetHeight;
+                    const altoPx = Math.max(primera.scrollHeight, primera.getBoundingClientRect().height);
+                    const altoMm = Math.max(35, Math.ceil(altoPx * 25.4 / 96 + 2));
+                    estilo.textContent = '@page { size: 58mm ' + altoMm + 'mm; margin: 0 !important; }';
+                    document.documentElement.style.setProperty('height', altoMm + 'mm', 'important');
+                    document.body.style.setProperty('height', altoMm + 'mm', 'important');
+                }
+            }
+            window.print();
+        }, 250);
     }
 
-    if (modo === 'tirilla') {
-        document.documentElement.style.width = '58mm';
-        document.body.style.width = '58mm';
-        document.documentElement.style.height = 'auto';
-        document.body.style.height = 'auto';
-        estilo.textContent = '@page { size: 58mm auto; margin: 0; }';
-    } else {
+    window.addEventListener('afterprint', function () {
+        document.body.classList.remove('modo-tirilla', 'modo-media-carta');
         document.documentElement.style.width = '';
         document.body.style.width = '';
-        estilo.textContent = '@page { size: letter portrait; margin: 10mm; }';
-    }
-
-    window.setTimeout(function () {
-        if (modo === 'tirilla') {
-            const primera = document.querySelector('body.modo-tirilla section.invoice');
-            if (primera) {
-                primera.style.setProperty('height', 'auto', 'important');
-                primera.style.setProperty('min-height', '0', 'important');
-                primera.style.setProperty('max-height', 'none', 'important');
-                primera.style.setProperty('overflow', 'visible', 'important');
-                void primera.offsetHeight;
-                const altoPx = Math.max(primera.scrollHeight, primera.getBoundingClientRect().height);
-                const altoMm = Math.max(35, Math.ceil(altoPx * 25.4 / 96 + 2));
-                estilo.textContent = '@page { size: 58mm ' + altoMm + 'mm; margin: 0 !important; }';
-                document.documentElement.style.setProperty('height', altoMm + 'mm', 'important');
-                document.body.style.setProperty('height', altoMm + 'mm', 'important');
-            }
-        }
-        window.print();
-    }, 250);
-}
-
-window.addEventListener('afterprint', function () {
-    document.body.classList.remove('modo-tirilla', 'modo-media-carta');
-    document.documentElement.style.width = '';
-    document.body.style.width = '';
-    document.documentElement.style.height = '';
-    document.body.style.height = '';
-});
-</script>
+        document.documentElement.style.height = '';
+        document.body.style.height = '';
+    });
+    </script>
 </body>
 </html>

@@ -1,239 +1,565 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Facturas</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Historial de Facturas • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --amber: #d97706;
+      --amber-bg: #fef3c7;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            margin: 0;
-            padding: 30px;
-            color: #333;
-        }
+    * { box-sizing: border-box; }
 
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+    }
 
-        .header h2 {
-            margin: 0;
-            color: #1f2937;
-        }
+    /* HEADER */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
 
-        .btn-back {
-            text-decoration: none;
-            background: #60a5fa;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            transition: .2s;
-            white-space: nowrap;
-        }
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-        .btn-back:hover {
-            background: #3b82f6;
-        }
+    .title-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
 
-        .filters {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    .topbar h1 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
 
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
+    .topbar .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-        .filters input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-        }
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: var(--blue);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+      white-space: nowrap;
+    }
 
-        .btn-filter {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 11px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+    .btn:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
 
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
+    .btn.dark {
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(15, 41, 66, 0.18);
+    }
+    .btn.dark:hover { background: var(--navy-light); }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .btn.gray {
+      background: #fff;
+      color: #475569;
+      border-color: #cbd5e1;
+      box-shadow: none;
+    }
+    .btn.gray:hover { background: #f1f5f9; color: var(--text); }
 
-        thead {
-            background: #2563eb;
-            color: white;
-        }
+    .btn.outline {
+      background: #fff;
+      color: var(--navy);
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn.outline:hover {
+      background: #eff6ff;
+      border-color: var(--blue);
+      color: var(--blue);
+    }
 
-        th, td {
-            padding: 14px 16px;
-            text-align: left;
-        }
+    .btn.sm {
+      padding: 7px 12px;
+      font-size: 12.5px;
+      border-radius: 8px;
+    }
 
-        tbody tr {
-            border-bottom: 1px solid #e5e7eb;
-        }
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      padding: 22px;
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--line);
+    }
 
-        tbody tr:hover {
-            background: #f9fafb;
-        }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
 
-        .btn-view {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-        }
+    .card-header h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .total {
-            font-weight: bold;
-        }
+    /* FILTERS */
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
 
-        .estado-pendiente { color:#d97706; font-weight:bold; }
-        .estado-parcial { color:#f59e0b; font-weight:bold; }
-        .estado-pagado { color:#10b981; font-weight:bold; }
-    </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 41px;
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-actions .btn {
+      flex: 1;
+      min-height: 41px;
+    }
+
+    /* TABLE */
+    .table-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toolbar-left h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .count-pill {
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .totals-chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chip strong {
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 960px;
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 13px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    thead th.num, tbody td.num {
+      text-align: right;
+    }
+
+    thead th.right, tbody td.right {
+      text-align: right;
+    }
+
+    tbody td {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13.5px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .id-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #eff6ff;
+      color: var(--blue);
+      font-weight: 700;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .client-name {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .muted-cell {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .money {
+      font-weight: 700;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .money.abono {
+      color: var(--green);
+    }
+
+    .money.saldo {
+      color: #b45309;
+    }
+
+    .money.saldo.zero {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-pendiente { background: var(--red-bg); color: #b91c1c; }
+    .badge-parcial { background: var(--amber-bg); color: #b45309; }
+    .badge-pagado { background: var(--green-bg); color: #15803d; }
+
+    .empty {
+      text-align: center;
+      padding: 44px 20px !important;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 10px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--navy);
+      font-size: 14.5px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 14px 12px 32px; }
+      .topbar h1 { font-size: 20px; }
+      .card { padding: 16px; }
+      .filters { grid-template-columns: 1fr; }
+      .topbar .btn { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
-
 <body>
+  <div class="container">
+    <!-- CABECERA -->
+    <header class="topbar">
+      <div class="title-group">
+        <div class="title-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Historial de facturas</h1>
+          <p class="subtitle">Consulta comprobantes emitidos, abonos realizados y saldos pendientes</p>
+        </div>
+      </div>
 
-<div class="container">
-
-    <!-- HEADER -->
-    <div class="header">
-        <h2>📄 Historial de Facturas</h2>
-
-        <a href="/dashboard" class="btn-back">
-            ⬅ Volver
-        </a>
-    </div>
+      <a href="/dashboard" class="btn dark">← Volver al inicio</a>
+    </header>
 
     <!-- FILTROS -->
-    <form method="GET" action="/facturas" class="filters">
+    <section class="card">
+      <div class="card-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar facturas
+        </h2>
+      </div>
 
-        <input type="text" name="cliente" placeholder="Cliente">
-        <input type="text" name="factura" placeholder="Número factura">
-        <input type="date" name="fecha">
+      <form method="GET" action="/facturas" class="filters">
+        <div class="field">
+          <label for="f_cliente">Cliente</label>
+          <input id="f_cliente" type="text" name="cliente" placeholder="Nombre del cliente" value="{{ request.args.get('cliente', '') }}">
+        </div>
 
-        <button type="submit" class="btn-filter">🔍 Filtrar</button>
+        <div class="field">
+          <label for="f_factura">Número de factura</label>
+          <input id="f_factura" type="text" name="factura" placeholder="Ej. 124" value="{{ request.args.get('factura', '') }}">
+        </div>
 
-    </form>
+        <div class="field">
+          <label for="f_fecha">Fecha</label>
+          <input id="f_fecha" type="date" name="fecha" value="{{ request.args.get('fecha', '') }}">
+        </div>
 
-    <!-- TABLA -->
-    <div class="table-container">
+        <div class="filter-actions">
+          <button type="submit" class="btn">Filtrar</button>
+          <a href="/facturas" class="btn gray">Limpiar</a>
+        </div>
+      </form>
+    </section>
 
+    <!-- TABLA DE FACTURAS -->
+    {% set ns = namespace(total_ventas=0, total_saldo=0) %}
+    {% for f in facturas %}
+      {% set ns.total_ventas = ns.total_ventas + (f.total or 0) %}
+      {% set ns.total_saldo = ns.total_saldo + ((f.total or 0) - (f.abono or 0)) %}
+    {% endfor %}
+
+    <section class="card table-card">
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <h2>Comprobantes registrados</h2>
+          <span class="count-pill">{{ facturas|length }} factura(s)</span>
+        </div>
+
+        <div class="totals-chips">
+          <div class="chip">Total listado: <strong>${{ "{:,.0f}".format(ns.total_ventas) }}</strong></div>
+          <div class="chip">Saldo pendiente: <strong style="color:#b45309">${{ "{:,.0f}".format(ns.total_saldo) }}</strong></div>
+        </div>
+      </div>
+
+      <div class="table-container">
         <table>
-
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Ciudad</th>
-                    <th>Total</th>
-
-                    <!-- NUEVO -->
-                    <th>Abono</th>
-                    <th>Saldo</th>
-                    <th>Estado</th>
-
-                    <th>Fecha</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for f in facturas %}
-                <tr>
-
-                    <td>#{{ f.id }}</td>
-                    <td>{{ f.cliente }}</td>
-                    <td>{{ f.ciudad }}</td>
-
-                    <td class="total">
-                        ${{ "{:,.0f}".format(f.total or 0) }}
-                    </td>
-
-                    <!-- ABONO -->
-                    <td>
-                        ${{ "{:,.0f}".format(f.abono or 0) }}
-                    </td>
-
-                    <!-- SALDO -->
-                    <td>
-                        ${{ "{:,.0f}".format((f.total or 0) - (f.abono or 0)) }}
-                    </td>
-
-                    <!-- ESTADO -->
-                    <td>
-                        {% if f.estado == "pendiente" %}
-                            <span class="estado-pendiente">⏳ Pendiente</span>
-
-                        {% elif f.estado == "parcial" %}
-                            <span class="estado-parcial">⚠ Parcial</span>
-
-                        {% else %}
-                            <span class="estado-pagado">✅ Pagado</span>
-                        {% endif %}
-                    </td>
-
-                    <td>{{ f.fecha|fecha_hora }}</td>
-
-                    <td>
-                        <a href="/factura/{{ f.id }}">
-                            <button class="btn-view">Ir</button>
-                        </a>
-                    </td>
-
-                </tr>
-                {% endfor %}
-
-            </tbody>
-
+          <thead>
+            <tr>
+              <th>Factura</th>
+              <th>Cliente</th>
+              <th>Ciudad</th>
+              <th class="num">Total</th>
+              <th class="num">Abono</th>
+              <th class="num">Saldo</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th class="right">Comprobante</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in facturas %}
+              {% set saldo = (f.total or 0) - (f.abono or 0) %}
+              <tr>
+                <td><span class="id-tag">#{{ f.id }}</span></td>
+                <td class="client-name">{{ f.cliente }}</td>
+                <td class="muted-cell">{{ f.ciudad or '—' }}</td>
+                <td class="num money">${{ "{:,.0f}".format(f.total or 0) }}</td>
+                <td class="num money abono">${{ "{:,.0f}".format(f.abono or 0) }}</td>
+                <td class="num money saldo {{ 'zero' if saldo <= 0 else '' }}">
+                  ${{ "{:,.0f}".format(saldo) }}
+                </td>
+                <td>
+                  {% if f.estado == "pendiente" %}
+                    <span class="badge badge-pendiente">⏳ Pendiente</span>
+                  {% elif f.estado == "parcial" %}
+                    <span class="badge badge-parcial">⚠ Parcial</span>
+                  {% else %}
+                    <span class="badge badge-pagado">✅ Pagado</span>
+                  {% endif %}
+                </td>
+                <td class="muted-cell" style="font-variant-numeric:tabular-nums;">{{ f.fecha|fecha_hora }}</td>
+                <td class="right">
+                  <a href="/factura/{{ f.id }}" class="btn outline sm">
+                    Ver factura →
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="9" class="empty">
+                  <div class="empty-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <strong>No hay facturas registradas</strong>
+                  <span>No se encontraron comprobantes que coincidan con los filtros seleccionados.</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
-
-    </div>
-
-</div>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+      </div>
+    </section>
+  </div>
 </body>
 </html>

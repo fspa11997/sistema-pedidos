@@ -1,205 +1,614 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Clientes • ST Gestión</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            margin: 0;
-            padding: 30px;
-            color: #333;
-        }
-        .container { max-width: 1400px; margin: auto; }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        .header h2 { margin: 0; color: #1f2937; font-size: 22px; }
-        .header p { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
-        .btn-back {
-            text-decoration: none;
-            background: #60a5fa;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-            transition: .2s;
-            white-space: nowrap;
-        }
-        .btn-back:hover { background: #3b82f6; }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,.08);
-            border: 1px solid #e5e7eb;
-        }
-        .card-title { margin: 0 0 16px; color: #1f2937; font-size: 16px; }
-        .filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
-        .filters input, .filters select, .form-grid input, .form-grid select {
-            width: 100%;
-            min-height: 42px;
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            background: #fff;
-            color: #374151;
-            outline: none;
-        }
-        .filters input:focus, .filters select:focus, .form-grid input:focus, .form-grid select:focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96,165,250,.15);
-        }
-        .btn-filter, .btn-primary {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 11px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-        .btn-filter:hover, .btn-primary:hover { background: #1d4ed8; }
-        .filter-tabs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
-        .filter-tabs a { text-decoration:none; }
-        .filter-tab {
-            border: 1px solid #dbeafe;
-            background: #eff6ff;
-            color: #2563eb;
-            padding: 9px 14px;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor:pointer;
-        }
-        .filter-tab:hover, .filter-tab.active { background:#dbeafe; }
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            overflow: auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,.08);
-            border: 1px solid #e5e7eb;
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        thead { background: #2563eb; color: white; }
-        th, td { padding: 13px 14px; text-align: left; white-space: nowrap; }
-        th { font-size: 12px; letter-spacing: .2px; }
-        td { font-size: 13px; }
-        tbody tr { border-bottom: 1px solid #e5e7eb; }
-        tbody tr:hover { background: #f9fafb; }
-        .total { font-weight: bold; color: #1f2937; }
-        .btn-view, .btn-edit, .btn-history, .btn-pay, .btn-green, .btn-red, .btn-blue {
-            color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor:pointer; font-weight:700;
-            text-decoration:none; display:inline-block; font-size:12px;
-        }
-        .btn-view { background:#10b981; }
-        .btn-view:hover { background:#059669; }
-        .btn-edit, .btn-blue, .btn-history { background:#3b82f6; }
-        .btn-edit:hover, .btn-blue:hover, .btn-history:hover { background:#2563eb; }
-        .btn-pay, .btn-green { background:#10b981; }
-        .btn-pay:hover, .btn-green:hover { background:#059669; }
-        .btn-red { background:#ef4444; }
-        .btn-red:hover { background:#dc2626; }
-        .acciones { display:flex; gap:7px; align-items:center; }
-        .acciones form { margin:0; }
-        .badge { display:inline-flex; align-items:center; gap:4px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; }
-        .badge-pendiente { background:#fff7ed; color:#d97706; }
-        .badge-parcial { background:#fffbeb; color:#b45309; }
-        .badge-pagado, .badge-entregado { background:#ecfdf5; color:#059669; }
-        .badge-eliminado { background:#fef2f2; color:#dc2626; }
-        .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:15px; }
-        .form-grid button { align-self:end; min-height:42px; }
-        .section-note { margin:0 0 16px; color:#6b7280; font-size:12px; }
-        .empty { text-align:center; padding:35px !important; color:#6b7280; }
-        .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-bottom:25px; }
-        .summary-card { background:white; border:1px solid #e5e7eb; border-radius:12px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
-        .summary-card small { display:block; color:#6b7280; margin-bottom:6px; }
-        .summary-card strong { font-size:20px; color:#1f2937; }
-        #modalAbono { display:none; position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:9999; align-items:center; justify-content:center; padding:20px; }
-        #modalAbono .modal-card { width:min(480px,100%); background:white; border-radius:14px; padding:22px; box-shadow:0 15px 45px rgba(0,0,0,.2); }
-        #modalAbono h3 { margin:0 0 16px; color:#1f2937; }
-        #modalAbono input { width:100%; min-height:42px; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; margin-bottom:12px; }
-        .modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:5px; }
-        .btn-cancel { border:1px solid #d1d5db; background:#fff; color:#374151; padding:10px 14px; border-radius:8px; font-weight:700; cursor:pointer; }
-        @media (max-width:700px) {
-            body { padding:18px 12px; }
-            .header { align-items:flex-start; }
-            .header h2 { font-size:19px; }
-            .summary-grid { grid-template-columns:1fr; }
-            .card { padding:15px; }
-            .filters { grid-template-columns:1fr; }
-            .filter-tabs { display:grid; grid-template-columns:1fr 1fr; }
-            .filter-tab { width:100%; }
-            table { min-width:760px; }
-        }
-</style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Clientes • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .topbar .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: var(--blue);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn.dark {
+      background: var(--navy);
+      box-shadow: 0 2px 6px rgba(15, 41, 66, 0.18);
+    }
+    .btn.dark:hover { background: var(--navy-light); }
+
+    .btn.outline {
+      background: #fff;
+      color: var(--navy);
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn.outline:hover {
+      background: #f8fafc;
+      border-color: var(--navy);
+    }
+
+    .btn.sm {
+      padding: 7px 12px;
+      font-size: 12.5px;
+      border-radius: 8px;
+    }
+
+    /* FLASH MESSAGES */
+    .flash-alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      border-radius: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+      font-size: 13.5px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      padding: 22px;
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--line);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-note {
+      margin: -6px 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* FORM GRID */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 41px;
+      padding: 9px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 8px;
+      margin-top: 4px;
+      border-top: 1px solid var(--line);
+    }
+
+    /* TABLE CARD & SEARCH */
+    .table-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toolbar-left h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .count-pill {
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .search-box {
+      position: relative;
+      width: min(320px, 100%);
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-box input {
+      padding-left: 36px;
+      min-height: 38px;
+      font-size: 13px;
+      background: #f8fafc;
+    }
+
+    .search-box input:focus {
+      background: #fff;
+    }
+
+    /* TABLE */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    thead th.right, tbody td.right {
+      text-align: right;
+    }
+
+    tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13.5px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .client-cell {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      border: 1px solid #dbeafe;
+    }
+
+    .client-name {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .id-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .doc-type {
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .muted-cell {
+      color: #475569;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 44px 20px !important;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 10px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--navy);
+      font-size: 14.5px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 14px 12px 32px; }
+      .topbar h1 { font-size: 20px; }
+      .card { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .topbar .btn, .form-actions .btn { width: 100%; }
+      .search-box { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <div>
-            <h2>👥 Clientes</h2>
-            <p>Gestión de clientes registrados.</p>
+  <div class="container">
+    <!-- CABECERA -->
+    <header class="topbar">
+      <div class="title-group">
+        <div class="title-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
         </div>
-        <a href="/dashboard" class="btn-back">⬅ Volver</a>
-    </div>
+        <div>
+          <h1>Directorio de clientes</h1>
+          <p class="subtitle">Registra y administra los clientes frecuentes de tu negocio</p>
+        </div>
+      </div>
 
-    <div class="card">
-        <h3 class="card-title">➕ Nuevo cliente</h3>
-        <p class="section-note">Registra los datos básicos del cliente para utilizarlo en ventas y pedidos.</p>
-        <form method="POST" action="/crear_cliente" class="form-grid"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="text" name="nombre" placeholder="👤 Nombre" required>
-            <input type="text" name="direccion" placeholder="📍 Dirección">
-            <input type="text" name="ciudad" placeholder="🏙 Ciudad">
-            <input type="text" name="telefono" placeholder="📞 Teléfono">
-            <select name="tipo_id"><option value="cc">CC</option><option value="nit">NIT</option></select>
-            <input type="text" name="identificacion" placeholder="🪪 Identificación">
-            <button type="submit" class="btn-primary">💾 Guardar cliente</button>
-        </form>
-    </div>
+      <a href="/dashboard" class="btn dark">← Volver al inicio</a>
+    </header>
 
-    <div class="table-container">
-        <table style="min-width:760px;">
-            <thead><tr><th>Cliente</th><th>Dirección</th><th>Ciudad</th><th>Teléfono</th><th>Identificación</th><th>Acción</th></tr></thead>
-            <tbody>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash-alert" role="alert">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- FORMULARIO NUEVO CLIENTE -->
+    <section class="card">
+      <div class="card-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          Registrar nuevo cliente
+        </h2>
+      </div>
+      <p class="section-note">Completa los datos básicos del cliente para seleccionarlo rápidamente en ventas, créditos y pedidos.</p>
+
+      <form method="POST" action="/crear_cliente" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+          <label for="c_nombre">Nombre completo o razón social *</label>
+          <input id="c_nombre" type="text" name="nombre" placeholder="Ej. Juan Pérez / Tienda El Sol" required>
+        </div>
+
+        <div class="field">
+          <label for="c_tipo_id">Tipo de documento</label>
+          <select id="c_tipo_id" name="tipo_id">
+            <option value="cc">CC — Cédula de ciudadanía</option>
+            <option value="nit">NIT — Número tributario</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="c_ident">Número de identificación</label>
+          <input id="c_ident" type="text" name="identificacion" placeholder="Ej. 1090456789">
+        </div>
+
+        <div class="field">
+          <label for="c_tel">Teléfono / WhatsApp</label>
+          <input id="c_tel" type="text" name="telefono" placeholder="Ej. 300 123 4567">
+        </div>
+
+        <div class="field">
+          <label for="c_ciudad">Ciudad / Municipio</label>
+          <input id="c_ciudad" type="text" name="ciudad" placeholder="Ej. Cali">
+        </div>
+
+        <div class="field">
+          <label for="c_dir">Dirección</label>
+          <input id="c_dir" type="text" name="direccion" placeholder="Ej. Cra 15 # 24 - 10">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar cliente
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- LISTADO DE CLIENTES -->
+    <section class="card table-card">
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <h2>Clientes registrados</h2>
+          <span class="count-pill" id="clientesCount">{{ clientes|length }} cliente(s)</span>
+        </div>
+
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="buscarClienteInput" placeholder="Buscar por nombre, documento o teléfono..." aria-label="Buscar cliente">
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table id="tablaClientes">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Identificación</th>
+              <th>Teléfono</th>
+              <th>Ciudad</th>
+              <th>Dirección</th>
+              <th class="right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
             {% for c in clientes %}
-                <tr>
-                    <td><b>{{ c.nombre }}</b></td>
-                    <td>{{ c.direccion }}</td>
-                    <td>{{ c.ciudad }}</td>
-                    <td>{{ c.telefono }}</td>
-                    <td>{{ c.identificacion }}</td>
-                    <td><a href="/editar_cliente/{{ c.id }}" class="btn-edit">✏️ Editar</a></td>
-                </tr>
+            <tr class="cliente-row">
+              <td>
+                <div class="client-cell">
+                  <span class="avatar" aria-hidden="true">{{ (c.nombre or '?')[:2] }}</span>
+                  <span class="client-name">{{ c.nombre }}</span>
+                </div>
+              </td>
+              <td>
+                {% if c.identificacion %}
+                  <span class="id-badge">
+                    {% if c.tipo_id %}<span class="doc-type">{{ c.tipo_id }}</span>{% endif %}
+                    <span>{{ c.identificacion }}</span>
+                  </span>
+                {% else %}
+                  <span style="color:#94a3b8">—</span>
+                {% endif %}
+              </td>
+              <td class="muted-cell">{{ c.telefono or '—' }}</td>
+              <td class="muted-cell">{{ c.ciudad or '—' }}</td>
+              <td class="muted-cell">{{ c.direccion or '—' }}</td>
+              <td class="right">
+                <a href="/editar_cliente/{{ c.id }}" class="btn outline sm">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar
+                </a>
+              </td>
+            </tr>
             {% else %}
-                <tr><td colspan="6" class="empty">No hay clientes registrados.</td></tr>
+            <tr>
+              <td colspan="6" class="empty">
+                <div class="empty-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </div>
+                <strong>No hay clientes registrados</strong>
+                <span>Usa el formulario superior para agregar tu primer cliente.</span>
+              </td>
+            </tr>
             {% endfor %}
-            </tbody>
+          </tbody>
         </table>
-    </div>
-</div>
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function() {
+      const input = document.getElementById('buscarClienteInput');
+      const rows = document.querySelectorAll('#tablaClientes tbody tr.cliente-row');
+      const badge = document.getElementById('clientesCount');
+      if (!input || !rows.length) return;
+
+      input.addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        let visibles = 0;
+        rows.forEach(row => {
+          const match = row.textContent.toLowerCase().includes(q);
+          row.style.display = match ? '' : 'none';
+          if (match) visibles++;
+        });
+        if (badge) badge.textContent = visibles + ' cliente(s)';
+      });
+    })();
+  </script>
 </body>
 </html>

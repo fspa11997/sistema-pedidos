@@ -1,173 +1,355 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Editar Cliente • ST Gestión</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Editar Cliente • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-hover: #15803d;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.08), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    * { box-sizing: border-box; }
 
-    <style>
-        body{
-            background:#f4f6f9;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 28px 16px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .card{
-            max-width:650px;
-            margin:40px auto;
-            background:white;
-            padding:25px;
-            border-radius:12px;
-            box-shadow:0 8px 25px rgba(0,0,0,0.08);
-        }
+    .wrap {
+      max-width: 680px;
+      margin: 0 auto;
+    }
 
-        .card h2{
-            text-align:center;
-            margin-bottom:20px;
-        }
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
 
-        .field{
-            margin-bottom:12px;
-        }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 15px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid #cbd5e1;
+      color: var(--navy);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.16s ease;
+    }
 
-        .field label{
-            display:block;
-            font-size:13px;
-            margin-bottom:5px;
-            color:#555;
-            font-weight:bold;
-        }
+    .btn-back:hover {
+      background: #f8fafc;
+      border-color: var(--navy);
+    }
 
-        .field input{
-            width:100%;
-            padding:10px;
-            border:1px solid #ddd;
-            border-radius:8px;
-            outline:none;
-        }
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+    }
 
-        .field input:focus{
-            border-color:#007bff;
-        }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
 
-        .readonly{
-            background:#f1f1f1;
-            color:#555;
-        }
+    .avatar-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 800;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
 
-        .btn{
-            width:100%;
-            padding:12px;
-            border:none;
-            border-radius:8px;
-            font-weight:bold;
-            cursor:pointer;
-        }
+    .card-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
 
-        .btn-save{
-            background:#28a745;
-            color:white;
-            margin-top:10px;
-        }
+    .card-header p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-        .btn-back{
-            background:#007bff;
-            color:white;
-            margin-top:10px;
-        }
+    /* FORM */
+    .field {
+      margin-bottom: 16px;
+    }
 
-        .hint{
-            font-size:12px;
-            color:#888;
-            margin-top:3px;
-        }
-    </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .lock-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .field input.readonly {
+      background: #f8fafc;
+      color: #64748b;
+      border-color: #e2e8f0;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      cursor: not-allowed;
+    }
+
+    .field input.readonly:focus {
+      border-color: #e2e8f0;
+      box-shadow: none;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* ACTIONS */
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 43px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      font: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .btn-save {
+      background: var(--green);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(22, 163, 74, 0.22);
+    }
+
+    .btn-save:hover {
+      background: var(--green-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      background: #fff;
+      color: #475569;
+      border-color: #cbd5e1;
+    }
+
+    .btn-cancel:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 16px 12px 32px; }
+      .card { padding: 20px 16px; }
+      .field-row { grid-template-columns: 1fr; gap: 0; }
+      .actions { flex-direction: column-reverse; }
+      .actions .btn { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="topbar">
+      <a href="/clientes" class="btn-back">← Volver a clientes</a>
+    </div>
 
-<div class="card">
+    <main class="card">
+      <div class="card-header">
+        <div class="avatar-badge" aria-hidden="true">{{ (cliente.nombre or '?')[:2] }}</div>
+        <div>
+          <h1>Editar información del cliente</h1>
+          <p>Actualiza los datos de contacto y ubicación registrados</p>
+        </div>
+      </div>
 
-    <h2>✏️ Editar Cliente</h2>
+      <form method="POST" action="/actualizar_cliente/{{ cliente.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <form method="POST" action="/actualizar_cliente/{{ cliente.id }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        <!-- 👤 NOMBRE -->
+        <!-- NOMBRE -->
         <div class="field">
-            <label>👤 Nombre del cliente</label>
-            <input type="text"
-                   name="nombre"
-                   value="{{ cliente.nombre }}"
-                   placeholder="Ej: Juan Pérez"
-                   required>
-            <div class="hint">Nombre completo o razón social del cliente</div>
+          <label for="nombreInput">👤 Nombre del cliente *</label>
+          <input id="nombreInput"
+                 type="text"
+                 name="nombre"
+                 value="{{ cliente.nombre }}"
+                 placeholder="Ej. Juan Pérez"
+                 required>
+          <div class="hint">Nombre completo o razón social del cliente</div>
         </div>
 
-        <!-- 📍 DIRECCIÓN -->
-        <div class="field">
-            <label>📍 Dirección</label>
-            <input type="text"
-                   name="direccion"
-                   value="{{ cliente.direccion }}"
-                   placeholder="Ej: Calle 10 # 23-45">
-            <div class="hint">Dirección de residencia o negocio</div>
-        </div>
-
-        <!-- 🏙 CIUDAD -->
-        <div class="field">
-            <label>🏙 Ciudad</label>
-            <input type="text"
-                   name="ciudad"
-                   value="{{ cliente.ciudad }}"
-                   placeholder="Ej: Cali">
-            <div class="hint">Ciudad donde se encuentra el cliente</div>
-        </div>
-
-        <!-- 📞 TELÉFONO -->
-        <div class="field">
-            <label>📞 Teléfono</label>
-            <input type="text"
+        <!-- TELÉFONO Y CIUDAD -->
+        <div class="field-row">
+          <div class="field">
+            <label for="telefonoInput">📞 Teléfono</label>
+            <input id="telefonoInput"
+                   type="text"
                    name="telefono"
                    value="{{ cliente.telefono }}"
-                   placeholder="Ej: 3001234567">
+                   placeholder="Ej. 300 123 4567">
             <div class="hint">Número de contacto principal</div>
+          </div>
+
+          <div class="field">
+            <label for="ciudadInput">🏙 Ciudad</label>
+            <input id="ciudadInput"
+                   type="text"
+                   name="ciudad"
+                   value="{{ cliente.ciudad }}"
+                   placeholder="Ej. Cali">
+            <div class="hint">Ciudad donde se encuentra</div>
+          </div>
         </div>
 
-        <!-- 🪪 IDENTIFICACIÓN (BLOQUEADO) -->
+        <!-- DIRECCIÓN -->
         <div class="field">
-            <label>🪪 Identificación (no editable)</label>
-            <input type="text"
-                   value="{{ cliente.identificacion }}"
-                   readonly
-                   class="readonly">
-            <div class="hint">Este dato no se puede modificar por seguridad del sistema</div>
+          <label for="direccionInput">📍 Dirección</label>
+          <input id="direccionInput"
+                 type="text"
+                 name="direccion"
+                 value="{{ cliente.direccion }}"
+                 placeholder="Ej. Calle 10 # 23 - 45">
+          <div class="hint">Dirección de residencia o punto de entrega</div>
+        </div>
+
+        <!-- IDENTIFICACIÓN (BLOQUEADO) -->
+        <div class="field">
+          <label for="identificacionInput">
+            <span>🪪 Identificación</span>
+            <span class="lock-tag">🔒 No editable</span>
+          </label>
+          <input id="identificacionInput"
+                 type="text"
+                 value="{{ cliente.identificacion }}"
+                 readonly
+                 class="readonly">
+          <div class="hint">Este dato está protegido y no se puede modificar por seguridad del sistema</div>
         </div>
 
         <!-- BOTONES -->
-        <button type="submit" class="btn btn-save">
-            💾 Guardar cambios
-        </button>
-
-        <a href="/clientes">
-            <button type="button" class="btn btn-back">
-                ⬅ Volver a clientes
-            </button>
-        </a>
-
-    </form>
-
-</div>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+        <div class="actions">
+          <a href="/clientes" class="btn btn-cancel">Cancelar</a>
+          <button type="submit" class="btn btn-save">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar cambios
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
 </body>
 </html>

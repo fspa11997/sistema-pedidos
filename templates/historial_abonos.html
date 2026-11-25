@@ -1,87 +1,431 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Historial de Abonos • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
 
-    <title>Historial de Abonos</title>
+    * { box-sizing: border-box; }
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .topbar .subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 16px;
+      background: var(--navy);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 2px 6px rgba(15, 41, 66, 0.18);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--navy-light);
+      transform: translateY(-1px);
+    }
+
+    /* SUMMARY STRIP */
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--navy);
+    }
+
+    .summary-card.green::before { background: var(--green); }
+
+    .summary-card small {
+      display: block;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .summary-card strong {
+      display: block;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-card.green strong { color: var(--green); }
+
+    /* TABLE CARD */
+    .table-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .table-toolbar h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .count-pill {
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+    }
+
+    thead th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    thead th.num, tbody td.num {
+      text-align: right;
+    }
+
+    tbody td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13.5px;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+
+    .id-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .factura-link {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: #eff6ff;
+      color: var(--blue);
+      font-weight: 700;
+      font-size: 12px;
+      text-decoration: none;
+      font-variant-numeric: tabular-nums;
+      transition: background 0.15s ease;
+    }
+
+    .factura-link:hover {
+      background: #dbeafe;
+    }
+
+    .client-name {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .money-abono {
+      font-weight: 800;
+      color: var(--green);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .method-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      color: #334155;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .muted-cell {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .obs-cell {
+      color: #475569;
+      max-width: 280px;
+      overflow-wrap: anywhere;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 44px 20px !important;
+      color: var(--muted);
+    }
+
+    .empty-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 10px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--navy);
+      font-size: 14.5px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 14px 12px 32px; }
+      .topbar h1 { font-size: 20px; }
+      .topbar .btn { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
-
 <body>
+  <div class="container">
+    <!-- CABECERA -->
+    <header class="topbar">
+      <div class="title-group">
+        <div class="title-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Historial de abonos</h1>
+          <p class="subtitle">Detalle cronológico de pagos parciales y cancelaciones recibidas</p>
+        </div>
+      </div>
 
-<div class="header-title">
+      <a href="/cartera" class="btn">← Volver a cartera</a>
+    </header>
 
-    <h2>📜 Historial de Abonos</h2>
+    <!-- RESUMEN DE ABONOS -->
+    {% set ns = namespace(total_abonos=0) %}
+    {% for p in pagos %}
+      {% set ns.total_abonos = ns.total_abonos + (p.abono or 0) %}
+    {% endfor %}
 
-    <a href="/cartera" class="btn-back-uniform">
-        ⬅ Volver
-    </a>
+    <section class="summary-strip">
+      <div class="summary-card">
+        <small>Cantidad de abonos registrados</small>
+        <strong>{{ pagos|length }}</strong>
+      </div>
 
-</div>
+      <div class="summary-card green">
+        <small>Total abonado acumulado</small>
+        <strong>${{ "{:,.0f}".format(ns.total_abonos) }}</strong>
+      </div>
+    </section>
 
-<br>
+    <!-- TABLA DE PAGOS -->
+    <section class="table-card">
+      <div class="table-toolbar">
+        <h2>Movimientos registrados</h2>
+        <span class="count-pill">{{ pagos|length }} registro(s)</span>
+      </div>
 
-<div class="table-card">
-
-<table>
-
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Factura</th>
-            <th>Cliente</th>
-            <th>Abono</th>
-            <th>Método</th>
-            <th>Fecha</th>
-            <th>Observación</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        {% for p in pagos %}
-        <tr>
-
-            <td>#{{ p.id }}</td>
-
-            <td>#{{ p.factura_id }}</td>
-
-            <td>{{ p.cliente }}</td>
-
-            <td style="color:green; font-weight:bold;">
-                ${{ "{:,.0f}".format(p.abono or 0) }}
-            </td>
-
-            <td>{{ (p.metodo_pago or "-")|capitalize }}</td>
-
-            <td>{{ p.fecha|fecha_hora }}</td>
-
-            <td>
-                {{ p.observacion or "-" }}
-            </td>
-
-        </tr>
-        {% endfor %}
-
-    </tbody>
-
-</table>
-
-</div>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Abono</th>
+              <th>Factura</th>
+              <th>Cliente</th>
+              <th class="num">Valor abonado</th>
+              <th>Método de pago</th>
+              <th>Fecha y hora</th>
+              <th>Observación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in pagos %}
+            <tr>
+              <td><span class="id-tag">#{{ p.id }}</span></td>
+              <td>
+                <a href="/factura/{{ p.factura_id }}" class="factura-link" title="Ver factura #{{ p.factura_id }}">
+                  #{{ p.factura_id }}
+                </a>
+              </td>
+              <td class="client-name">{{ p.cliente }}</td>
+              <td class="num money-abono">+ ${{ "{:,.0f}".format(p.abono or 0) }}</td>
+              <td>
+                <span class="method-pill">{{ (p.metodo_pago or "—")|capitalize }}</span>
+              </td>
+              <td class="muted-cell">{{ p.fecha|fecha_hora }}</td>
+              <td class="obs-cell">{{ p.observacion or "—" }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="empty">
+                <div class="empty-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                </div>
+                <strong>Aún no hay abonos registrados</strong>
+                <span>Cuando registres un abono desde Cartera, aparecerá detallado aquí.</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </body>
 </html>

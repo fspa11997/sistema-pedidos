@@ -1,79 +1,328 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<meta charset="UTF-8">
-<title>{{ producto.nombre }} • Código de barras</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#eef3f8;font-family:Arial,"Segoe UI",sans-serif;color:#111;display:flex;justify-content:center;align-items:flex-start;padding:30px}
-.label{width:520px;background:#fff;border:2px solid #111;border-radius:10px;padding:28px 30px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.12)}
-.nombre{font-size:25px;font-weight:800;margin:0 0 14px;text-transform:uppercase;line-height:1.2}
-.codigo{font-size:19px;letter-spacing:1px;margin:0 0 18px}
-.titulo{font-size:14px;font-weight:700;margin:10px 0 5px}
-.barcode{width:100%;height:auto;max-height:150px;object-fit:contain;display:block;margin:0 auto}
-.acciones{margin-top:22px;display:flex;justify-content:center;gap:10px}
-button{border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13px}
-.imprimir{background:#117be8;color:#fff}.cerrar{background:#e7edf3;color:#173b63}
-@media print{body{background:#fff;padding:0;display:block}.label{width:100%;max-width:90mm;border:2px solid #111;border-radius:0;box-shadow:none;margin:0 auto;padding:8mm 6mm}.nombre{font-size:18px}.codigo{font-size:13px;margin-bottom:6mm}.titulo{font-size:11px}.barcode{max-height:35mm}.acciones{display:none}@page{size:auto;margin:8mm}}
-</style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>{{ producto.nombre }} • Código de barras</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --radius: 16px;
+      --shadow-md: 0 12px 30px -6px rgba(15, 41, 66, 0.1), 0 4px 12px -2px rgba(15, 41, 66, 0.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .preview-shell {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .shell-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .shell-head-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .shell-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .shell-head h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .shell-head small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .cut-guide {
+      padding: 16px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1.5px dashed #cbd5e1;
+    }
+
+    /* ETIQUETA IMPRIMIBLE */
+    .label {
+      width: 100%;
+      background: #fff;
+      border: 2px solid #0f172a;
+      border-radius: 10px;
+      padding: 24px 26px;
+      text-align: center;
+    }
+
+    .nombre {
+      font-size: 22px;
+      font-weight: 800;
+      color: #000;
+      margin: 0 0 8px;
+      text-transform: uppercase;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .codigo {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      font-variant-numeric: tabular-nums;
+      margin: 0 0 14px;
+    }
+
+    .titulo {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 4px 0 8px;
+    }
+
+    .barcode {
+      width: 100%;
+      height: auto;
+      max-height: 145px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .acciones {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 42px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13.5px;
+      transition: all 0.16s ease;
+    }
+
+    .imprimir {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.22);
+    }
+
+    .imprimir:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+    }
+
+    .cerrar {
+      background: #fff;
+      color: #475569;
+      border-color: #cbd5e1;
+    }
+
+    .cerrar:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+
+    @media (max-width: 480px) {
+      .preview-shell { padding: 16px; }
+      .cut-guide { padding: 10px; }
+      .label { padding: 18px 14px; }
+      .nombre { font-size: 18px; }
+      .acciones { flex-direction: column-reverse; }
+      .acciones button { width: 100%; }
+    }
+
+    @media print {
+      @page { size: auto; margin: 8mm; }
+      body {
+        min-height: 0;
+        background: #fff !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      .preview-shell, .cut-guide {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      .shell-head, .acciones {
+        display: none !important;
+      }
+      .label {
+        width: 100%;
+        max-width: 90mm;
+        border: 2px solid #000 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 auto;
+        padding: 7mm 6mm;
+      }
+      .nombre {
+        font-size: 17px;
+        color: #000 !important;
+      }
+      .codigo {
+        background: transparent !important;
+        color: #000 !important;
+        font-size: 13px;
+        margin-bottom: 4mm;
+      }
+      .titulo {
+        color: #000 !important;
+        font-size: 10px;
+      }
+      .barcode {
+        max-height: 35mm;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
 <body>
-<div class="label">
-  <div class="nombre">{{ producto.nombre }}</div>
-  <div class="codigo">{{ producto.codigo_barras }}</div>
-  <div class="titulo">Código de barras</div>
-  <img
-    id="barcode"
-    class="barcode"
-    src="{{ url_for(
-        'codigo_barras',
-        codigo=producto.codigo_barras
-    ) }}"
-    alt="Código de barras de {{ producto.nombre }}">
+  <div class="preview-shell">
+    <div class="shell-head">
+      <div class="shell-head-title">
+        <div class="shell-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Etiqueta de código de barras</h1>
+          <small>Vista previa lista para impresora térmica o estándar</small>
+        </div>
+      </div>
+    </div>
 
-  <div class="acciones">
-    <button class="imprimir" onclick="window.print()">🖨 Imprimir</button>
-    <button class="cerrar" onclick="window.close()">Cerrar</button>
+    <div class="cut-guide">
+      <div class="label">
+        <div class="nombre">{{ producto.nombre }}</div>
+        <div class="codigo">{{ producto.codigo_barras }}</div>
+        <div class="titulo">Código de barras</div>
+        <img
+          id="barcode"
+          class="barcode"
+          src="{{ url_for('codigo_barras', codigo=producto.codigo_barras) }}"
+          alt="Código de barras de {{ producto.nombre }}">
+      </div>
+    </div>
+
+    <div class="acciones">
+      <button type="button" class="cerrar" onclick="window.close()">Cerrar ventana</button>
+      <button type="button" class="imprimir" onclick="window.print()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir etiqueta
+      </button>
+    </div>
   </div>
-</div>
-<script>
-const imagen = document.getElementById("barcode");
 
-function imprimir() {
-    setTimeout(() => {
+  <script>
+    const imagen = document.getElementById("barcode");
+
+    function imprimir() {
+      setTimeout(() => {
         window.print();
-    }, 300);
-}
-
-if (imagen.complete) {
-    if (imagen.naturalWidth > 0) {
-        imprimir();
-    } else {
-        alert(
-            "No se pudo generar el código de barras. " +
-            "Revisa la consola de Flask."
-        );
+      }, 300);
     }
-} else {
-    imagen.onload = imprimir;
 
-    imagen.onerror = function () {
+    if (imagen.complete) {
+      if (imagen.naturalWidth > 0) {
+        imprimir();
+      } else {
         alert(
-            "Error al cargar el código de barras. " +
-            "Revisa la consola de Flask."
+          "No se pudo generar el código de barras. " +
+          "Revisa la consola de Flask."
         );
-    };
-}
-</script>
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+      }
+    } else {
+      imagen.onload = imprimir;
+
+      imagen.onerror = function () {
+        alert(
+          "Error al cargar el código de barras. " +
+          "Revisa la consola de Flask."
+        );
+      };
+    }
+  </script>
 </body>
 </html>

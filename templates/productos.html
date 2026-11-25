@@ -1,68 +1,834 @@
-<!DOCTYPE html><html><head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}"><meta charset="UTF-8"><title>Productos • ST Gestión</title>
-<style>
-:root{--navy:#102f50;--blue:#117be8;--green:#08ad60;--line:#dce8f3;--text:#173b63;--muted:#7d95ad}
-*{box-sizing:border-box}body{margin:0;padding-left:248px;background:#f3f8fd;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--text)}
-.header-title{position:fixed;z-index:3000;top:0;left:248px;right:0;height:62px;background:#fff;border-bottom:1px solid #e5edf5;display:flex;align-items:center;gap:16px;padding:0 24px;box-shadow:0 2px 12px rgba(20,55,90,.06)}
-.header-title:before{content:"☰";font-size:24px;color:#123f6e}.header-title h2{margin:0;font-size:16px}.header-title p{margin-left:auto;font-size:12px;color:#617b96}.logout{background:#ef4760;color:#fff;padding:9px 14px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none}
-.sidebar{position:fixed;z-index:3500;left:0;top:0;bottom:0;width:248px;background:linear-gradient(180deg,#102f50,#0c2744);color:#dcecff;overflow:auto}.brand{height:76px;display:flex;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid rgba(255,255,255,.08)}.brand strong{display:block;color:#fff;font-size:17px}.brand small{color:#4fc3ff;font-size:10px}.nav{padding:14px 10px}.nav-title{color:#87a8c6;font-size:9px;font-weight:700;letter-spacing:1.2px;padding:6px 16px}.nav a{display:block;text-decoration:none}.nav a.btn{height:42px;padding:0 14px;line-height:42px;border-radius:5px;color:#dcecff;font-size:13px;font-weight:600}.nav a.btn:hover,.nav a.active{background:rgba(17,123,232,.24);color:#fff}.main{padding:84px 28px 30px}.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.page-head h1{margin:0;font-size:22px}.page-head p{margin:5px 0 0;color:var(--muted);font-size:12px}.card{background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 20px rgba(30,70,105,.06);overflow:hidden}.card-head{padding:17px 20px;border-bottom:1px solid #e5edf5;display:flex;align-items:center;justify-content:space-between}.card-head h3{margin:0;font-size:15px}.content{padding:18px 20px}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field label{display:block;font-size:10px;font-weight:700;margin-bottom:5px;color:#234d79}.field input,.field select{width:100%;height:38px;border:1px solid #d8e6f2;border-radius:5px;padding:0 10px;background:#fff;color:#365572}.btn-primary{border:0;background:var(--green);color:#fff;padding:10px 15px;border-radius:5px;font-weight:700;cursor:pointer}.btn-danger{color:#e34c61;text-decoration:none;font-weight:700}.table-wrap{overflow:auto}.data-table{width:100%;border-collapse:collapse}.data-table th{background:#f5f9fd;color:#244d78;font-size:11px;padding:11px;text-align:left;border-bottom:1px solid #dce8f3;white-space:nowrap}.data-table td{padding:10px 11px;border-bottom:1px solid #edf2f7;font-size:12px;color:#4e6982;white-space:nowrap}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700}.critical{background:#ffe9ed;color:#d83f57}.low{background:#fff3dc;color:#c17b00}.ok{background:#e6f8ef;color:#087f49}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}.stat{padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:9px}.stat small{color:var(--muted);font-size:10px}.stat strong{display:block;font-size:24px;margin-top:5px}
-@media(max-width:950px){body{padding-left:210px}.header-title{left:210px}.sidebar{width:210px}.form-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){body{padding-left:0}.sidebar{position:relative;width:100%;height:auto}.header-title{position:relative;left:0}.main{padding:20px 12px}.form-grid,.stats{grid-template-columns:1fr}}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Productos • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-dark: #091d30;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-hover: #15803d;
+      --red: #dc2626;
+      --red-bg: #fee2e2;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 41, 66, 0.06), 0 1px 2px rgba(15, 41, 66, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
+    }
 
-/* Menú superior adaptable: tablets y celulares */
-@media (max-width:950px) {
-  body { padding-left:0 !important; }
-  .header-title { position:relative !important; left:0 !important; right:auto !important; }
-  .sidebar {
-    position:relative !important; top:auto !important; left:auto !important; bottom:auto !important;
-    width:100% !important; height:auto !important; max-height:none !important;
-    display:flex !important; flex-direction:column !important; overflow:visible !important;
-  }
-  .sidebar .nav {
-    order:-1; display:flex !important; flex-direction:row !important;
-    align-items:center; gap:5px; padding:8px 10px 10px !important;
-    overflow-x:auto !important; overflow-y:hidden !important; white-space:nowrap;
-    scrollbar-width:thin;
-  }
-  .sidebar .nav-title { display:none !important; }
-  .sidebar .nav a { flex:0 0 auto; }
-  .sidebar .nav a.btn { height:40px !important; line-height:40px !important; padding:0 12px !important; }
-  .main { padding:22px 18px 28px !important; }
-}
-@media (max-width:700px) {
-  .header-title { height:54px !important; padding:0 14px !important; }
-  .header-title:before { font-size:20px !important; }
-  .header-title h2 { font-size:14px !important; }
-  .header-title p { font-size:11px !important; }
-  .sidebar .brand { order:2; min-height:58px; height:auto !important; padding:10px 14px !important; }
-  .sidebar .nav a.btn { font-size:12px !important; }
-  .main { padding:18px 12px 24px !important; }
-  .form-grid { grid-template-columns:minmax(0,1fr) !important; }
-  .stats { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
-  .table-wrap { overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
-  .data-table { min-width:720px; }
-}
+    * { box-sizing: border-box; }
+    html, body { min-width: 320px; background-color: var(--bg); }
 
-</style>    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    body {
+      margin: 0;
+      padding-left: 256px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
 
-<style>
-/* Transición entre páginas para evitar el destello blanco al cambiar de sección. */
-@view-transition { navigation: auto; }
-::view-transition-old(root) { animation: st-page-out 90ms ease-out both; }
-::view-transition-new(root) { animation: st-page-in 140ms ease-out both; }
-@keyframes st-page-out { to { opacity: .94; } }
-@keyframes st-page-in { from { opacity: .94; } to { opacity: 1; } }
-html, body { background-color: #f3f8fd; }
-</style>
-</head><body>
-<div class="header-title"><h2>ST GESTIÓN</h2><p>Usuario: <b>{{ session['usuario'] }}</b></p></div>
-<aside class="sidebar"><div class="brand"><span style="font-size:26px">🛒</span><div><strong>ST GESTIÓN</strong><small>Sistema de Gestión de Ventas</small></div></div><nav class="nav"><a class="btn" href="/dashboard">🏠 &nbsp; Inicio</a> <!--<a class="btn" href="/clientes">👥 &nbsp; Clientes</a><a class="btn" href="/ventas">💵 &nbsp; Ventas</a><a class="btn" href="/cartera">💰 &nbsp; Cartera</a><a class="btn" href="/facturas">📄 &nbsp; Facturas</a><a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a> --> <a class="btn active" href="/productos">🏷️ &nbsp; Productos</a><a class="btn " href="/inventario">📦 &nbsp; Inventario</a></nav></aside>
-<main class="main"><div class="page-head"><div><h1>🏷️ Productos</h1><p>Administra productos, precios y costos.</p></div></div>{% if error %}<div style="background:#ffe9ed;color:#b52f46;padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ error }}</div>{% endif %}{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div style="background:{{ "#e6f8ef" if category == "success" else "#ffe9ed" }};color:{{ "#087f49" if category == "success" else "#b52f46" }};padding:10px 14px;border-radius:6px;margin-bottom:14px;font-size:12px;font-weight:700">{{ message }}</div>{% endfor %}{% endwith %}<div class="card"><div class="card-head"><h3>Nuevo producto</h3></div><div class="content"><form method="POST" action="/crear_producto"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="form-grid"><div class="field"><label>Producto</label><input type="text" name="nombre" placeholder="Nombre del producto" required></div><div class="field"><label>Código de barras</label><input type="text" name="codigo_barras" inputmode="numeric" autocomplete="off" placeholder="Escanear o escribir (opcional)"><small style="display:block;margin-top:5px;color:var(--muted)">Vacío = generar automáticamente.</small></div><div class="field"><label>Precio mayorista</label><input type="number" name="precio_mayorista" min="0" required></div><div class="field"><label>Precio individual</label><input type="number" name="precio_individual" min="0" required></div><div class="field"><label>Precio mostrador</label><input type="number" name="precio_mostrador" min="0" required></div><div class="field"><label>Costo por unidad</label><input type="number" step="0.01" name="costo" min="0" placeholder="0"></div>{% if puede_configurar_iva %}<div class="field"><label>IVA del producto (%)</label><input type="number" name="iva_porcentaje" min="0" max="100" step="0.01" placeholder="Ej. 0, 5 o 19"><small style="display:block;margin-top:5px;color:var(--muted)">Opcional al crear. Puedes dejarlo pendiente o indicar 0 si no aplica IVA.</small></div>{% else %}<div class="field"><label>IVA del producto</label><div style="padding:11px 12px;border:1px solid #f3d28a;background:#fff8e8;color:#946200;border-radius:8px;font-size:12px;font-weight:700">Pendiente de configuración por un administrador</div></div>{% endif %}<div class="field"><label>Cantidad inicial de productos</label><input type="number" name="cantidad" min="1" step="1" value="1" required><small style="display:block;margin-top:5px;color:var(--muted)">Esta cantidad se registra automáticamente en Inventario.</small></div></div><div style="margin-top:14px"><button class="btn-primary" type="submit">＋ Crear producto</button></div></form></div></div><br><div class="card"><div class="card-head"><h3>Listado de productos</h3><span style="font-size:11px;color:var(--muted)">{{ productos|length }} productos</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>Producto</th><th>Código de barras</th><th>Mayorista</th><th>Individual</th><th>Mostrador</th><th>Costo/unidad</th><th>IVA</th><th>Acción</th></tr></thead><tbody>{% for p in productos %}<tr><td><b>{{ p.nombre }}</b></td><td><b>{{ p.codigo_barras or "Sin código" }}</b>{% if p.codigo_barras %}<br><img src="/codigo_barras/{{ p.codigo_barras }}" alt="Código de barras" style="width:150px;height:45px;object-fit:contain;margin-top:4px">{% endif %}</td><td>${{ "{:,.0f}".format(p.precio_mayorista or 0) }}</td><td>${{ "{:,.0f}".format(p.precio_individual or 0) }}</td><td>${{ "{:,.0f}".format(p.precio_mostrador or 0) }}</td><td>${{ "{:,.0f}".format(p.costo or 0) }}</td><td>{% if puede_configurar_iva %}<form method="POST" action="/actualizar_iva_producto/{{ p.id }}" style="display:flex;align-items:center;gap:5px"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="number" name="iva_porcentaje" min="0" max="100" step="0.01" value="{{ p.iva_porcentaje if p.iva_porcentaje is not none else '' }}" placeholder="Pendiente" required style="width:88px;height:32px;border:1px solid #d8e6f2;border-radius:5px;padding:0 6px"><span>%</span><button type="submit" style="border:0;background:#117be8;color:white;padding:7px 8px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer">Guardar</button></form>{% elif p.iva_porcentaje is none %}<span style="display:inline-block;padding:6px 8px;border-radius:6px;background:#fff3d8;color:#946200;font-size:10px;font-weight:700">Pendiente</span>{% else %}<span>{{ p.iva_porcentaje }}%</span>{% endif %}</td><td style="white-space:nowrap"><a href="/imprimir_codigo_barras/{{ p.id }}" target="_blank" style="display:inline-block;background:#117be8;color:#fff;text-decoration:none;padding:7px 10px;border-radius:5px;font-weight:700;font-size:11px;margin-right:6px">🖨 Imprimir código</a><form method="POST" action="/eliminar_producto/{{ p.id }}" style="display:inline" onsubmit="return confirm('¿Eliminar este producto?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn-danger" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">🗑 Eliminar</button></form></td></tr>{% else %}<tr><td colspan="8" style="text-align:center;padding:30px">No hay productos registrados.</td></tr>{% endfor %}</tbody></table></div></div></main><link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
-</body></html>
+    button, input, select { font: inherit; }
+
+    /* Transición suave entre páginas */
+    @view-transition { navigation: auto; }
+    ::view-transition-old(root) { animation: st-page-out 90ms ease-out both; }
+    ::view-transition-new(root) { animation: st-page-in 140ms ease-out both; }
+    @keyframes st-page-out { to { opacity: .94; } }
+    @keyframes st-page-in { from { opacity: .94; } to { opacity: 1; } }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      z-index: 3500;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 256px;
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
+      color: #e2e8f0;
+      overflow-y: auto;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      flex-shrink: 0;
+    }
+
+    .brand strong {
+      display: block;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .brand small {
+      display: block;
+      color: #93c5fd;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .nav {
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav a.btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 10px;
+      color: #cbd5e1;
+      font-size: 13.5px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.16s ease;
+    }
+
+    .nav a.btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .nav a.active {
+      background: var(--blue);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.32);
+    }
+
+    /* TOP HEADER */
+    .header-title {
+      position: fixed;
+      z-index: 3000;
+      top: 0;
+      left: 256px;
+      right: 0;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 28px;
+    }
+
+    .header-title:before {
+      content: "☰";
+      font-size: 20px;
+      color: var(--navy);
+    }
+
+    .header-title h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: 0.02em;
+    }
+
+    .header-title p {
+      margin: 0 0 0 auto;
+      font-size: 12.5px;
+      color: var(--muted);
+      background: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+    }
+
+    .header-title p b { color: var(--navy); }
+
+    /* MAIN */
+    .main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 88px 28px 48px;
+    }
+
+    .page-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .page-head-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .page-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22);
+      flex-shrink: 0;
+    }
+
+    .page-head h1 {
+      margin: 0;
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .page-head p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ALERTS */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .alert.error {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .alert.success {
+      background: #dcfce7;
+      color: #15803d;
+      border-color: #bbf7d0;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .card-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .card-head h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .count-pill {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      background: #f1f5f9;
+      padding: 4px 11px;
+      border-radius: 999px;
+    }
+
+    .content { padding: 22px; }
+
+    /* FORM */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #475569;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      height: 41px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+      font-size: 13.5px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .field small {
+      display: block;
+      margin-top: 5px;
+      font-size: 11.5px;
+      line-height: 1.35;
+      color: var(--muted);
+    }
+
+    .iva-pending-box {
+      min-height: 41px;
+      padding: 9px 12px;
+      border: 1px solid #fde68a;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 42px;
+      border: 0;
+      background: var(--green);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(22, 163, 74, 0.22);
+      transition: all 0.16s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--green-hover);
+      transform: translateY(-1px);
+    }
+
+    /* TABLE */
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 13px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .data-table th.num,
+    .data-table td.num {
+      text-align: right;
+    }
+
+    .data-table th.right,
+    .data-table td.right {
+      text-align: right;
+    }
+
+    .data-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13.5px;
+      color: #334155;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+
+    .product-name {
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .barcode-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .code-tag {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .barcode-preview {
+      width: 144px;
+      height: 42px;
+      object-fit: contain;
+      background: #fff;
+      padding: 3px 6px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .money {
+      font-weight: 700;
+      color: var(--navy);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .money.cost {
+      color: #475569;
+      font-weight: 600;
+    }
+
+    /* IVA INLINE FORM */
+    .iva-form {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .iva-form input[type="number"] {
+      width: 84px;
+      height: 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--navy);
+    }
+
+    .iva-form input[type="number"]:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .iva-save-btn {
+      height: 34px;
+      border: 0;
+      background: var(--blue);
+      color: #fff;
+      padding: 0 11px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .iva-save-btn:hover { background: var(--blue-hover); }
+
+    .iva-pending-pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #b45309;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .iva-value-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ROW ACTIONS */
+    .row-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 34px;
+      background: #eff6ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+      text-decoration: none;
+      padding: 0 11px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-print:hover {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    .btn-danger {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 34px;
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid #fecaca;
+      padding: 0 11px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-danger:hover {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1150px) {
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 950px) {
+      body { padding-left: 0 !important; }
+      .header-title { position: relative !important; left: 0 !important; right: auto !important; padding: 0 18px; }
+      .sidebar {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: visible !important;
+      }
+      .sidebar .nav {
+        order: -1;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap;
+        scrollbar-width: thin;
+      }
+      .sidebar .nav a { flex: 0 0 auto; }
+      .sidebar .nav a.btn { height: 38px !important; padding: 0 13px !important; }
+      .main { padding: 22px 16px 32px !important; }
+    }
+
+    @media (max-width: 700px) {
+      .header-title { height: 54px !important; padding: 0 14px !important; }
+      .header-title h2 { font-size: 14px !important; }
+      .header-title p { font-size: 11px !important; padding: 4px 10px; }
+      .sidebar .brand { order: 2; min-height: 60px; height: auto !important; padding: 10px 14px !important; }
+      .main { padding: 16px 12px 28px !important; }
+      .page-head h1 { font-size: 20px; }
+      .card-head { padding: 14px 16px; }
+      .content { padding: 16px; }
+      .form-grid { grid-template-columns: minmax(0, 1fr) !important; }
+      .form-footer .btn-primary { width: 100%; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+</head>
+<body>
+  <div class="header-title">
+    <h2>ST GESTIÓN</h2>
+    <p>Usuario: <b>{{ session['usuario'] }}</b></p>
+  </div>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">🛒</div>
+      <div>
+        <strong>ST GESTIÓN</strong>
+        <small>Sistema de Gestión de Ventas</small>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="btn" href="/dashboard">🏠 &nbsp; Inicio</a>
+      <!-- <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
+      <a class="btn" href="/ventas">💵 &nbsp; Ventas</a>
+      <a class="btn" href="/cartera">💰 &nbsp; Cartera</a>
+      <a class="btn" href="/facturas">📄 &nbsp; Facturas</a>
+      <a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a> -->
+      <a class="btn active" href="/productos">🏷️ &nbsp; Productos</a>
+      <a class="btn" href="/inventario">📦 &nbsp; Inventario</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div class="page-head-left">
+        <div class="page-icon" aria-hidden="true">🏷️</div>
+        <div>
+          <h1>Productos</h1>
+          <p>Administra el catálogo de productos, listas de precios, costos e impuestos.</p>
+        </div>
+      </div>
+    </div>
+
+    {% if error %}
+      <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert {{ 'success' if category == 'success' else 'error' }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- CREAR PRODUCTO -->
+    <section class="card">
+      <div class="card-head">
+        <h3>Nuevo producto</h3>
+        <span class="count-pill">Catálogo</span>
+      </div>
+      <div class="content">
+        <form method="POST" action="/crear_producto">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-grid">
+            <div class="field">
+              <label for="prodNombre">Producto *</label>
+              <input id="prodNombre" type="text" name="nombre" placeholder="Nombre del producto" required>
+            </div>
+
+            <div class="field">
+              <label for="prodCodigo">Código de barras</label>
+              <input id="prodCodigo" type="text" name="codigo_barras" inputmode="numeric" autocomplete="off" placeholder="Escanear o escribir (opcional)">
+              <small>Vacío = generar automáticamente.</small>
+            </div>
+
+            <div class="field">
+              <label for="prodMayorista">Precio mayorista *</label>
+              <input id="prodMayorista" type="number" name="precio_mayorista" min="0" placeholder="0" required>
+            </div>
+
+            <div class="field">
+              <label for="prodIndividual">Precio individual *</label>
+              <input id="prodIndividual" type="number" name="precio_individual" min="0" placeholder="0" required>
+            </div>
+
+            <div class="field">
+              <label for="prodMostrador">Precio mostrador *</label>
+              <input id="prodMostrador" type="number" name="precio_mostrador" min="0" placeholder="0" required>
+            </div>
+
+            <div class="field">
+              <label for="prodCosto">Costo por unidad</label>
+              <input id="prodCosto" type="number" step="0.01" name="costo" min="0" placeholder="0">
+            </div>
+
+            {% if puede_configurar_iva %}
+            <div class="field">
+              <label for="prodIva">IVA del producto (%)</label>
+              <input id="prodIva" type="number" name="iva_porcentaje" min="0" max="100" step="0.01" placeholder="Ej. 0, 5 o 19">
+              <small>Opcional al crear. Puedes dejarlo pendiente o indicar 0 si no aplica IVA.</small>
+            </div>
+            {% else %}
+            <div class="field">
+              <label>IVA del producto</label>
+              <div class="iva-pending-box">Pendiente de configuración por un administrador</div>
+            </div>
+            {% endif %}
+
+            <div class="field">
+              <label for="prodCantidad">Cantidad inicial *</label>
+              <input id="prodCantidad" type="number" name="cantidad" min="1" step="1" value="1" required>
+              <small>Esta cantidad se registra automáticamente en Inventario.</small>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button class="btn-primary" type="submit">＋ Crear producto</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- LISTADO DE PRODUCTOS -->
+    <section class="card">
+      <div class="card-head">
+        <h3>Listado de productos</h3>
+        <span class="count-pill">{{ productos|length }} productos</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Código de barras</th>
+              <th class="num">Mayorista</th>
+              <th class="num">Individual</th>
+              <th class="num">Mostrador</th>
+              <th class="num">Costo/unidad</th>
+              <th>IVA</th>
+              <th class="right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in productos %}
+            <tr>
+              <td class="product-name">{{ p.nombre }}</td>
+
+              <td>
+                <div class="barcode-box">
+                  <span class="code-tag">{{ p.codigo_barras or "Sin código" }}</span>
+                  {% if p.codigo_barras %}
+                    <img class="barcode-preview" src="/codigo_barras/{{ p.codigo_barras }}" alt="Código de barras">
+                  {% endif %}
+                </div>
+              </td>
+
+              <td class="num money">${{ "{:,.0f}".format(p.precio_mayorista or 0) }}</td>
+              <td class="num money">${{ "{:,.0f}".format(p.precio_individual or 0) }}</td>
+              <td class="num money">${{ "{:,.0f}".format(p.precio_mostrador or 0) }}</td>
+              <td class="num money cost">${{ "{:,.0f}".format(p.costo or 0) }}</td>
+
+              <td>
+                {% if puede_configurar_iva %}
+                  <form class="iva-form" method="POST" action="/actualizar_iva_producto/{{ p.id }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="number" name="iva_porcentaje" min="0" max="100" step="0.01" value="{{ p.iva_porcentaje if p.iva_porcentaje is not none else '' }}" placeholder="Pendiente" required>
+                    <span style="font-weight:700;color:#64748b;">%</span>
+                    <button type="submit" class="iva-save-btn">Guardar</button>
+                  </form>
+                {% elif p.iva_porcentaje is none %}
+                  <span class="iva-pending-pill">Pendiente</span>
+                {% else %}
+                  <span class="iva-value-pill">{{ p.iva_porcentaje }}%</span>
+                {% endif %}
+              </td>
+
+              <td class="right">
+                <div class="row-actions">
+                  <a class="btn-print" href="/imprimir_codigo_barras/{{ p.id }}" target="_blank">🖨 Imprimir código</a>
+                  <form method="POST" action="/eliminar_producto/{{ p.id }}" style="display:inline;margin:0;" onsubmit="return confirm('¿Eliminar este producto?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-danger">🗑 Eliminar</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" style="text-align:center;padding:34px;color:var(--muted);">No hay productos registrados.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

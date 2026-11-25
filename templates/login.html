@@ -1,194 +1,335 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Login • ST Gestión</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Iniciar sesión • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-dark: #091d30;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --red-bg: #fee2e2;
+      --red-text: #b91c1c;
+      --radius: 20px;
+    }
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    * { box-sizing: border-box; }
 
-    <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px 16px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 20%, rgba(37, 99, 235, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 82% 80%, rgba(56, 189, 248, 0.18) 0%, transparent 42%),
+        linear-gradient(145deg, var(--navy-dark) 0%, var(--navy) 52%, var(--navy-light) 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        body{
-            margin:0;
-            padding:0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: linear-gradient(135deg, #2f80ed, #56ccf2);
-            height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-        }
+    .login-card {
+      width: 100%;
+      max-width: 410px;
+      background: var(--surface);
+      padding: 38px 34px 30px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 24px 54px -12px rgba(4, 15, 28, 0.55);
+    }
 
-        .login-card{
-            background:rgba(255,255,255,0.95);
-            width:380px;
-            padding:40px;
-            border-radius:20px;
-            box-shadow:0 10px 35px rgba(0,0,0,0.2);
-            text-align:center;
-            backdrop-filter: blur(10px);
-        }
+    .brand-header {
+      text-align: center;
+      margin-bottom: 26px;
+    }
 
-        .login-logo{
-            margin-bottom:15px;
-        }
+    .login-logo {
+      margin: 0 auto 14px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .login-logo img{
-            width:220px;
-            height:auto;
-        }
+    .login-logo img {
+      max-width: 195px;
+      max-height: 76px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
 
-        .login-title{
-            margin:0;
-            color:#222;
-            font-size:28px;
-            font-weight:bold;
-        }
+    .login-title {
+      margin: 0;
+      color: var(--navy);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
 
-        .login-subtitle{
-            color:#777;
-            font-size:14px;
-            margin-top:8px;
-            margin-bottom:30px;
-        }
+    .login-subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13.5px;
+      font-weight: 500;
+    }
 
-        .login-card input,
-        .login-card select{
-            width:100%;
-            padding:14px;
-            margin-bottom:15px;
-            border-radius:10px;
-            border:1px solid #ddd;
-            font-size:15px;
-            box-sizing:border-box;
-            transition:0.2s;
-            background:white;
-        }
+    .error-box {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--red-bg);
+      color: var(--red-text);
+      border: 1px solid #fecaca;
+      padding: 11px 14px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+    }
 
-        .login-card input:focus,
-        .login-card select:focus{
-            outline:none;
-            border-color:#2f80ed;
-            box-shadow:0 0 0 3px rgba(47,128,237,0.15);
-        }
+    .field {
+      margin-bottom: 16px;
+      text-align: left;
+    }
 
-        .login-btn{
-            width:100%;
-            padding:14px;
-            border:none;
-            border-radius:10px;
-            background:#2f80ed;
-            color:white;
-            font-size:16px;
-            cursor:pointer;
-            transition:0.2s;
-            font-weight:bold;
-        }
+    .field label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
 
-        .login-btn:hover{
-            background:#1366d6;
-            transform:translateY(-1px);
-        }
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
 
-        .error-box{
-            background:#ffe5e5;
-            color:#c62828;
-            padding:12px;
-            border-radius:10px;
-            margin-bottom:20px;
-            font-size:14px;
-        }
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
 
-        .footer-text{
-            margin-top:25px;
-            font-size:12px;
-            color:#888;
-        }
+    .login-card input {
+      width: 100%;
+      height: 45px;
+      padding: 0 14px 0 40px;
+      border-radius: 11px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.16s ease;
+    }
 
-        @media(max-width:500px){
+    .login-card input.has-toggle {
+      padding-right: 42px;
+    }
 
-            .login-card{
-                width:90%;
-                padding:30px;
-            }
+    .login-card input:focus {
+      background: #ffffff;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
 
-            .login-title{
-                font-size:24px;
-            }
+    .toggle-pass {
+      position: absolute;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
 
-        }
+    .toggle-pass:hover {
+      background: #e2e8f0;
+      color: var(--navy);
+    }
 
-    </style>
+    .login-btn {
+      width: 100%;
+      height: 46px;
+      margin-top: 6px;
+      border: 0;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--blue) 0%, #1d4ed8 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 18px -4px rgba(37, 99, 235, 0.42);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    .login-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px -4px rgba(37, 99, 235, 0.5);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .footer-text {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .footer-text a {
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    .copyright {
+      display: block;
+      margin-top: 8px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 30px 22px 24px;
+        border-radius: 16px;
+      }
+      .login-title {
+        font-size: 21px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
-
 <body>
-
-<div class="login-card">
-
-    <div class="login-logo">
-
-        <img
-            src="{{ url_for('static', filename='logo.png') }}"
-            alt="Logo"
-        >
-
+  <main class="login-card">
+    <div class="brand-header">
+      <div class="login-logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo ST Gestión">
+      </div>
+      <h1 class="login-title">ST Gestión</h1>
+      <p class="login-subtitle">Sistema de pedidos y control empresarial</p>
     </div>
 
-    <h2 class="login-title">
-        ST Gestión
-    </h2>
-
-    <p class="login-subtitle">
-        Sistema de pedidos y control empresarial
-    </p>
-
     {% if error %}
-    <div class="error-box">
-        {{ error }}
+    <div class="error-box" role="alert">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{{ error }}</span>
     </div>
     {% endif %}
 
-    <form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <input
+      <div class="field">
+        <label for="usuarioInput">Usuario</label>
+        <div class="input-wrap">
+          <span class="input-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          <input
+            id="usuarioInput"
             type="text"
             name="usuario"
-            placeholder="👤 Usuario"
+            placeholder="Ingresa tu usuario"
+            autocomplete="username"
+            autofocus
             required
-        >
+          >
+        </div>
+      </div>
 
-        <input
+      <div class="field">
+        <label for="passwordInput">Contraseña</label>
+        <div class="input-wrap">
+          <span class="input-icon" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input
+            id="passwordInput"
+            class="has-toggle"
             type="password"
             name="password"
-            placeholder="🔒 Contraseña"
+            placeholder="Ingresa tu contraseña"
+            autocomplete="current-password"
             required
-        >
+          >
+          <button type="button" class="toggle-pass" id="togglePassBtn" aria-label="Mostrar u ocultar contraseña" title="Mostrar contraseña">
+            <svg id="eyeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
 
-        <button type="submit" class="login-btn">
-            Entrar al sistema
-        </button>
-
+      <button type="submit" class="login-btn">
+        Entrar al sistema
+      </button>
     </form>
 
     <div class="footer-text">
-        Al ingresar aceptas los
-        <a href="{{ url_for('terminos') }}" target="_blank" rel="noopener">Términos de uso</a> y la
-        <a href="{{ url_for('privacidad') }}" target="_blank" rel="noopener">Política de privacidad</a>.
-        <br>© ST Gestión
+      Al ingresar aceptas los
+      <a href="{{ url_for('terminos') }}" target="_blank" rel="noopener">Términos de uso</a> y la
+      <a href="{{ url_for('privacidad') }}" target="_blank" rel="noopener">Política de privacidad</a>.
+      <span class="copyright">© ST Gestión</span>
     </div>
+  </main>
 
-</div>
+  <script>
+    const passInput = document.getElementById('passwordInput');
+    const toggleBtn = document.getElementById('togglePassBtn');
+    const eyeIcon = document.getElementById('eyeIcon');
 
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    toggleBtn.addEventListener('click', () => {
+      const hidden = passInput.type === 'password';
+      passInput.type = hidden ? 'text' : 'password';
+      toggleBtn.title = hidden ? 'Ocultar contraseña' : 'Mostrar contraseña';
+      eyeIcon.innerHTML = hidden
+        ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+        : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+    });
+  </script>
 </body>
 </html>

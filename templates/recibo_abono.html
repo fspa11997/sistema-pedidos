@@ -1,110 +1,458 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#102f50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ST Gestión">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <title>Recibo de Abono</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f2942">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ST Gestión">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <title>Recibo de Abono #{{ recibo.id }} • ST Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --blue: #2563eb;
+      --blue-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-bg: #dcfce7;
+      --amber: #b45309;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --radius: 16px;
+      --shadow-md: 0 12px 30px -6px rgba(15, 41, 66, 0.1), 0 4px 12px -2px rgba(15, 41, 66, 0.05);
+    }
 
-    <style>
+    * { box-sizing: border-box; }
 
-        body{
-            font-family: Arial;
-            padding:20px;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px 16px 44px;
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .recibo{
-            width:400px;
-            margin:auto;
-            border:1px solid #ccc;
-            padding:20px;
-        }
+    .receipt-wrapper {
+      width: 100%;
+      max-width: 440px;
+    }
 
-        h2{
-            text-align:center;
-        }
+    /* TOOLBAR */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
 
-        .linea{
-            margin-bottom:10px;
-        }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 9px 15px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
 
-        button{
-            padding:10px;
-            background:green;
-            color:white;
-            border:none;
-            cursor:pointer;
-        }
+    .btn-back {
+      background: #fff;
+      color: var(--navy);
+      border-color: #cbd5e1;
+    }
 
-    </style>
+    .btn-back:hover {
+      background: #f8fafc;
+      border-color: var(--navy);
+    }
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    .btn-print {
+      background: var(--navy);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(15, 41, 66, 0.2);
+    }
+
+    .btn-print:hover {
+      background: var(--navy-light);
+      transform: translateY(-1px);
+    }
+
+    /* RECIBO CARD */
+    .recibo {
+      background: var(--surface);
+      border: 1px solid #dbe4ee;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .recibo-header {
+      padding: 22px 24px 20px;
+      background: linear-gradient(135deg, var(--navy) 0%, #1d4f82 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #bae6fd;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .recibo-id {
+      text-align: right;
+    }
+
+    .recibo-id small {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #bae6fd;
+    }
+
+    .recibo-id strong {
+      display: block;
+      font-size: 20px;
+      font-weight: 800;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .recibo-body {
+      padding: 22px 24px 24px;
+    }
+
+    .status-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: var(--green-bg);
+      color: #15803d;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .info-list {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 15px;
+      background: #fafcff;
+    }
+
+    .linea {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 14px;
+      padding: 7px 0;
+      border-bottom: 1px dashed #e2e8f0;
+      font-size: 13.5px;
+    }
+
+    .linea:last-child {
+      border-bottom: none;
+      padding-bottom: 2px;
+    }
+
+    .linea:first-child {
+      padding-top: 2px;
+    }
+
+    .linea .label {
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .linea .value {
+      color: var(--navy);
+      font-weight: 700;
+      text-align: right;
+      overflow-wrap: anywhere;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .factura-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: #eff6ff;
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 12.5px;
+    }
+
+    /* BLOQUE FINANCIERO */
+    .finance-box {
+      margin-top: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .finance-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 15px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .finance-row span {
+      color: #475569;
+      font-weight: 600;
+    }
+
+    .finance-row strong {
+      color: var(--navy);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .finance-row.abono-highlight {
+      background: #f0fdf4;
+      border-bottom-color: #dcfce7;
+    }
+
+    .finance-row.abono-highlight span {
+      color: #166534;
+      font-weight: 700;
+    }
+
+    .finance-row.abono-highlight strong {
+      color: var(--green);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .saldo-final {
+      padding: 14px 15px;
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .saldo-final span {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
+
+    .saldo-final strong {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .recibo-footer {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed #cbd5e1;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 14px 12px 28px; justify-content: flex-start; }
+      .recibo-header { padding: 18px 18px 16px; }
+      .recibo-body { padding: 18px; }
+    }
+
+    @media print {
+      @page { size: auto; margin: 8mm; }
+      body {
+        min-height: 0;
+        padding: 0 !important;
+        background: #fff !important;
+        display: block !important;
+      }
+      .toolbar { display: none !important; }
+      .receipt-wrapper { max-width: 90mm; margin: 0 auto; }
+      .recibo {
+        border: 1.5px solid #000 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      .recibo-header {
+        background: #fff !important;
+        color: #000 !important;
+        border-bottom: 1.5px solid #000 !important;
+        padding: 4mm !important;
+      }
+      .brand-mark {
+        border-color: #000 !important;
+        background: transparent !important;
+        color: #000 !important;
+      }
+      .brand-sub, .recibo-id small { color: #333 !important; }
+      .recibo-body { padding: 4mm !important; }
+      .status-banner {
+        background: transparent !important;
+        color: #000 !important;
+        padding: 0 !important;
+        margin-bottom: 3mm !important;
+      }
+      .info-list, .finance-box {
+        border-color: #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+      }
+      .factura-pill {
+        background: transparent !important;
+        color: #000 !important;
+        padding: 0 !important;
+      }
+      .finance-row.abono-highlight { background: #fff !important; }
+      .finance-row.abono-highlight span,
+      .finance-row.abono-highlight strong { color: #000 !important; }
+      .saldo-final {
+        background: #fff !important;
+        color: #000 !important;
+        border-top: 1.5px solid #000 !important;
+      }
+      .saldo-final span, .saldo-final strong { color: #000 !important; }
+      .recibo-footer { color: #000 !important; }
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
 </head>
 <body>
-
-<div class="recibo">
-
-    <h2>🧾 RECIBO DE ABONO</h2>
-
-    <div class="linea">
-        <b>Recibo:</b>
-        #{{ recibo.id }}
+  <div class="receipt-wrapper">
+    <div class="toolbar">
+      <a href="/cartera" class="btn btn-back">← Volver a cartera</a>
+      <button type="button" class="btn btn-print" onclick="window.print()">🖨 Imprimir recibo</button>
     </div>
 
-    <div class="linea">
-        <b>Factura:</b>
-        #{{ recibo.factura_id }}
+    <div class="recibo">
+      <header class="recibo-header">
+        <div class="brand">
+          <div class="brand-mark">ST</div>
+          <div>
+            <div class="brand-title">RECIBO DE ABONO</div>
+            <div class="brand-sub">ST Gestión • Comprobante de pago</div>
+          </div>
+        </div>
+        <div class="recibo-id">
+          <small>Recibo N.º</small>
+          <strong>#{{ recibo.id }}</strong>
+        </div>
+      </header>
+
+      <div class="recibo-body">
+        <div class="status-banner">✓ Abono registrado correctamente</div>
+
+        <div class="info-list">
+          <div class="linea">
+            <span class="label">Factura asociada</span>
+            <span class="value"><span class="factura-pill">#{{ recibo.factura_id }}</span></span>
+          </div>
+          <div class="linea">
+            <span class="label">Cliente</span>
+            <span class="value">{{ recibo.cliente }}</span>
+          </div>
+          <div class="linea">
+            <span class="label">Fecha y hora</span>
+            <span class="value">{{ recibo.fecha|fecha_hora }}</span>
+          </div>
+          <div class="linea">
+            <span class="label">Método de pago</span>
+            <span class="value">{{ (recibo.metodo_pago or "—")|capitalize }}</span>
+          </div>
+        </div>
+
+        <div class="finance-box">
+          <div class="finance-row">
+            <span>Saldo anterior</span>
+            <strong>${{ "{:,.0f}".format(recibo.saldo_anterior or 0) }}</strong>
+          </div>
+          <div class="finance-row abono-highlight">
+            <span>Valor abonado</span>
+            <strong>- ${{ "{:,.0f}".format(recibo.valor_abono or 0) }}</strong>
+          </div>
+          <div class="saldo-final">
+            <span>Saldo restante</span>
+            <strong>${{ "{:,.0f}".format(recibo.saldo_nuevo or 0) }}</strong>
+          </div>
+        </div>
+
+        <div class="recibo-footer">
+          Comprobante interno de control de cartera • ST Gestión
+        </div>
+      </div>
     </div>
-
-    <div class="linea">
-        <b>Cliente:</b>
-        {{ recibo.cliente }}
-    </div>
-
-    <div class="linea">
-        <b>Fecha:</b>
-        {{ recibo.fecha|fecha_hora }}
-    </div>
-
-    <hr>
-
-    <div class="linea">
-        <b>Saldo anterior:</b>
-        ${{ "{:,.0f}".format(recibo.saldo_anterior) }}
-    </div>
-
-    <div class="linea">
-        <b>Abono:</b>
-        <span style="color:green;">
-            ${{ "{:,.0f}".format(recibo.valor_abono) }}
-        </span>
-    </div>
-
-    <div class="linea">
-        <b>Método de pago:</b>
-        {{ (recibo.metodo_pago or "-")|capitalize }}
-    </div>
-
-    <div class="linea">
-        <b>Saldo restante:</b>
-        ${{ "{:,.0f}".format(recibo.saldo_nuevo) }}
-    </div>
-
-    <br>
-
-    <button onclick="window.print()">
-        🖨 Imprimir
-    </button>
-
-</div>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+  </div>
 </body>
 </html>
