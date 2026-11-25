@@ -1275,7 +1275,7 @@ button,input,select{font-family:inherit}
 
                     <!-- 💳 MÉTODO DE PAGO -->
                     
-                    <select name="metodo_pago" id="metodoPago">
+                    <select name="metodo_pago" id="metodoPago" required>
                         <option value="">Seleccionar método de pago</option>
                         <option value="efectivo">💵 Efectivo</option>
                         <option value="tarjeta">💳 Tarjeta</option>
@@ -1331,7 +1331,7 @@ button,input,select{font-family:inherit}
                         <label>
                           🏷️<h2>Producto</h2>
                         </label>
-                        
+
                         <div class="item"> 
                             <select name="producto[]" required>
                                 {% for prod in productos %}
