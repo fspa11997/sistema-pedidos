@@ -35,12 +35,12 @@
       --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.07), 0 4px 10px -2px rgba(15, 41, 66, 0.04);
     }
 
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
     html, body { min-width: 320px; background-color: var(--bg); }
 
     body {
       margin: 0;
-      padding-left: 256px;
+      padding-left: 248px;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       font-size: 14px;
       color: var(--text);
@@ -63,7 +63,7 @@
       left: 0;
       top: 0;
       bottom: 0;
-      width: 256px;
+      width: 248px;
       background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
       color: #e2e8f0;
       overflow-y: auto;
@@ -145,7 +145,7 @@
       position: fixed;
       z-index: 3000;
       top: 0;
-      left: 256px;
+      left: 248px;
       right: 0;
       height: 64px;
       background: rgba(255, 255, 255, 0.94);
@@ -154,7 +154,7 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 0 28px;
+      padding: 0 24px;
     }
 
     .header-title:before {
@@ -187,7 +187,7 @@
     .main {
       max-width: 1440px;
       margin: 0 auto;
-      padding: 88px 28px 48px;
+      padding: 84px 22px 48px;
     }
 
     .page-head {
@@ -196,7 +196,7 @@
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .page-head-left {
@@ -266,7 +266,7 @@
     }
 
     .card-head {
-      padding: 18px 22px;
+      padding: 16px 20px;
       border-bottom: 1px solid var(--line);
       display: flex;
       align-items: center;
@@ -291,7 +291,7 @@
       border-radius: 999px;
     }
 
-    .content { padding: 22px; }
+    .content { padding: 20px; }
 
     /* FORM */
     .form-grid {
@@ -381,29 +381,39 @@
       transform: translateY(-1px);
     }
 
-    /* TABLE */
+    /* TABLE: AJUSTADA AL 100% SIN BARRA HORIZONTAL EN ESCRITORIO */
     .table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      overflow-x: visible;
     }
 
     .data-table {
-      width: 100%;
-      min-width: 980px;
+      width: 100% !important;
+      min-width: 0 !important;
       border-collapse: collapse;
     }
 
     .data-table th {
       background: #f8fafc;
       color: #475569;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 13px 14px;
+      letter-spacing: 0.03em;
+      padding: 12px 8px;
       text-align: left;
       border-bottom: 1px solid var(--line);
       white-space: nowrap;
+    }
+
+    .data-table th:first-child,
+    .data-table td:first-child {
+      padding-left: 16px;
+    }
+
+    .data-table th:last-child,
+    .data-table td:last-child {
+      padding-right: 16px;
     }
 
     .data-table th.num,
@@ -417,9 +427,9 @@
     }
 
     .data-table td {
-      padding: 13px 14px;
+      padding: 11px 8px;
       border-bottom: 1px solid var(--line);
-      font-size: 13.5px;
+      font-size: 13px;
       color: #334155;
       vertical-align: middle;
     }
@@ -430,34 +440,37 @@
     .product-name {
       color: var(--navy);
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13.5px;
+      max-width: 170px;
+      line-height: 1.3;
+      word-break: break-word;
     }
 
     .barcode-box {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: 4px;
     }
 
     .code-tag {
       display: inline-block;
-      padding: 3px 9px;
+      padding: 2px 7px;
       border-radius: 6px;
       background: #f1f5f9;
       color: #334155;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
     .barcode-preview {
-      width: 144px;
-      height: 42px;
+      width: 118px;
+      height: 36px;
       object-fit: contain;
       background: #fff;
-      padding: 3px 6px;
+      padding: 2px 4px;
       border: 1px solid var(--line);
       border-radius: 6px;
     }
@@ -465,6 +478,7 @@
     .money {
       font-weight: 700;
       color: var(--navy);
+      font-size: 13px;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
@@ -474,23 +488,25 @@
       font-weight: 600;
     }
 
-    /* IVA INLINE FORM */
+    /* IVA INLINE FORM COMPACTO */
     .iva-form {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      white-space: nowrap;
     }
 
     .iva-form input[type="number"] {
-      width: 84px;
-      height: 34px;
+      width: 62px !important;
+      height: 33px !important;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 0 8px;
-      font-size: 13px;
+      padding: 0 6px !important;
+      font-size: 12.5px;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       color: var(--navy);
+      text-align: center;
     }
 
     .iva-form input[type="number"]:focus {
@@ -500,11 +516,11 @@
     }
 
     .iva-save-btn {
-      height: 34px;
+      height: 33px;
       border: 0;
       background: var(--blue);
       color: #fff;
-      padding: 0 11px;
+      padding: 0 9px;
       border-radius: 8px;
       font-size: 12px;
       font-weight: 700;
@@ -516,17 +532,17 @@
 
     .iva-pending-pill {
       display: inline-block;
-      padding: 5px 10px;
+      padding: 4px 9px;
       border-radius: 999px;
       background: #fef3c7;
       color: #b45309;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
     }
 
     .iva-value-pill {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 4px 9px;
       border-radius: 999px;
       background: #eff6ff;
       color: var(--blue);
@@ -535,25 +551,25 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ROW ACTIONS */
+    /* ROW ACTIONS COMPACTOS */
     .row-actions {
       display: inline-flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 8px;
+      gap: 6px;
       white-space: nowrap;
     }
 
     .btn-print {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      height: 34px;
+      gap: 4px;
+      height: 33px;
       background: #eff6ff;
       color: var(--blue);
       border: 1px solid #bfdbfe;
       text-decoration: none;
-      padding: 0 11px;
+      padding: 0 9px;
       border-radius: 8px;
       font-weight: 700;
       font-size: 12px;
@@ -569,15 +585,16 @@
     .btn-danger {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      height: 34px;
+      justify-content: center;
+      width: 33px;
+      height: 33px;
       background: var(--red-bg);
       color: var(--red);
       border: 1px solid #fecaca;
-      padding: 0 11px;
+      padding: 0;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -591,6 +608,11 @@
     /* RESPONSIVE */
     @media (max-width: 1150px) {
       .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .data-table { min-width: 860px !important; }
     }
 
     @media (max-width: 950px) {
@@ -657,11 +679,6 @@
     </div>
     <nav class="nav">
       <a class="btn" href="/dashboard">🏠 &nbsp; Inicio</a>
-      <!-- <a class="btn" href="/clientes">👥 &nbsp; Clientes</a>
-      <a class="btn" href="/ventas">💵 &nbsp; Ventas</a>
-      <a class="btn" href="/cartera">💰 &nbsp; Cartera</a>
-      <a class="btn" href="/facturas">📄 &nbsp; Facturas</a>
-      <a class="btn" href="/pedidos">🚚 &nbsp; Pedidos</a> -->
       <a class="btn active" href="/productos">🏷️ &nbsp; Productos</a>
       <a class="btn" href="/inventario">📦 &nbsp; Inventario</a>
     </nav>
@@ -771,7 +788,7 @@
               <th class="num">Mayorista</th>
               <th class="num">Individual</th>
               <th class="num">Mostrador</th>
-              <th class="num">Costo/unidad</th>
+              <th class="num">Costo/und</th>
               <th>IVA</th>
               <th class="right">Acción</th>
             </tr>
@@ -799,8 +816,8 @@
                 {% if puede_configurar_iva %}
                   <form class="iva-form" method="POST" action="/actualizar_iva_producto/{{ p.id }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="number" name="iva_porcentaje" min="0" max="100" step="0.01" value="{{ p.iva_porcentaje if p.iva_porcentaje is not none else '' }}" placeholder="Pendiente" required>
-                    <span style="font-weight:700;color:#64748b;">%</span>
+                    <input type="number" name="iva_porcentaje" min="0" max="100" step="0.01" value="{{ p.iva_porcentaje if p.iva_porcentaje is not none else '' }}" placeholder="Pend." required>
+                    <span style="font-weight:700;color:#64748b;font-size:12px;">%</span>
                     <button type="submit" class="iva-save-btn">Guardar</button>
                   </form>
                 {% elif p.iva_porcentaje is none %}
@@ -812,10 +829,10 @@
 
               <td class="right">
                 <div class="row-actions">
-                  <a class="btn-print" href="/imprimir_codigo_barras/{{ p.id }}" target="_blank">🖨 Imprimir código</a>
+                  <a class="btn-print" href="/imprimir_codigo_barras/{{ p.id }}" target="_blank" title="Imprimir código de barras">🖨 Código</a>
                   <form method="POST" action="/eliminar_producto/{{ p.id }}" style="display:inline;margin:0;" onsubmit="return confirm('¿Eliminar este producto?')">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn-danger">🗑 Eliminar</button>
+                    <button type="submit" class="btn-danger" title="Eliminar producto" aria-label="Eliminar producto">🗑</button>
                   </form>
                 </div>
               </td>
